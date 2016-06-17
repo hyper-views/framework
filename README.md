@@ -1,2 +1,3 @@
-# framework
-redux, virtual-dom, main-loop, hyperx, singlepage, catchlinks, etc
+# @erickmerchant/framework
+
+redux, hyperx, single-page, etc.

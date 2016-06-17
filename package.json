@@ -1,0 +1,33 @@
+{
+  "name": "@erickmerchant/framework",
+  "version": "1.0.0",
+  "description": "redux, hyperx, singlepage, catchlinks, etc",
+  "main": "framework.js",
+  "scripts": {
+    "test": "standard && tap test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erickmerchant/framework.git"
+  },
+  "author": "Erick Merchant <erickmerchant@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/erickmerchant/framework/issues"
+  },
+  "homepage": "https://github.com/erickmerchant/framework#readme",
+  "devDependencies": {
+    "standard": "^7.0.0",
+    "tap": "^5.7.1"
+  },
+  "dependencies": {
+    "@erickmerchant/router": "^4.2.0",
+    "catch-links": "^2.0.1",
+    "hyperx": "^2.0.4",
+    "main-loop": "^3.2.0",
+    "redux": "^3.5.2",
+    "redux-thunk": "^2.1.0",
+    "single-page": "^1.1.0",
+    "virtual-dom": "^2.1.1"
+  }
+}
