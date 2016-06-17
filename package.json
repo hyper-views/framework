@@ -2,9 +2,11 @@
   "name": "@erickmerchant/framework",
   "version": "1.0.0",
   "description": "redux, hyperx, singlepage, catchlinks, etc",
-  "main": "framework.js",
+  "main": "dist/main.js",
   "scripts": {
-    "test": "standard && tap test.js"
+    "test": "standard && tap test.js",
+    "cover": "tap test.js --cov --coverage-report=html",
+    "prepublish": "babel --presets es2015 main.js -d dist/"
   },
   "repository": {
     "type": "git",
@@ -17,6 +19,8 @@
   },
   "homepage": "https://github.com/erickmerchant/framework#readme",
   "devDependencies": {
+    "babel-cli": "^6.10.1",
+    "babel-preset-es2015": "^6.9.0",
     "standard": "^7.0.0",
     "tap": "^5.7.1"
   },
