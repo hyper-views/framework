@@ -6,7 +6,7 @@
   "scripts": {
     "test": "standard && tap test.js",
     "cover": "tap test.js --cov --coverage-report=html",
-    "prepublish": "babel --presets es2015 main.js -d dist/"
+    "compile": "babel --presets es2015 main.js -d dist/"
   },
   "repository": {
     "type": "git",
