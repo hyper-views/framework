@@ -28,13 +28,8 @@
     "tape": "^4.6.0"
   },
   "dependencies": {
-    "@erickmerchant/router": "^4.2.0",
     "catch-links": "^2.0.1",
-    "hyperx": "^2.0.4",
-    "main-loop": "^3.2.0",
-    "redux": "^3.5.2",
-    "redux-thunk": "^2.1.0",
     "single-page": "^1.1.0",
-    "virtual-dom": "^2.1.1"
+    "yo-yo": "^1.2.2"
   }
 }
