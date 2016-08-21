@@ -2,25 +2,24 @@ const catchLinks = require('catch-links')
 const singlePage = require('single-page')
 const html = require('yo-yo')
 
-module.exports = function (store, component) {
+module.exports = function ({target, store, component}) {
+  const context = {}
   const show = singlePage(function (href) {
-    dispatch('context', href)
+    context.href = href
+
+    render(store())
   })
 
-  const el = component(store(), {dispatch, next, show, html})
+  catchLinks(target, show)
 
-  catchLinks(el, show)
-
-  return el
-
-  function dispatch (type, data) {
-    render(store(type, data))
+  function dispatch () {
+    render(store(...arguments))
   }
 
   function render (state) {
-    const newEl = component(state, {dispatch, next, show, html})
+    const element = component({state, dispatch, context, show, html, next})
 
-    html.update(el, newEl)
+    html.update(target, element)
   }
 }
 
