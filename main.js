@@ -3,9 +3,9 @@ const singlePage = require('single-page')
 const html = require('yo-yo')
 
 module.exports = function ({target, store, component}) {
-  const context = {}
-  const show = singlePage(function (href) {
-    context.href = href
+  let href
+  const show = singlePage(function (h) {
+    href = h
 
     render(store())
   })
@@ -17,7 +17,7 @@ module.exports = function ({target, store, component}) {
   }
 
   function render (state) {
-    const element = component({state, dispatch, context, show, html, next})
+    const element = component({state, dispatch, href, show, html, next})
 
     html.update(target, element)
   }
