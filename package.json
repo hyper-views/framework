@@ -24,7 +24,7 @@
     "faucet": "0.0.1",
     "mockery": "^1.4.0",
     "nyc": "^8.0.0",
-    "standard": "^7.0.0",
+    "standard": "^8.0.0",
     "tape": "^4.6.0"
   },
   "dependencies": {
