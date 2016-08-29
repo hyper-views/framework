@@ -1,7 +1,7 @@
 {
   "name": "@erickmerchant/framework",
   "version": "4.0.0",
-  "description": "redux, hyperx, singlepage, catchlinks, etc",
+  "description": "A simple data down, actions up framework.",
   "main": "dist/main.js",
   "scripts": {
     "test": "standard && tape 'test.js' | faucet",
