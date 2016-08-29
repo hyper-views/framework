@@ -1,6 +1,7 @@
 const catchLinks = require('catch-links')
 const singlePage = require('single-page')
-const html = require('yo-yo')
+const diffhtml = require('diffhtml')
+const html = diffhtml.html
 
 module.exports = function ({target, store, component}) {
   let href
@@ -19,7 +20,7 @@ module.exports = function ({target, store, component}) {
   function render (state) {
     const element = component({state, dispatch, href, show, html, next})
 
-    html.update(target, element)
+    diffhtml.innerHTML(target, element)
   }
 }
 
