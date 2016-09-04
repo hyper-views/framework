@@ -4,26 +4,33 @@ const diffhtml = require('diffhtml')
 const html = diffhtml.html
 
 module.exports = function ({target, store, component}) {
-  let href
-  const show = singlePage(function (h) {
-    href = h
+  let context = {}
+  let state = store()
+  const show = singlePage(function (href) {
+    context.href = href
 
-    render(store())
+    render()
   })
 
   catchLinks(target, show)
 
   function dispatch () {
-    render(store(...arguments))
+    render(...arguments)
   }
 
-  function render (state) {
-    const element = component({state, dispatch, href, show, html, next})
+  function render () {
+    state = store(state, ...arguments)
 
-    diffhtml.innerHTML(target, element)
+    window.requestAnimationFrame(() => {
+      const element = component({state, dispatch, context, show, html, next})
+
+      diffhtml.innerHTML(target, element)
+    })
   }
-}
 
-function next (callback) {
-  process.nextTick(callback)
+  function next (callback) {
+    process.nextTick(function () {
+      callback(target)
+    })
+  }
 }
