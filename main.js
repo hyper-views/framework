@@ -4,10 +4,12 @@ const diffhtml = require('diffhtml')
 const html = diffhtml.html
 
 module.exports = function ({target, store, component}) {
-  let context = {}
+  let href
   let state = store()
-  const show = singlePage(function (href) {
-    context.href = href
+  let rafCalled = false
+
+  const show = singlePage(function (newHref) {
+    href = newHref
 
     render()
   })
@@ -15,17 +17,23 @@ module.exports = function ({target, store, component}) {
   catchLinks(target, show)
 
   function dispatch () {
-    render(...arguments)
+    state = store(state, ...arguments)
+
+    render()
   }
 
   function render () {
-    state = store(state, ...arguments)
+    if (!rafCalled) {
+      rafCalled = true
 
-    window.requestAnimationFrame(() => {
-      const element = component({state, dispatch, context, show, html, next})
+      window.requestAnimationFrame(() => {
+        rafCalled = false
 
-      diffhtml.innerHTML(target, element)
-    })
+        const element = component(href)({state, dispatch, show, html, next})
+
+        diffhtml.innerHTML(target, element)
+      })
+    }
   }
 
   function next (callback) {
