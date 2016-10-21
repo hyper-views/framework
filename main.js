@@ -1,9 +1,7 @@
 const catchLinks = require('catch-links')
 const singlePage = require('single-page')
-const diffhtml = require('diffhtml')
-const html = diffhtml.html
 
-module.exports = function ({target, store, component}) {
+module.exports = function ({target, store, component, diff}) {
   let href
   let state = store()
   let rafCalled = false
@@ -29,9 +27,9 @@ module.exports = function ({target, store, component}) {
       window.requestAnimationFrame(() => {
         rafCalled = false
 
-        const element = component(href)({state, dispatch, show, html, next})
+        const element = component(href)({state, dispatch, show, next})
 
-        diffhtml.innerHTML(target, element)
+        diff(target, element)
       })
     }
   }
