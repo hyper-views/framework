@@ -6,7 +6,8 @@
   "scripts": {
     "test": "standard && tape 'test.js' | faucet",
     "cover": "nyc --reporter=html npm test",
-    "prepare": "babel --presets es2015 main.js -d dist/"
+    "build": "babel --presets es2015 main.js -d dist/",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
