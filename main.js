@@ -1,7 +1,9 @@
 const catchLinks = require('catch-links')
 const singlePage = require('single-page')
 
-module.exports = function ({target, store, component, diff}) {
+module.exports = function ({target, store, component, diff, raf}) {
+  raf = raf != null ? raf : window.requestAnimationFrame
+
   let href
   let state = store()
   let rafCalled = false
@@ -14,6 +16,10 @@ module.exports = function ({target, store, component, diff}) {
 
   catchLinks(target, show)
 
+  return function (init) {
+    init({state, dispatch})
+  }
+
   function dispatch () {
     state = store(state, ...arguments)
 
@@ -24,7 +30,7 @@ module.exports = function ({target, store, component, diff}) {
     if (!rafCalled) {
       rafCalled = true
 
-      window.requestAnimationFrame(() => {
+      raf(() => {
         rafCalled = false
 
         const element = component(href)({state, dispatch, show, next})
