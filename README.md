@@ -122,10 +122,10 @@ Should return the element to pass to __diff__
 - target: the target that the application is passed
 - element: the new element returned from the __component callback__
 
-##### init({state, dispatch})
+#### init({state, dispatch})
 
 - state: the __state__
-- dispatch: see __dispatch
+- dispatch: see __dispatch__
 
 ## Related Projects
 
