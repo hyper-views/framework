@@ -55,77 +55,99 @@ function component (href) {
 
 ### Framework Code
 
-#### framework({target, store, component, diff, raf})
+#### framework
+
+_framework({target, store, component, diff, raf})_
 
 - target: a DOM element. The place to render your application
-- store: a function. See __store__
-- component: a function. See __component__
-- diff: a function. See __diff__
+- store: a function. See [store](#store)
+- component: a function. See [component](#component)
+- diff: a function. See [diff](#diff)
 - raf: optional. A function. A replacement for window.requestAnimationFrame. It defaults to window.requestAnimationFrame
 
-Returns a function. See __init__
+Returns a function. See [init](#init)
 
 #### state
 
-This is what is returned from the __store__. It can be anything from simply a number like in the example, to a complex object.
+This is what is returned from the [store](#store). It can be anything from simply a number like in the example, to a complex object.
 
-#### dispatch(...arguments)
+#### dispatch
+
+_dispatch(...arguments)_
 
 Initializes a change in state and causes a render
 
 - arguments: all get passed to the store
 
-#### show(href)
+#### show
+
+_show(href)_
 
 - href: the window.location will get updated with this and a render will happen
 
-#### next(callback)
+#### next
+
+_next(callback)_
 
 A convenient helper to pass a callback to process.nextTick. Can be used to manipulate the page in some way after a render. For example scrolling to a specific element
 
-- callback: see below
+- callback: see [next callback](#next-callback)
 
-##### callback(target)
+#### next callback
 
-- target: the __target__
+_callback(target)_
 
-#### init(init)
+- target: the [target](#target)
 
-- init: see __application code init__
+#### init
+
+_init(callback)_
+
+- callback: see [init callback](#init-callback)
 
 ### Application Code
 
-#### store(state, ...arguments)
+#### store
+
+_store(state, ...arguments)_
 
 Called initially with zero arguments, it should return the default/initial state.
 
 - state: the previous thing returned from calling store
-- arguments: all the arguments passed to __dispatch__
+- arguments: all the arguments passed to [dispatch](#dispatch)
 
-#### component(href)
+#### component
+
+_component(href)_
 
 - href: the current url
 
-Returns the callback (see below)
+Returns the [component callback](#component-callback)
 
-##### callback({state, dispatch, show, next})
+#### component callback
 
-- state: the current __state__
-- dispatch: the __dispatch__ function
-- show: a function. See __show__
-- next: a function. See __next__
+_callback({state, dispatch, show, next})_
 
-Should return the element to pass to __diff__
+- state: the current [state](#state)
+- dispatch: the [dispatch](#dispatch) function
+- show: a function. See [show](#show)
+- next: a function. See [next](#next)
 
-#### diff(target, element)
+Should return the element to pass to [diff](#diff)
+
+#### diff
+
+_diff(target, element)_
 
 - target: the target that the application is passed
-- element: the new element returned from the __component callback__
+- element: the new element returned from the [component callback](#component-callback)
 
-#### init({state, dispatch})
+#### init callback
 
-- state: the __state__
-- dispatch: see __dispatch__
+_callback({state, dispatch})_
+
+- state: the [state](#state)
+- dispatch: see [dispatch](#dispatch)
 
 ## Related Projects
 
