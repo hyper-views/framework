@@ -97,7 +97,7 @@ A convenient helper to pass a callback to process.nextTick. Can be used to manip
 
 _callback(target)_
 
-- target: the [target](#target)
+- target: the target passed to [framework](#framework)
 
 #### init
 
@@ -139,7 +139,7 @@ Should return the element to pass to [diff](#diff)
 
 _diff(target, element)_
 
-- target: the target that the application is passed
+- target: the target passed to [framework](#framework)
 - element: the new element returned from the [component callback](#component-callback)
 
 #### init callback
