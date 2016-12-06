@@ -4,13 +4,13 @@ This scoped package is my personal framework.
 
 I wrote it to understand how modern javascript frameworks do things. It's greatly inspired by React and Redux, etc, obviously. Also hyperx, which demonstrated that you can use tagged template strings instead of JSX, was a huge inspiration.
 
-I also wrote it because I don't really like any of the options out there. They're all too complicated in my opinion.
+I also wrote it because I don't really like any of the options out there. I wouldn't necessarily use it for anything serious, but intend to use it for any personal stuff I do.
 
 It is meant to be used with browserify.
 
 ## An Example
 
-This example uses diffhtml, but you should be able to use an alternative that provides something with the same functionality of its innerHTML.
+This example uses diffhtml, but you should be able to use an alternative that provides something with the same functionality of its innerHTML (see [diff](#diff)).
 
 ``` javascript
 const framework = require('@erickmerchant/framework')
@@ -34,10 +34,11 @@ function store (state = 0, action) {
 
 function component (href) {
   return function ({state, dispatch}) {
-    return html`<p>
-      <button onclick='${decrement}'>-</button>
-      <strong>${state}</strong>
-      <button onclick='${increment}'>+</button>
+    return html`<div>
+      <output>${state}</output>
+      <br>
+      <button onclick='${decrement}'>--</button>
+      <button onclick='${increment}'>++</button>
     </p>`
 
     function decrement () {
@@ -60,10 +61,10 @@ function component (href) {
 _framework({target, store, component, diff, raf})_
 
 - target: a DOM element. The place to render your application
-- store: a function. See [store](#store)
-- component: a function. See [component](#component)
-- diff: a function. See [diff](#diff)
-- raf: optional. A function. A replacement for window.requestAnimationFrame. It defaults to window.requestAnimationFrame
+- store: see [store](#store)
+- component: see [component](#component)
+- diff: see [diff](#diff)
+- raf: optional. A replacement for window.requestAnimationFrame. It defaults to window.requestAnimationFrame
 
 Returns a function. See [init](#init)
 
@@ -83,7 +84,7 @@ Initializes a change in state and causes a render
 
 _show(href)_
 
-- href: the window.location will get updated with this and a render will happen
+- href: the location will get updated with this and a render will happen
 
 #### next
 
@@ -128,10 +129,10 @@ Returns the [component callback](#component-callback)
 
 _callback({state, dispatch, show, next})_
 
-- state: the current [state](#state)
-- dispatch: the [dispatch](#dispatch) function
-- show: a function. See [show](#show)
-- next: a function. See [next](#next)
+- state: see [state](#state)
+- dispatch: see [dispatch](#dispatch)
+- show: see [show](#show)
+- next: see [next](#next)
 
 Should return the element to pass to [diff](#diff)
 
@@ -146,7 +147,7 @@ _diff(target, element)_
 
 _callback({state, dispatch})_
 
-- state: the [state](#state)
+- state: see [state](#state)
 - dispatch: see [dispatch](#dispatch)
 
 ## Related Projects
