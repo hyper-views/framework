@@ -17,7 +17,7 @@ module.exports = function ({target, store, component, diff, raf}) {
   catchLinks(target, show)
 
   return function (init) {
-    init({state, dispatch})
+    init(dispatch)
   }
 
   function dispatch () {

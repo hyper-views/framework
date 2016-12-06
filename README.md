@@ -8,6 +8,7 @@ I also wrote it because I don't really like any of the options out there. I woul
 
 It is meant to be used with browserify.
 
+
 ## An Example
 
 This example uses diffhtml, but you should be able to use an alternative that provides something with the same functionality of its innerHTML (see [diff](#diff)).
@@ -51,6 +52,7 @@ function component (href) {
   }
 }
 ```
+
 
 ## API Reference
 
@@ -123,11 +125,11 @@ _component(href)_
 
 - href: the current url
 
-Returns the [component callback](#component-callback)
+Returns the [component result](#component-result)
 
-#### component callback
+#### component result
 
-_callback({state, dispatch, show, next})_
+_result({state, dispatch, show, next})_
 
 - state: see [state](#state)
 - dispatch: see [dispatch](#dispatch)
@@ -141,14 +143,14 @@ Should return the element to pass to [diff](#diff)
 _diff(target, element)_
 
 - target: the target passed to [framework](#framework)
-- element: the new element returned from the [component callback](#component-callback)
+- element: the new element returned from the [component result](#component-result)
 
 #### init callback
 
-_callback({state, dispatch})_
+_callback(dispatch)_
 
-- state: see [state](#state)
 - dispatch: see [dispatch](#dispatch)
+
 
 ## Related Projects
 

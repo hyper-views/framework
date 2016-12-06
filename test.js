@@ -36,8 +36,8 @@ test('test main - set-up', function (t) {
     component: noop,
     diff: noop,
     raf: noop
-  })(function (app) {
-    t.deepEqual(Object.keys(app), ['state', 'dispatch'])
+  })(function (dispatch) {
+    t.ok(typeof dispatch, 'function')
   })
 
   mockery.disable()
