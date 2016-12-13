@@ -1,23 +1,11 @@
-const catchLinks = require('catch-links')
-const singlePage = require('single-page')
-
 module.exports = function ({target, store, component, diff, raf}) {
   raf = raf != null ? raf : window.requestAnimationFrame
 
-  let href
   let state = store()
   let rafCalled = false
 
-  const show = singlePage(function (newHref) {
-    href = newHref
-
-    render()
-  })
-
-  catchLinks(target, show)
-
   return function (init) {
-    init(dispatch)
+    init({target, dispatch})
   }
 
   function dispatch () {
@@ -33,16 +21,18 @@ module.exports = function ({target, store, component, diff, raf}) {
       raf(() => {
         rafCalled = false
 
-        const element = component(href)({state, dispatch, show, next})
+        const element = component({state, dispatch, next})
 
-        diff(target, element)
+        if (element != null) {
+          diff(target, element)
+        }
       })
     }
   }
 
   function next (callback) {
     process.nextTick(function () {
-      callback(target)
+      callback({target, dispatch})
     })
   }
 }

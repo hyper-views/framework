@@ -33,22 +33,20 @@ function store (state = 0, action) {
   return state
 }
 
-function component (href) {
-  return function ({state, dispatch}) {
-    return html`<div>
-      <output>${state}</output>
-      <br>
-      <button onclick='${decrement}'>--</button>
-      <button onclick='${increment}'>++</button>
-    </p>`
+function component ({state, dispatch}) {
+  return html`<div>
+    <output>${state}</output>
+    <br>
+    <button onclick='${decrement}'>--</button>
+    <button onclick='${increment}'>++</button>
+  </p>`
 
-    function decrement () {
-      dispatch('decrement')
-    }
+  function decrement () {
+    dispatch('decrement')
+  }
 
-    function increment () {
-      dispatch('increment')
-    }
+  function increment () {
+    dispatch('increment')
   }
 }
 ```
@@ -82,12 +80,6 @@ Initializes a change in state and causes a render
 
 - arguments: all get passed to the store
 
-#### show
-
-_show(href)_
-
-- href: the location will get updated with this and a render will happen
-
 #### next
 
 _next(callback)_
@@ -95,12 +87,6 @@ _next(callback)_
 A convenient helper to pass a callback to process.nextTick. Can be used to manipulate the page in some way after a render. For example scrolling to a specific element
 
 - callback: see [next callback](#next-callback)
-
-#### next callback
-
-_callback(target)_
-
-- target: the target passed to [framework](#framework)
 
 #### init
 
@@ -121,19 +107,10 @@ Called initially with zero arguments, it should return the default/initial state
 
 #### component
 
-_component(href)_
-
-- href: the current url
-
-Returns the [component result](#component-result)
-
-#### component result
-
-_result({state, dispatch, show, next})_
+_component({state, dispatch, next})_
 
 - state: see [state](#state)
 - dispatch: see [dispatch](#dispatch)
-- show: see [show](#show)
 - next: see [next](#next)
 
 Should return the element to pass to [diff](#diff)
@@ -143,12 +120,20 @@ Should return the element to pass to [diff](#diff)
 _diff(target, element)_
 
 - target: the target passed to [framework](#framework)
-- element: the new element returned from the [component result](#component-result)
+- element: the new element returned from the [component](#component)
+
+#### next callback
+
+_callback({target, dispatch})_
+
+- target: the target passed to [framework](#framework)
+- dispatch: see [dispatch](#dispatch)
 
 #### init callback
 
-_callback(dispatch)_
+_callback({target, dispatch})_
 
+- target: the target passed to [framework](#framework)
 - dispatch: see [dispatch](#dispatch)
 
 
