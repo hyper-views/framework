@@ -71,8 +71,7 @@ test('test main - next', function (t) {
 
       return {}
     },
-    diff: function (target, newTarget) {
-    },
+    diff: noop,
     raf: function (callback) {
       process.nextTick(function () { callback() })
     }

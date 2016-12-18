@@ -11,22 +11,20 @@ module.exports = function ({target, store, component, diff, raf}) {
   function dispatch () {
     state = store(state, ...arguments)
 
-    render()
-  }
-
-  function render () {
     if (!rafCalled) {
       rafCalled = true
 
-      raf(() => {
-        rafCalled = false
+      raf(render)
+    }
+  }
 
-        const element = component({state, dispatch, next})
+  function render () {
+    rafCalled = false
 
-        if (element != null) {
-          diff(target, element)
-        }
-      })
+    const element = component({state, dispatch, next})
+
+    if (element != null) {
+      diff(target, element)
     }
   }
 
