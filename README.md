@@ -60,6 +60,8 @@ function component ({state, dispatch}) {
 
 _framework({target, store, component, diff, raf})_
 
+The function exported by this module.
+
 - target: a DOM element. The place to render your application
 - store: see [store](#store)
 - component: see [component](#component)
