@@ -145,10 +145,6 @@ _callback({target, dispatch})_
 
   A state container to use as a store
 
-- [@erickmerchant/router](https://github.com/erickmerchant/router)
-
-  A router to use as a component
-
 - [A TodoMVC example](http://todo.erickmerchant.com)
 
   The source code can be found [here](https://github.com/erickmerchant/framework-todo)
