@@ -1,6 +1,6 @@
 {
   "name": "@erickmerchant/framework",
-  "version": "9.0.1",
+  "version": "9.0.2",
   "description": "A simple data down, actions up framework.",
   "main": "dist/main.js",
   "scripts": {
