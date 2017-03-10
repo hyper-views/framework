@@ -11,13 +11,12 @@ It is meant to be used with browserify.
 
 ## An Example
 
-This example uses diffhtml, but you should be able to use an alternative that provides something with the same functionality of its innerHTML (see [diff](#diff)).
+This example uses yo-yo (which uses hyperx), but you should be able to use diffHTML and possibly other solutions.
 
 ``` javascript
 const framework = require('@erickmerchant/framework')
-const diffhtml = require('diffhtml')
-const diff = diffhtml.innerHTML
-const html = diffhtml.html
+const html = require('yo-yo')
+const diff = html.update
 const target = document.querySelector('main')
 
 framework({target, store, component, diff})(init)
@@ -27,19 +26,21 @@ function init ({dispatch}) {
 }
 
 function store (state = 0, action) {
-  if (action === 'increment') state = state + 1
-  if (action === 'decrement') state = state - 1
+  switch (action) {
+    case 'increment': return state + 1
+    case 'decrement': return state - 1
+  }
 
   return state
 }
 
 function component ({state, dispatch}) {
-  return html`<div>
+  return html`<main>
     <output>${state}</output>
     <br>
-    <button onclick='${decrement}'>--</button>
-    <button onclick='${increment}'>++</button>
-  </p>`
+    <button onclick=${decrement}>--</button>
+    <button onclick=${increment}>++</button>
+  </main>`
 
   function decrement () {
     dispatch('decrement')
@@ -63,9 +64,9 @@ _framework({target, store, component, diff, raf})_
 The function exported by this module.
 
 - target: a DOM element. The place to render your application
-- store: see [store](#store)
-- component: see [component](#component)
-- diff: see [diff](#diff)
+- [store](#store)
+- [component](#component)
+- [diff](#diff)
 - raf: optional. A replacement for window.requestAnimationFrame. It defaults to window.requestAnimationFrame
 
 Returns a function. See [init](#init)
@@ -84,17 +85,19 @@ Initializes a change in state and causes a render
 
 #### next
 
-_next(callback)_
+_next(({target, dispatch}) => { ... })_
 
 A convenient helper to pass a callback to process.nextTick. Can be used to manipulate the page in some way after a render. For example scrolling to a specific element
 
-- callback: see [next callback](#next-callback)
+- target: the target passed to [framework](#framework)
+- [dispatch](#dispatch)
 
 #### init
 
-_init(callback)_
+_init(({target, dispatch}) => { ... })_
 
-- callback: see [init callback](#init-callback)
+- target: the target passed to [framework](#framework)
+- [dispatch](#dispatch)
 
 ### Application Code
 
@@ -111,9 +114,9 @@ Called initially with zero arguments, it should return the default/initial state
 
 _component({state, dispatch, next})_
 
-- state: see [state](#state)
-- dispatch: see [dispatch](#dispatch)
-- next: see [next](#next)
+- [state](#state)
+- [dispatch](#dispatch)
+- [next](#next)
 
 Should return the element to pass to [diff](#diff)
 
@@ -123,20 +126,6 @@ _diff(target, element)_
 
 - target: the target passed to [framework](#framework)
 - element: the new element returned from the [component](#component)
-
-#### next callback
-
-_callback({target, dispatch})_
-
-- target: the target passed to [framework](#framework)
-- dispatch: see [dispatch](#dispatch)
-
-#### init callback
-
-_callback({target, dispatch})_
-
-- target: the target passed to [framework](#framework)
-- dispatch: see [dispatch](#dispatch)
 
 
 ## Related Projects
