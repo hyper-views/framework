@@ -1,13 +1,6 @@
 # @erickmerchant/framework
 
-This scoped package is my personal framework.
-
-I wrote it to understand how modern javascript frameworks do things. It's greatly inspired by React and Redux, etc, obviously. Also hyperx, which demonstrated that you can use tagged template strings instead of JSX, was a huge inspiration.
-
-I also wrote it because I don't really like any of the options out there. I wouldn't necessarily use it for anything serious, but intend to use it for any personal stuff I do.
-
-It is meant to be used with browserify.
-
+This scoped package is my personal framework. I wrote it to understand how modern javascript frameworks do things. It's meant to be used with browserify.
 
 ## An Example
 
