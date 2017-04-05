@@ -29,8 +29,6 @@ module.exports = function ({target, store, component, diff, raf}) {
   }
 
   function next (callback) {
-    process.nextTick(function () {
-      callback({target, dispatch})
-    })
+    process.nextTick(callback, {target, dispatch})
   }
 }
