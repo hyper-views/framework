@@ -1,7 +1,14 @@
-module.exports = function ({target, store, component, diff, raf}) {
+module.exports = function ({target, store, component, diff, options, raf}) {
   raf = raf != null ? raf : window.requestAnimationFrame
 
-  let state = store()
+  options = options != null ? Object.assign({}, options, {dispatch, next}) : {dispatch, next}
+  let stores = store
+
+  if (!Array.isArray(store)) {
+    stores = [store]
+  }
+
+  let state = stores.reduce((state, store) => store(state))
   let rafCalled = false
 
   return function (init) {
@@ -9,7 +16,7 @@ module.exports = function ({target, store, component, diff, raf}) {
   }
 
   function dispatch () {
-    state = store(state, ...arguments)
+    state = stores.reduce((state, store) => store(state, ...arguments), state)
 
     if (!rafCalled) {
       rafCalled = true
@@ -21,7 +28,7 @@ module.exports = function ({target, store, component, diff, raf}) {
   function render () {
     rafCalled = false
 
-    const element = component({state, dispatch, next})
+    const element = component(Object.assign({state}, options))
 
     if (element != null) {
       diff(target, element)

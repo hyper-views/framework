@@ -123,9 +123,13 @@ _diff(target, element)_
 
 ## Related Projects
 
-- [@erickmerchant/state-container](https://github.com/erickmerchant/state-container)
+- [@erickmerchant/combine-stores](https://github.com/erickmerchant/combine-stores)
 
-  A state container to use as a store
+  A module to create a store from other stores where each is responsible for one property in the state.
+
+- [@erickmerchant/router](https://github.com/erickmerchant/router)
+
+  A module to do routing inside your components.
 
 - [A TodoMVC example](http://todo.erickmerchant.com)
 
