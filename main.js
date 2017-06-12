@@ -2,12 +2,8 @@ module.exports = function ({target, store, component, diff, options, raf}) {
   raf = raf != null ? raf : window.requestAnimationFrame
 
   options = options != null ? Object.assign({}, options, {dispatch, next}) : {dispatch, next}
-  let stores = store
 
-  if (!Array.isArray(store)) {
-    stores = [store]
-  }
-
+  let stores = !Array.isArray(store) ? [store] : store
   let state = stores.reduce((state, store) => store(state))
   let rafCalled = false
 
