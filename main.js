@@ -17,7 +17,13 @@ module.exports = function ({target, store, component, diff, options, raf}) {
   }
 
   function dispatch () {
-    state = stores.reduce((state, store) => store(state, ...arguments), state)
+    state = stores.reduce((state, store) => {
+      const args = (arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments))
+
+      args.unshift(state)
+
+      return store.apply(null, args)
+    }, state)
 
     if (!rafCalled) {
       rafCalled = true
