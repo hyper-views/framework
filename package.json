@@ -19,10 +19,10 @@
   "homepage": "https://github.com/erickmerchant/framework#readme",
   "devDependencies": {
     "faucet": "0.0.1",
-    "mockery": "^2.0.0",
-    "nyc": "^11.0.2",
+    "mockery": "^2.1.0",
+    "nyc": "^11.0.3",
     "standard": "^10.0.0",
-    "tape": "^4.6.0"
+    "tape": "^4.7.0"
   },
   "dependencies": {}
 }
