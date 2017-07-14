@@ -16,7 +16,13 @@ module.exports = function ({target, store, component, diff, raf}) {
   }
 
   function dispatch (...args) {
-    action(commit, ...args)
+    if (!args.length) {
+      commit(function () {
+        return state
+      })
+    } else {
+      action(commit, ...args)
+    }
   }
 
   function commit (then) {
