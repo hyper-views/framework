@@ -1,19 +1,26 @@
 module.exports = function ({target, store, component, diff, raf}) {
   raf = raf != null ? raf : window.requestAnimationFrame
 
-  let state = store()
+  let state
   let rafCalled = false
+  let action
+
+  action = store(function (seed) {
+    if (!action) {
+      state = seed
+    }
+  })
 
   return function (init) {
     init({target, dispatch})
   }
 
-  function dispatch () {
-    const args = (arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments))
+  function dispatch (...args) {
+    action(commit, ...args)
+  }
 
-    args.unshift(state)
-
-    state = store.apply(null, args)
+  function commit (then) {
+    state = then(state)
 
     if (!rafCalled) {
       rafCalled = true

@@ -1,5 +1,14 @@
 const test = require('tape')
 const noop = function () {}
+const noopStore = function (seed) {
+  seed('')
+
+  return function (commit) {
+    commit(function () {
+      return ''
+    })
+  }
+}
 
 test('test main - init', function (t) {
   let theTarget = {}
@@ -8,9 +17,7 @@ test('test main - init', function (t) {
 
   require('./main.js')({
     target: theTarget,
-    store: function () {
-      return {}
-    },
+    store: noopStore,
     component: noop,
     diff: noop,
     raf: noop
@@ -23,15 +30,27 @@ test('test main - init', function (t) {
 test('test main - dispatch > render', function (t) {
   let theTarget = {}
 
-  t.plan(3)
+  t.plan(6)
 
   require('./main.js')({
     target: theTarget,
-    store: function (state = {}) {
-      return state
+    store: function (seed) {
+      seed('')
+
+      return function (commit, arg) {
+        commit(function (state) {
+          t.equal(state, '')
+
+          t.equal(arg, 123)
+
+          return 'test'
+        })
+      }
     },
     component: function (app) {
       t.deepEqual(Object.keys(app), ['state', 'dispatch', 'next'])
+
+      t.equal(app.state, 'test')
 
       return {}
     },
@@ -44,7 +63,7 @@ test('test main - dispatch > render', function (t) {
       process.nextTick(function () { callback() })
     }
   })(function ({target, dispatch}) {
-    dispatch()
+    dispatch(123)
   })
 })
 
@@ -56,9 +75,7 @@ test('test main - next', function (t) {
 
   require('./main.js')({
     target: theTarget,
-    store: function (state = {}) {
-      return {}
-    },
+    store: noopStore,
     component: function (app) {
       if (!nextRun) {
         nextRun = true

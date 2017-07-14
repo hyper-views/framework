@@ -1,6 +1,6 @@
 # @erickmerchant/framework
 
-This scoped package is my personal framework. I wrote it to understand how modern javascript frameworks do things. It's meant to be used with browserify.
+This scoped package is my personal framework. I use it on a number of small projects.
 
 ## An Example
 
@@ -18,13 +18,15 @@ function init ({dispatch}) {
   dispatch('increment')
 }
 
-function store (state = 0, action) {
-  switch (action) {
-    case 'increment': return state + 1
-    case 'decrement': return state - 1
-  }
+function store (seed) {
+  seed(0)
 
-  return state
+  return function (commit, action) {
+    switch (action) {
+      case 'increment': commit((state) => state + 1)
+      case 'decrement': commit((state) => state - 1)
+    }
+  }
 }
 
 function component ({state, dispatch}) {
@@ -66,7 +68,24 @@ Returns a function. See [init](#init)
 
 #### state
 
-This is what is returned from the [store](#store). It can be anything from simply a number like in the example, to a complex object.
+This is what is initially passed to [seed](#seed) and subsequently returned from [commit](#commit) callbacks. It can be anything from simply a number like in the example, to a complex object.
+
+#### seed
+
+_seed(state)_
+
+It should be passed the initial state
+
+- [state](#state): the initial state
+
+#### commit
+
+_commit((current) => next)_
+
+It's passed a callback that receives the current state and should return the new state.
+
+- [current](#state): the current state
+- [next](#state): the next state
 
 #### dispatch
 
@@ -74,7 +93,7 @@ _dispatch(...arguments)_
 
 Initializes a change in state and causes a render
 
-- arguments: all get passed to the store
+- arguments: all get passed to the [agent](#agent)
 
 #### next
 
@@ -96,11 +115,19 @@ _init(({target, dispatch}) => { ... })_
 
 #### store
 
-_store(state, ...arguments)_
+_store(seed)_
 
-Called initially with zero arguments, it should return the default/initial state.
+It should return the [agent](#agent).
 
-- state: the previous thing returned from calling store
+- [seed](#seed)
+
+#### agent
+
+_agent(commit, ...arguments)_
+
+Anything returned will be ignored
+
+- [commit](#commit)
 - arguments: all the arguments passed to [dispatch](#dispatch)
 
 #### component
@@ -125,7 +152,7 @@ _diff(target, element)_
 
 - [@erickmerchant/combine-stores](https://github.com/erickmerchant/combine-stores)
 
-  A module to create a store from other stores where each is responsible for one property in the state.
+  A module to create a store from other stores where each is responsible for one property in the state. __Does not currently work with 12__.
 
 - [@erickmerchant/router](https://github.com/erickmerchant/router)
 
