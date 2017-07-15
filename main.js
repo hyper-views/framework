@@ -12,7 +12,11 @@ module.exports = function ({target, store, component, diff, raf}) {
   })
 
   return function (init) {
-    init({target, dispatch})
+    if (typeof init === 'function') {
+      init({target, dispatch})
+    } else {
+      dispatch()
+    }
   }
 
   function dispatch (...args) {

@@ -12,11 +12,7 @@ const html = require('yo-yo')
 const diff = html.update
 const target = document.querySelector('main')
 
-framework({target, store, component, diff})(init)
-
-function init ({dispatch}) {
-  dispatch('increment')
-}
+framework({target, store, component, diff})()
 
 function store (seed) {
   seed(0)
@@ -107,6 +103,8 @@ A convenient helper to pass a callback to process.nextTick. Can be used to manip
 #### init
 
 _init(({target, dispatch}) => { ... })_
+
+Call init to mount your component. The callback is optional. 
 
 - target: the target passed to [framework](#framework)
 - [dispatch](#dispatch)
