@@ -19,8 +19,13 @@ function store (seed) {
 
   return function (commit, action) {
     switch (action) {
-      case 'increment': commit((state) => state + 1)
-      case 'decrement': commit((state) => state - 1)
+      case 'increment':
+        commit((state) => state + 1)
+        break
+
+      case 'decrement':
+        commit((state) => state - 1)
+        break
     }
   }
 }
@@ -29,17 +34,9 @@ function component ({state, dispatch}) {
   return html`<main>
     <output>${state}</output>
     <br>
-    <button onclick=${decrement}>--</button>
-    <button onclick=${increment}>++</button>
+    <button onclick=${() => dispatch('decrement')}>--</button>
+    <button onclick=${() => dispatch('increment')}>++</button>
   </main>`
-
-  function decrement () {
-    dispatch('decrement')
-  }
-
-  function increment () {
-    dispatch('increment')
-  }
 }
 ```
 
@@ -68,11 +65,14 @@ This is what is initially passed to [seed](#seed) and subsequently returned from
 
 #### seed
 
-_seed(state)_
+_seed(state|setup)_
 
-It should be passed the initial state
+It should be passed the initial state or a setup function
 
 - [state](#state): the initial state
+- [setup](#setup): a function to generate the initial state
+
+_Warning: Calling seed after [init](#init) is called will throw an Error_
 
 #### commit
 
@@ -83,11 +83,13 @@ It's passed a callback that receives the current state and should return the new
 - [current](#state): the current state
 - [next](#state): the next state
 
+_Warning: Calling commit before [init](#init) is called will throw an Error_
+
 #### dispatch
 
 _dispatch(...arguments)_
 
-Initializes a change in state and causes a render
+Initializes a change in state and causes a render. If the length of arguments is 0, the agent is not, but a render is triggered.
 
 - arguments: all get passed to the [agent](#agent)
 
@@ -95,7 +97,7 @@ Initializes a change in state and causes a render
 
 _next(({target, dispatch}) => { ... })_
 
-A convenient helper to pass a callback to process.nextTick. Can be used to manipulate the page in some way after a render. For example scrolling to a specific element
+A convenient helper to pass a callback to process.nextTick. Can be used to manipulate the page in some way after a render. For example scrolling to a specific element or focusing an input element.
 
 - target: the target passed to [framework](#framework)
 - [dispatch](#dispatch)
@@ -104,7 +106,7 @@ A convenient helper to pass a callback to process.nextTick. Can be used to manip
 
 _init(({target, dispatch}) => { ... })_
 
-Call init to mount your component. The callback is optional. 
+Call init to mount your component. The callback is optional.
 
 - target: the target passed to [framework](#framework)
 - [dispatch](#dispatch)
@@ -118,6 +120,14 @@ _store(seed)_
 It should return the [agent](#agent).
 
 - [seed](#seed)
+
+#### setup
+
+_setup(commit)_
+
+It should return the initial state.
+
+- [commit](#commit)
 
 #### agent
 
@@ -147,10 +157,6 @@ _diff(target, element)_
 
 
 ## Related Projects
-
-- [@erickmerchant/combine-stores](https://github.com/erickmerchant/combine-stores)
-
-  A module to create a store from other stores where each is responsible for one property in the state. __Does not currently work with 12__.
 
 - [@erickmerchant/router](https://github.com/erickmerchant/router)
 
