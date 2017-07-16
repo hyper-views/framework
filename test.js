@@ -10,27 +10,10 @@ const noopStore = function (seed) {
   }
 }
 
-test('test main - init', function (t) {
+test('init to render', function (t) {
   let theTarget = {}
 
-  t.plan(2)
-
-  require('./main.js')({
-    target: theTarget,
-    store: noopStore,
-    component: noop,
-    diff: noop,
-    raf: noop
-  })(function ({dispatch, target}) {
-    t.equal(typeof dispatch, 'function')
-    t.equal(target, theTarget)
-  })
-})
-
-test('test main - dispatch > render', function (t) {
-  let theTarget = {}
-
-  t.plan(6)
+  t.plan(9)
 
   require('./main.js')({
     target: theTarget,
@@ -48,7 +31,7 @@ test('test main - dispatch > render', function (t) {
       }
     },
     component: function (app) {
-      t.deepEqual(Object.keys(app), ['state', 'dispatch', 'next'])
+      t.deepEqual(Object.keys(app).length, 3)
 
       t.equal(app.state, 'test')
 
@@ -62,29 +45,33 @@ test('test main - dispatch > render', function (t) {
     raf: function (callback) {
       process.nextTick(function () { callback() })
     }
-  })(function ({target, dispatch}) {
-    dispatch(123)
+  })(function (app) {
+    t.deepEqual(Object.keys(app).length, 2)
+
+    t.equal(typeof app.dispatch, 'function')
+
+    t.equal(app.target, theTarget)
+
+    app.dispatch(123)
   })
 })
 
-test('test main - next', function (t) {
+test('using next', function (t) {
   let theTarget = {}
-  let nextRun = false
 
-  t.plan(2)
+  t.plan(3)
 
   require('./main.js')({
     target: theTarget,
     store: noopStore,
-    component: function (app) {
-      if (!nextRun) {
-        nextRun = true
+    component: function ({next}) {
+      next(function (app) {
+        t.deepEqual(Object.keys(app).length, 2)
 
-        app.next(function ({target, dispatch}) {
-          t.equal(typeof dispatch, 'function')
-          t.equal(target, theTarget)
-        })
-      }
+        t.equal(typeof app.dispatch, 'function')
+
+        t.equal(app.target, theTarget)
+      })
 
       return {}
     },
@@ -92,7 +79,63 @@ test('test main - next', function (t) {
     raf: function (callback) {
       process.nextTick(function () { callback() })
     }
-  })(function ({target, dispatch}) {
-    dispatch()
+  })()
+})
+
+test('seed with function', function (t) {
+  let theTarget = {}
+
+  t.plan(1)
+
+  require('./main.js')({
+    target: theTarget,
+    store: function (seed) {
+      seed(function (commit) {
+        t.equal(typeof commit, 'function')
+
+        return ''
+      })
+
+      return noop
+    },
+    component: noop,
+    diff: noop,
+    raf: noop
+  })()
+})
+
+test('dispatch multiple', function (t) {
+  let theTarget = {}
+
+  t.plan(4)
+
+  require('./main.js')({
+    target: theTarget,
+    store: function (seed) {
+      seed('')
+
+      return function (commit, arg) {
+        commit(function (state) {
+          t.equal(arg, 123)
+
+          return 'test'
+        })
+      }
+    },
+    component: function (app) {
+      t.deepEqual(Object.keys(app).length, 3)
+
+      t.equal(app.state, 'test')
+
+      return {}
+    },
+    diff: noop,
+    raf: function (callback) {
+      process.nextTick(function () { callback() })
+    }
+  })(function ({dispatch}) {
+    dispatch(123)
+
+    dispatch(123)
   })
 })
