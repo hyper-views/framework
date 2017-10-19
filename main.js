@@ -3,6 +3,11 @@ const assert = require('assert')
 module.exports = function ({target, store, component, diff, raf}) {
   raf = raf != null ? raf : window.requestAnimationFrame
 
+  assert.equal(typeof store, 'function', 'store must be a function')
+  assert.equal(typeof component, 'function', 'component must be a function')
+  assert.equal(typeof diff, 'function', 'diff must be a function')
+  assert.equal(typeof raf, 'function', 'raf must be a function')
+
   let rafCalled = false
   let initialized = false
 
@@ -21,6 +26,8 @@ module.exports = function ({target, store, component, diff, raf}) {
     initialized = true
 
     if (init != null) {
+      assert.equal(typeof init, 'function', 'init must be a function')
+
       init({target, dispatch})
     } else {
       dispatch()
@@ -37,6 +44,7 @@ module.exports = function ({target, store, component, diff, raf}) {
 
   function commit (current) {
     assert.ok(initialized, 'trying to commit before the app is initialized')
+    assert.equal(typeof current, 'function', 'current must be a function')
 
     state = current(state)
 
@@ -58,6 +66,8 @@ module.exports = function ({target, store, component, diff, raf}) {
   }
 
   function next (callback) {
+    assert.equal(typeof callback, 'function', 'callback must be a function')
+
     process.nextTick(callback, {target, dispatch})
   }
 }
