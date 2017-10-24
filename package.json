@@ -20,7 +20,7 @@
   "devDependencies": {
     "faucet": "0.0.1",
     "mockery": "^2.1.0",
-    "nyc": "^11.2.1",
+    "nyc": "^11.3.0",
     "standard": "^10.0.3",
     "tape": "^4.8.0"
   },
