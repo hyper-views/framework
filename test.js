@@ -1,141 +1,151 @@
 const test = require('tape')
 const noop = function () {}
-const noopStore = function (seed) {
-  seed('')
+const noopStore = function (commit) {
+  commit(() => '')
 
-  return function (commit) {
+  return function () {
     commit(function () {
       return ''
     })
   }
 }
+const raf = function (callback) {
+  process.nextTick(function () { callback() })
+}
+const initialElement = Symbol('initial target')
+const newElement = Symbol('new target')
+const initialState = Symbol('initial state')
+const newState = Symbol('new state')
+const dispatchArgumnt = Symbol('dispatch argument')
 
 test('init to render', function (t) {
-  let theTarget = {}
-
-  t.plan(9)
+  t.plan(14)
 
   require('./main.js')({
-    target: theTarget,
-    store: function (seed) {
-      seed('')
+    target: initialElement,
+    store: function (commit) {
+      t.equal(commit.name, 'commit')
 
-      return function (commit, arg) {
+      t.equal(typeof commit, 'function')
+
+      commit(() => initialState)
+
+      return function (arg) {
+        t.equal(arg, dispatchArgumnt)
+
         commit(function (state) {
-          t.equal(state, '')
+          t.equal(state, initialState)
 
-          t.equal(arg, 123)
-
-          return 'test'
+          return newState
         })
       }
     },
     component: function (app) {
       t.deepEqual(Object.keys(app).length, 3)
 
-      t.equal(app.state, 'test')
+      t.equal(app.dispatch.name, 'dispatch')
 
-      return {}
+      t.equal(typeof app.dispatch, 'function')
+
+      t.equal(app.next.name, 'next')
+
+      t.equal(typeof app.next, 'function')
+
+      t.equal(app.state, newState)
+
+      return newElement
     },
-    diff: function (target, newTarget) {
-      t.equal(target, theTarget)
+    diff: function (target, newElement) {
+      t.equal(target, initialElement)
 
-      t.deepEqual(newTarget, {})
+      t.deepEqual(newElement, newElement)
     },
-    raf: function (callback) {
-      process.nextTick(function () { callback() })
-    }
-  })(function (app) {
-    t.deepEqual(Object.keys(app).length, 2)
+    raf
+  })(function (dispatch) {
+    t.equal(dispatch.name, 'dispatch')
 
-    t.equal(typeof app.dispatch, 'function')
+    t.equal(typeof dispatch, 'function')
 
-    t.equal(app.target, theTarget)
-
-    app.dispatch(123)
+    dispatch(dispatchArgumnt)
   })
 })
 
 test('using next', function (t) {
-  let theTarget = {}
-
-  t.plan(3)
-
-  require('./main.js')({
-    target: theTarget,
-    store: noopStore,
-    component: function ({next}) {
-      next(function (app) {
-        t.deepEqual(Object.keys(app).length, 2)
-
-        t.equal(typeof app.dispatch, 'function')
-
-        t.equal(app.target, theTarget)
-      })
-
-      return {}
-    },
-    diff: noop,
-    raf: function (callback) {
-      process.nextTick(function () { callback() })
-    }
-  })()
-})
-
-test('seed with function', function (t) {
-  let theTarget = {}
-
   t.plan(1)
 
   require('./main.js')({
-    target: theTarget,
-    store: function (seed) {
-      seed(function (commit) {
-        t.equal(typeof commit, 'function')
-
-        return ''
+    target: initialElement,
+    store: noopStore,
+    component: function ({next}) {
+      next(function (target) {
+        t.equal(target, initialElement)
       })
 
-      return noop
+      return newElement
     },
-    component: noop,
     diff: noop,
-    raf: noop
-  })()
+    raf
+  })
+})
+
+test('using dispatch', function (t) {
+  t.plan(2)
+
+  require('./main.js')({
+    target: initialElement,
+    store: function (commit) {
+      commit(() => initialState)
+
+      return function (arg) {
+        t.equal(arg, dispatchArgumnt)
+
+        commit(function (state) {
+          t.equal(state, initialState)
+
+          return newState
+        })
+      }
+    },
+    component: function ({dispatch, state}) {
+      if (state === initialState) {
+        process.nextTick(function () {
+          dispatch(dispatchArgumnt)
+        })
+      }
+
+      return newElement
+    },
+    diff: noop,
+    raf
+  })
 })
 
 test('dispatch multiple', function (t) {
-  let theTarget = {}
-
-  t.plan(4)
+  t.plan(2)
 
   require('./main.js')({
-    target: theTarget,
-    store: function (seed) {
-      seed('')
+    target: initialElement,
+    store: function (commit) {
+      commit(() => '')
 
-      return function (commit, arg) {
+      return function (arg) {
+        t.equal(arg, dispatchArgumnt)
+
         commit(function (state) {
-          t.equal(arg, 123)
-
-          return 'test'
+          return newState
         })
       }
     },
     component: function (app) {
-      t.deepEqual(Object.keys(app).length, 3)
+      t.equal(app.state, newState)
 
-      t.equal(app.state, 'test')
-
-      return {}
+      return newElement
     },
     diff: noop,
-    raf: function (callback) {
-      process.nextTick(function () { callback() })
-    }
-  })(function ({dispatch}) {
-    dispatch(123)
+    raf
+  })(function (dispatch) {
+    dispatch()
 
-    dispatch(123)
+    dispatch(dispatchArgumnt)
   })
 })

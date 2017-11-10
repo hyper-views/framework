@@ -14,10 +14,10 @@ const target = document.querySelector('main')
 
 framework({target, store, component, diff})()
 
-function store (seed) {
-  seed(0)
+function store (commit) {
+  commit(() => 0)
 
-  return function (commit, action) {
+  return function (action) {
     switch (action) {
       case 'increment':
         commit((state) => state + 1)
@@ -61,18 +61,7 @@ Returns a function. See [init](#init)
 
 #### state
 
-This is what is initially passed to [seed](#seed) and subsequently returned from [commit](#commit) callbacks. It can be anything from simply a number like in the example, to a complex object.
-
-#### seed
-
-_seed(state|setup)_
-
-It should be passed the initial state or a setup function
-
-- [state](#state): the initial state
-- [setup](#setup): a function to generate the initial state
-
-_Warning: Calling seed after [init](#init) is called will throw an Error_
+This is what is passed to [commit](#commit). It can be anything from simply a number like in the example, but a plain object makes sense in most cases.
 
 #### commit
 
@@ -83,59 +72,46 @@ It's passed a callback that receives the current state and should return the new
 - [current](#state): the current state
 - [next](#state): the next state
 
-_Warning: Calling commit before [init](#init) is called will throw an Error_
-
 #### dispatch
 
 _dispatch(...arguments)_
 
-Initializes a change in state and causes a render. If the length of arguments is 0, the agent is not, but a render is triggered.
+Initializes a change in state and causes a render. If the length of arguments is 0, the agent is not called, but a render is triggered.
 
 - arguments: all get passed to the [agent](#agent)
 
 #### next
 
-_next(({target, dispatch}) => { ... })_
+_next((target) => { ... })_
 
 A convenient helper to pass a callback to process.nextTick. Can be used to manipulate the page in some way after a render. For example scrolling to a specific element or focusing an input element.
 
 - target: the target passed to [framework](#framework)
-- [dispatch](#dispatch)
 
 #### init
 
-_init(({target, dispatch}) => { ... })_
+_init((dispatch) => { ... })_
 
-Call init to mount your component. The callback is optional.
+Call init to do some initial work that may require dispatch.
 
-- target: the target passed to [framework](#framework)
 - [dispatch](#dispatch)
 
 ### Application Code
 
 #### store
 
-_store(seed)_
+_store(commit)_
 
 It should return the [agent](#agent).
-
-- [seed](#seed)
-
-#### setup
-
-_setup(commit)_
-
-It should return the initial state.
 
 - [commit](#commit)
 
 #### agent
 
-_agent(commit, ...arguments)_
+_agent(..arguments)_
 
 Anything returned will be ignored
 
-- [commit](#commit)
 - arguments: all the arguments passed to [dispatch](#dispatch)
 
 #### component
