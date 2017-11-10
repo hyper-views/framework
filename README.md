@@ -4,12 +4,12 @@ This scoped package is my personal framework. I use it on a number of small proj
 
 ## An Example
 
-This example uses yo-yo (which uses hyperx), but you should be able to use diffHTML and possibly other solutions.
+This example uses bel with nanomorph, but you should be able to use diffHTML and possibly other solutions.
 
 ``` javascript
 const framework = require('@erickmerchant/framework')
-const html = require('yo-yo')
-const diff = html.update
+const html = require('bel')
+const diff = require('nanomorph')
 const target = document.querySelector('main')
 
 framework({target, store, component, diff})()
@@ -108,7 +108,7 @@ It should return the [agent](#agent).
 
 #### agent
 
-_agent(..arguments)_
+_agent(...arguments)_
 
 Anything returned will be ignored
 
