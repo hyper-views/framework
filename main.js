@@ -14,6 +14,7 @@ module.exports = function ({target, store, component, diff, raf}) {
   let rafCalled = false
 
   let state
+
   let agent = store(commit)
 
   return function (init) {
