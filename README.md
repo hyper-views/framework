@@ -70,7 +70,7 @@ _commit((current) => next)_
 It's passed a callback that receives the current state and should return the new state.
 
 - [current](#state): the current state
-- [next](#state): the next state
+- [next](#next): the next state
 
 #### dispatch
 
