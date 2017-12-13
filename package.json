@@ -4,8 +4,7 @@
   "description": "A simple data down, actions up framework.",
   "main": "main.js",
   "scripts": {
-    "test": "standard && tape 'test.js' | faucet",
-    "cover": "nyc --reporter=html npm test"
+    "test": "standard && tape 'test.js'"
   },
   "repository": {
     "type": "git",
@@ -18,9 +17,6 @@
   },
   "homepage": "https://github.com/erickmerchant/framework#readme",
   "devDependencies": {
-    "faucet": "0.0.1",
-    "mockery": "^2.1.0",
-    "nyc": "^11.3.0",
     "standard": "^10.0.3",
     "tape": "^4.8.0"
   },
