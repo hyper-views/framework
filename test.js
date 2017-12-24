@@ -23,7 +23,7 @@ test('init to render', function (t) {
 
   require('./main.js')({
     target: initialElement,
-    store: function (commit) {
+    store (commit) {
       t.equal(commit.name, 'commit')
 
       t.equal(typeof commit, 'function')
@@ -40,7 +40,7 @@ test('init to render', function (t) {
         })
       }
     },
-    component: function (app) {
+    component (app) {
       t.deepEqual(Object.keys(app).length, 3)
 
       t.equal(app.dispatch.name, 'dispatch')
@@ -55,7 +55,7 @@ test('init to render', function (t) {
 
       return newElement
     },
-    diff: function (target, newElement) {
+    diff (target, newElement) {
       t.equal(target, initialElement)
 
       t.deepEqual(newElement, newElement)
@@ -76,7 +76,7 @@ test('using next', function (t) {
   require('./main.js')({
     target: initialElement,
     store: noopStore,
-    component: function ({next}) {
+    component ({next}) {
       next(function (target) {
         t.equal(target, initialElement)
       })
@@ -93,7 +93,7 @@ test('using dispatch', function (t) {
 
   require('./main.js')({
     target: initialElement,
-    store: function (commit) {
+    store (commit) {
       commit(() => initialState)
 
       return function (arg) {
@@ -106,7 +106,7 @@ test('using dispatch', function (t) {
         })
       }
     },
-    component: function ({dispatch, state}) {
+    component ({dispatch, state}) {
       if (state === initialState) {
         process.nextTick(function () {
           dispatch(dispatchArgumnt)
@@ -125,7 +125,7 @@ test('dispatch multiple', function (t) {
 
   require('./main.js')({
     target: initialElement,
-    store: function (commit) {
+    store (commit) {
       commit(() => '')
 
       return function (arg) {
@@ -136,7 +136,7 @@ test('dispatch multiple', function (t) {
         })
       }
     },
-    component: function (app) {
+    component (app) {
       t.equal(app.state, newState)
 
       return newElement
