@@ -4,11 +4,11 @@ This scoped package is my personal framework. I use it on a number of small proj
 
 ## An Example
 
-This example uses bel with nanomorph, but you should be able to use diffHTML and possibly other solutions.
+This example uses nanohtml with nanomorph, but you should be able to use diffHTML and possibly other solutions.
 
 ``` javascript
 const framework = require('@erickmerchant/framework')
-const html = require('bel')
+const html = require('nanohtml')
 const diff = require('nanomorph')
 const target = document.querySelector('main')
 
