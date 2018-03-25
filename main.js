@@ -1,4 +1,5 @@
 const assert = require('assert')
+const setImmediate = require('set-immediate-shim')
 
 module.exports = function ({target, store, component, diff, raf}) {
   raf = raf != null ? raf : window.requestAnimationFrame
@@ -54,6 +55,6 @@ module.exports = function ({target, store, component, diff, raf}) {
   function next (callback) {
     assert.equal(typeof callback, 'function', 'callback must be a function')
 
-    process.nextTick(callback, target)
+    setImmediate(callback, target)
   }
 }
