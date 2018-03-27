@@ -1,5 +1,4 @@
 const assert = require('assert')
-const setImmediate = require('set-immediate-shim')
 
 module.exports = function ({target, store, component, diff, raf}) {
   raf = raf != null ? raf : window.requestAnimationFrame
@@ -16,7 +15,9 @@ module.exports = function ({target, store, component, diff, raf}) {
 
   let state
 
-  let agent = store(commit)
+  const agent = store(commit)
+
+  const nextQueue = []
 
   return function (init) {
     assert.equal(typeof init, 'function', 'init must be a function')
@@ -50,11 +51,17 @@ module.exports = function ({target, store, component, diff, raf}) {
     const element = component({state, dispatch, next})
 
     diff(target, element)
+
+    while (nextQueue.length) {
+      let callback = nextQueue.shift()
+
+      callback(target)
+    }
   }
 
   function next (callback) {
     assert.equal(typeof callback, 'function', 'callback must be a function')
 
-    setImmediate(callback, target)
+    nextQueue.push(callback)
   }
 }

@@ -20,7 +20,5 @@
     "standard": "^11.0.1",
     "tape": "^4.9.0"
   },
-  "dependencies": {
-    "set-immediate-shim": "^2.0.0"
-  }
+  "dependencies": {}
 }

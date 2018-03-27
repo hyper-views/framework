@@ -71,7 +71,9 @@ test('init to render', function (t) {
 })
 
 test('using next', function (t) {
-  t.plan(1)
+  t.plan(4)
+
+  let i = 0
 
   require('./main.js')({
     target: initialElement,
@@ -79,6 +81,18 @@ test('using next', function (t) {
     component ({next}) {
       next(function (target) {
         t.equal(target, initialElement)
+
+        t.equal(i, 0)
+
+        i += 1
+      })
+
+      next(function (target) {
+        t.equal(target, initialElement)
+
+        t.equal(i, 1)
+
+        i += 1
       })
 
       return newElement
