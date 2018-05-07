@@ -138,6 +138,6 @@ _diff(target, element)_
 
   A module to do routing inside your components.
 
-- [A TodoMVC example](http://todo.erickmerchant.com)
+- [A TodoMVC example](https://todo.erickmerchant.com)
 
   The source code can be found [here](https://github.com/erickmerchant/framework-todo)
