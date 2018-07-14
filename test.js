@@ -3,10 +3,12 @@ const noop = function () {}
 const noopStore = function (commit) {
   commit(() => '')
 
-  return function () {
-    commit(function () {
-      return ''
-    })
+  return {
+    '*': () => {
+      commit(function () {
+        return ''
+      })
+    }
   }
 }
 const raf = function (callback) {
@@ -30,14 +32,16 @@ test('init to render', function (t) {
 
       commit(() => initialState)
 
-      return function (arg) {
-        t.equal(arg, dispatchArgumnt)
+      return {
+        '*': (arg) => {
+          t.equal(arg, dispatchArgumnt)
 
-        commit(function (state) {
-          t.equal(state, initialState)
+          commit(function (state) {
+            t.equal(state, initialState)
 
-          return newState
-        })
+            return newState
+          })
+        }
       }
     },
     component (app) {
@@ -66,7 +70,7 @@ test('init to render', function (t) {
 
     t.equal(typeof dispatch, 'function')
 
-    dispatch(dispatchArgumnt)
+    dispatch('*', dispatchArgumnt)
   })
 })
 
@@ -110,20 +114,22 @@ test('using dispatch', function (t) {
     store (commit) {
       commit(() => initialState)
 
-      return function (arg) {
-        t.equal(arg, dispatchArgumnt)
+      return {
+        '*': (arg) => {
+          t.equal(arg, dispatchArgumnt)
 
-        commit(function (state) {
-          t.equal(state, initialState)
+          commit(function (state) {
+            t.equal(state, initialState)
 
-          return newState
-        })
+            return newState
+          })
+        }
       }
     },
     component ({dispatch, state}) {
       if (state === initialState) {
         process.nextTick(function () {
-          dispatch(dispatchArgumnt)
+          dispatch('*', dispatchArgumnt)
         })
       }
 
@@ -142,12 +148,14 @@ test('dispatch multiple', function (t) {
     store (commit) {
       commit(() => '')
 
-      return function (arg) {
-        t.equal(arg, dispatchArgumnt)
+      return {
+        '*': (arg) => {
+          t.equal(arg, dispatchArgumnt)
 
-        commit(function (state) {
-          return newState
-        })
+          commit(function (state) {
+            return newState
+          })
+        }
       }
     },
     component (app) {
@@ -160,6 +168,6 @@ test('dispatch multiple', function (t) {
   })(function (dispatch) {
     dispatch()
 
-    dispatch(dispatchArgumnt)
+    dispatch('*', dispatchArgumnt)
   })
 })

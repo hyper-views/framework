@@ -15,7 +15,9 @@ module.exports = function ({target, store, component, diff, raf}) {
 
   let state
 
-  const agent = store(commit)
+  const actions = store(commit)
+
+  assert.equal(typeof actions, 'object', 'actions must be an object')
 
   const nextQueue = []
 
@@ -25,11 +27,13 @@ module.exports = function ({target, store, component, diff, raf}) {
     init(dispatch)
   }
 
-  function dispatch (...args) {
-    if (!args.length) {
+  function dispatch (action, ...args) {
+    if (action == null) {
       commit((state) => state)
     } else {
-      agent(...args)
+      assert.ok(actions[action], 'action not defined')
+
+      return actions[action](...args)
     }
   }
 
