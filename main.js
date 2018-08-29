@@ -1,15 +1,15 @@
 const assert = require('assert')
 
-module.exports = function ({target, store, component, diff, raf}) {
+module.exports = function ({ target, store, component, diff, raf }) {
   raf = raf != null ? raf : window.requestAnimationFrame
 
-  assert.equal(typeof store, 'function', 'store must be a function')
+  assert.strictEqual(typeof store, 'function', 'store must be a function')
 
-  assert.equal(typeof component, 'function', 'component must be a function')
+  assert.strictEqual(typeof component, 'function', 'component must be a function')
 
-  assert.equal(typeof diff, 'function', 'diff must be a function')
+  assert.strictEqual(typeof diff, 'function', 'diff must be a function')
 
-  assert.equal(typeof raf, 'function', 'raf must be a function')
+  assert.strictEqual(typeof raf, 'function', 'raf must be a function')
 
   let rafCalled = false
 
@@ -17,12 +17,12 @@ module.exports = function ({target, store, component, diff, raf}) {
 
   const actions = store(commit)
 
-  assert.equal(typeof actions, 'object', 'actions must be an object')
+  assert.strictEqual(typeof actions, 'object', 'actions must be an object')
 
   const nextQueue = []
 
   return function (init) {
-    assert.equal(typeof init, 'function', 'init must be a function')
+    assert.strictEqual(typeof init, 'function', 'init must be a function')
 
     init(dispatch)
   }
@@ -38,7 +38,7 @@ module.exports = function ({target, store, component, diff, raf}) {
   }
 
   function commit (current) {
-    assert.equal(typeof current, 'function', 'current must be a function')
+    assert.strictEqual(typeof current, 'function', 'current must be a function')
 
     state = current(state)
 
@@ -52,7 +52,7 @@ module.exports = function ({target, store, component, diff, raf}) {
   function render () {
     rafCalled = false
 
-    const element = component({state, dispatch, next})
+    const element = component({ state, dispatch, next })
 
     diff(target, element)
 
@@ -64,7 +64,7 @@ module.exports = function ({target, store, component, diff, raf}) {
   }
 
   function next (callback) {
-    assert.equal(typeof callback, 'function', 'callback must be a function')
+    assert.strictEqual(typeof callback, 'function', 'callback must be a function')
 
     nextQueue.push(callback)
   }

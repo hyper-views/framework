@@ -82,7 +82,7 @@ test('using next', function (t) {
   require('./main.js')({
     target: initialElement,
     store: noopStore,
-    component ({next}) {
+    component ({ next }) {
       next(function (target) {
         t.equal(target, initialElement)
 
@@ -126,7 +126,7 @@ test('using dispatch', function (t) {
         }
       }
     },
-    component ({dispatch, state}) {
+    component ({ dispatch, state }) {
       if (state === initialState) {
         process.nextTick(function () {
           dispatch('*', dispatchArgumnt)
