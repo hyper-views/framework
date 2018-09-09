@@ -1,18 +1,18 @@
 const test = require('tape')
-const noop = function () {}
-const noopStore = function (commit) {
+const noop = () => {}
+const noopStore = (commit) => {
   commit(() => '')
 
   return {
-    '*': () => {
-      commit(function () {
+    '*' () {
+      commit(() => {
         return ''
       })
     }
   }
 }
-const raf = function (callback) {
-  process.nextTick(function () { callback() })
+const raf = (callback) => {
+  process.nextTick(() => { callback() })
 }
 const initialElement = Symbol('initial target')
 const newElement = Symbol('new target')
@@ -20,7 +20,7 @@ const initialState = Symbol('initial state')
 const newState = Symbol('new state')
 const dispatchArgumnt = Symbol('dispatch argument')
 
-test('init to render', function (t) {
+test('init to render', (t) => {
   t.plan(14)
 
   require('./main.js')({
@@ -33,10 +33,10 @@ test('init to render', function (t) {
       commit(() => initialState)
 
       return {
-        '*': (arg) => {
+        '*' (arg) {
           t.equal(arg, dispatchArgumnt)
 
-          commit(function (state) {
+          commit((state) => {
             t.equal(state, initialState)
 
             return newState
@@ -65,7 +65,7 @@ test('init to render', function (t) {
       t.deepEqual(newElement, newElement)
     },
     raf
-  })(function (dispatch) {
+  })((dispatch) => {
     t.equal(dispatch.name, 'dispatch')
 
     t.equal(typeof dispatch, 'function')
@@ -74,7 +74,7 @@ test('init to render', function (t) {
   })
 })
 
-test('using next', function (t) {
+test('using next', (t) => {
   t.plan(4)
 
   let i = 0
@@ -83,7 +83,7 @@ test('using next', function (t) {
     target: initialElement,
     store: noopStore,
     component ({ next }) {
-      next(function (target) {
+      next((target) => {
         t.equal(target, initialElement)
 
         t.equal(i, 0)
@@ -91,7 +91,7 @@ test('using next', function (t) {
         i += 1
       })
 
-      next(function (target) {
+      next((target) => {
         t.equal(target, initialElement)
 
         t.equal(i, 1)
@@ -106,7 +106,7 @@ test('using next', function (t) {
   })
 })
 
-test('using dispatch', function (t) {
+test('using dispatch', (t) => {
   t.plan(2)
 
   require('./main.js')({
@@ -115,10 +115,10 @@ test('using dispatch', function (t) {
       commit(() => initialState)
 
       return {
-        '*': (arg) => {
+        '*' (arg) {
           t.equal(arg, dispatchArgumnt)
 
-          commit(function (state) {
+          commit((state) => {
             t.equal(state, initialState)
 
             return newState
@@ -128,7 +128,7 @@ test('using dispatch', function (t) {
     },
     component ({ dispatch, state }) {
       if (state === initialState) {
-        process.nextTick(function () {
+        process.nextTick(() => {
           dispatch('*', dispatchArgumnt)
         })
       }
@@ -140,7 +140,7 @@ test('using dispatch', function (t) {
   })
 })
 
-test('dispatch multiple', function (t) {
+test('dispatch multiple', (t) => {
   t.plan(2)
 
   require('./main.js')({
@@ -149,10 +149,10 @@ test('dispatch multiple', function (t) {
       commit(() => '')
 
       return {
-        '*': (arg) => {
+        '*' (arg) {
           t.equal(arg, dispatchArgumnt)
 
-          commit(function (state) {
+          commit((state) => {
             return newState
           })
         }
@@ -165,7 +165,7 @@ test('dispatch multiple', function (t) {
     },
     diff: noop,
     raf
-  })(function (dispatch) {
+  })((dispatch) => {
     dispatch()
 
     dispatch('*', dispatchArgumnt)

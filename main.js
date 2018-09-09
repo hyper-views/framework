@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-module.exports = function ({ target, store, component, diff, raf }) {
+module.exports = ({ target, store, component, diff, raf }) => {
   raf = raf != null ? raf : window.requestAnimationFrame
 
   assert.strictEqual(typeof store, 'function', 'store must be a function')
@@ -21,7 +21,7 @@ module.exports = function ({ target, store, component, diff, raf }) {
 
   const nextQueue = []
 
-  return function (init) {
+  return (init) => {
     assert.strictEqual(typeof init, 'function', 'init must be a function')
 
     init(dispatch)
