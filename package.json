@@ -4,7 +4,7 @@
   "description": "A simple data down, actions up framework.",
   "main": "main.js",
   "scripts": {
-    "test": "tasks standard 'tape test.js'"
+    "test": "standard && tape test.js"
   },
   "repository": {
     "type": "git",
@@ -17,11 +17,10 @@
   },
   "homepage": "https://github.com/erickmerchant/framework#readme",
   "devDependencies": {
-    "@erickmerchant/tasks": "^0.3.0",
     "standard": "^12.0.1",
     "tape": "^4.9.1"
   },
   "dependencies": {
-    "@erickmerchant/framework-cli": "^5.3.0"
+    "@erickmerchant/framework-cli": "^5.3.2"
   }
 }
