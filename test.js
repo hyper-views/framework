@@ -16,7 +16,7 @@ const initialElement = Symbol('initial target')
 const newElement = Symbol('new target')
 const initialState = Symbol('initial state')
 const newState = Symbol('new state')
-const dispatchArgumnt = Symbol('dispatch argument')
+const dispatchArgument = Symbol('dispatch argument')
 
 test('init to render', (t) => {
   t.plan(12)
@@ -31,7 +31,7 @@ test('init to render', (t) => {
       commit(() => initialState)
 
       return (arg) => {
-        t.equal(arg, dispatchArgumnt)
+        t.equal(arg, dispatchArgument)
 
         commit((state) => {
           t.equal(state, initialState)
@@ -62,7 +62,7 @@ test('init to render', (t) => {
   })((dispatch) => {
     t.equal(typeof dispatch, 'function')
 
-    dispatch(dispatchArgumnt)
+    dispatch(dispatchArgument)
   })
 })
 
@@ -107,7 +107,7 @@ test('using dispatch', (t) => {
       commit(() => initialState)
 
       return (arg) => {
-        t.equal(arg, dispatchArgumnt)
+        t.equal(arg, dispatchArgument)
 
         commit((state) => {
           t.equal(state, initialState)
@@ -119,7 +119,7 @@ test('using dispatch', (t) => {
     component ({ dispatch, state }) {
       if (state === initialState) {
         process.nextTick(() => {
-          dispatch(dispatchArgumnt)
+          dispatch(dispatchArgument)
         })
       }
 
@@ -139,7 +139,7 @@ test('dispatch multiple', (t) => {
       commit(() => '')
 
       return (arg) => {
-        t.equal(arg, dispatchArgumnt)
+        t.equal(arg, dispatchArgument)
 
         commit((state) => {
           return newState
@@ -154,8 +154,8 @@ test('dispatch multiple', (t) => {
     diff: noop,
     raf
   })((dispatch) => {
-    dispatch(dispatchArgumnt)
+    dispatch(dispatchArgument)
 
-    dispatch(dispatchArgumnt)
+    dispatch(dispatchArgument)
   })
 })
