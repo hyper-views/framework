@@ -17,13 +17,15 @@ framework({target, store, component, diff})()
 function store (commit) {
   commit(() => 0)
 
-  return {
-    increment () {
+  return (action) => {
+    switch (action) {
+      case 'increment':
       commit((state) => state + 1)
-    },
+      break
 
-    decrement () {
+      case 'decrement':
       commit((state) => state - 1)
+      break
     }
   }
 }
@@ -70,15 +72,6 @@ It's passed a callback that receives the current state and should return the new
 - [current](#state): the current state
 - [next](#next): the next state
 
-#### dispatch
-
-_dispatch(action, ...arguments)_
-
-Initializes a change in state and causes a render. If the length of arguments is 0, an action is not called, but a render is triggered.
-
-- action: the name of an [action](#action)
-- arguments: all get passed to the specified [action](#action)
-
 #### next
 
 _next((target) => { ... })_
@@ -101,17 +94,17 @@ Call init to do some initial work that may require dispatch.
 
 _store(commit)_
 
-It should return an object of actions (see [action](#action)).
+It should return a function (see [dispatch](#dispatch)).
 
 - [commit](#commit)
 
-#### action
+#### dispatch
 
-_action(...arguments)_
+_dispatch(...arguments)_
 
-A method in the object returned from the [store](#store). Anything returned will be returned by [dispatch](#dispatch).
+Initializes a change in state and causes a render.
 
-- arguments: all the arguments passed to [dispatch](#dispatch) after the name of the [action](#action)
+- arguments: anything
 
 #### component
 

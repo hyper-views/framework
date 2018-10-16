@@ -3,12 +3,10 @@ const noop = () => {}
 const noopStore = (commit) => {
   commit(() => '')
 
-  return {
-    '*' () {
-      commit(() => {
-        return ''
-      })
-    }
+  return () => {
+    commit(() => {
+      return ''
+    })
   }
 }
 const raf = (callback) => {
@@ -21,7 +19,7 @@ const newState = Symbol('new state')
 const dispatchArgumnt = Symbol('dispatch argument')
 
 test('init to render', (t) => {
-  t.plan(14)
+  t.plan(12)
 
   require('./main.js')({
     target: initialElement,
@@ -32,22 +30,18 @@ test('init to render', (t) => {
 
       commit(() => initialState)
 
-      return {
-        '*' (arg) {
-          t.equal(arg, dispatchArgumnt)
+      return (arg) => {
+        t.equal(arg, dispatchArgumnt)
 
-          commit((state) => {
-            t.equal(state, initialState)
+        commit((state) => {
+          t.equal(state, initialState)
 
-            return newState
-          })
-        }
+          return newState
+        })
       }
     },
     component (app) {
       t.deepEqual(Object.keys(app).length, 3)
-
-      t.equal(app.dispatch.name, 'dispatch')
 
       t.equal(typeof app.dispatch, 'function')
 
@@ -66,11 +60,9 @@ test('init to render', (t) => {
     },
     raf
   })((dispatch) => {
-    t.equal(dispatch.name, 'dispatch')
-
     t.equal(typeof dispatch, 'function')
 
-    dispatch('*', dispatchArgumnt)
+    dispatch(dispatchArgumnt)
   })
 })
 
@@ -114,22 +106,20 @@ test('using dispatch', (t) => {
     store (commit) {
       commit(() => initialState)
 
-      return {
-        '*' (arg) {
-          t.equal(arg, dispatchArgumnt)
+      return (arg) => {
+        t.equal(arg, dispatchArgumnt)
 
-          commit((state) => {
-            t.equal(state, initialState)
+        commit((state) => {
+          t.equal(state, initialState)
 
-            return newState
-          })
-        }
+          return newState
+        })
       }
     },
     component ({ dispatch, state }) {
       if (state === initialState) {
         process.nextTick(() => {
-          dispatch('*', dispatchArgumnt)
+          dispatch(dispatchArgumnt)
         })
       }
 
@@ -141,21 +131,19 @@ test('using dispatch', (t) => {
 })
 
 test('dispatch multiple', (t) => {
-  t.plan(2)
+  t.plan(3)
 
   require('./main.js')({
     target: initialElement,
     store (commit) {
       commit(() => '')
 
-      return {
-        '*' (arg) {
-          t.equal(arg, dispatchArgumnt)
+      return (arg) => {
+        t.equal(arg, dispatchArgumnt)
 
-          commit((state) => {
-            return newState
-          })
-        }
+        commit((state) => {
+          return newState
+        })
       }
     },
     component (app) {
@@ -166,8 +154,8 @@ test('dispatch multiple', (t) => {
     diff: noop,
     raf
   })((dispatch) => {
-    dispatch()
+    dispatch(dispatchArgumnt)
 
-    dispatch('*', dispatchArgumnt)
+    dispatch(dispatchArgumnt)
   })
 })

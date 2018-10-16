@@ -15,9 +15,9 @@ module.exports = ({ target, store, component, diff, raf }) => {
 
   let state
 
-  const actions = store(commit)
+  const dispatch = store(commit)
 
-  assert.strictEqual(typeof actions, 'object', 'actions must be an object')
+  assert.strictEqual(typeof dispatch, 'function', 'dispatch must be a function')
 
   const nextQueue = []
 
@@ -25,16 +25,6 @@ module.exports = ({ target, store, component, diff, raf }) => {
     assert.strictEqual(typeof init, 'function', 'init must be a function')
 
     init(dispatch)
-  }
-
-  function dispatch (action, ...args) {
-    if (action == null) {
-      commit((state) => state)
-    } else {
-      assert.ok(actions[action], 'action not defined')
-
-      return actions[action](...args)
-    }
   }
 
   function commit (current) {
