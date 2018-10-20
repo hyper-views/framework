@@ -47,7 +47,7 @@ module.exports = ({ target, store, component, diff, raf }) => {
     diff(target, element)
 
     while (nextQueue.length) {
-      let callback = nextQueue.shift()
+      const callback = nextQueue.shift()
 
       callback(target)
     }
