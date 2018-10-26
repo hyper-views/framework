@@ -4,15 +4,13 @@ This scoped package is my personal framework. I use it on a number of small proj
 
 ## An Example
 
-This example uses nanohtml with nanomorph, but you should be able to use diffHTML and possibly other solutions.
-
 ``` javascript
 const framework = require('@erickmerchant/framework')
 const html = require('nanohtml')
-const diff = require('nanomorph')
+const morph = require('nanomorph')
 const target = document.querySelector('main')
 
-framework({target, store, component, diff})()
+framework({target, store, component, morph})()
 
 function store (commit) {
   commit(() => 0)
@@ -47,14 +45,14 @@ function component ({state, dispatch}) {
 
 #### framework
 
-_framework({target, store, component, diff, raf})_
+_framework({target, store, component, morph, raf})_
 
 The function exported by this module.
 
 - target: a DOM element. The place to render your application
 - [store](#store)
 - [component](#component)
-- [diff](#diff)
+- [morph](#morph)
 - raf: optional. A replacement for window.requestAnimationFrame. It defaults to window.requestAnimationFrame
 
 Returns a function. See [init](#init)
@@ -71,14 +69,6 @@ It's passed a callback that receives the current state and should return the new
 
 - [current](#state): the current state
 - [next](#next): the next state
-
-#### next
-
-_next((target) => { ... })_
-
-A convenient helper to pass a callback to process.nextTick. Can be used to manipulate the page in some way after a render. For example scrolling to a specific element or focusing an input element.
-
-- target: the target passed to [framework](#framework)
 
 #### init
 
@@ -108,17 +98,16 @@ Initializes a change in state and causes a render.
 
 #### component
 
-_component({state, dispatch, next})_
+_component({state, dispatch})_
 
 - [state](#state)
 - [dispatch](#dispatch)
-- [next](#next)
 
-Should return the element to pass to [diff](#diff)
+Should return the element to pass to [morph](#morph)
 
-#### diff
+#### morph
 
-_diff(target, element)_
+_morph(target, element)_
 
 - target: the target passed to [framework](#framework)
 - element: the new element returned from the [component](#component)
