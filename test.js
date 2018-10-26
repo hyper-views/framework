@@ -1,14 +1,5 @@
 const test = require('tape')
 const noop = () => {}
-const noopStore = (commit) => {
-  commit(() => '')
-
-  return () => {
-    commit(() => {
-      return ''
-    })
-  }
-}
 const raf = (callback) => {
   process.nextTick(() => { callback() })
 }
@@ -19,7 +10,7 @@ const newState = Symbol('new state')
 const dispatchArgument = Symbol('dispatch argument')
 
 test('init to render', (t) => {
-  t.plan(12)
+  t.plan(10)
 
   require('./main.js')({
     target: initialElement,
@@ -41,19 +32,15 @@ test('init to render', (t) => {
       }
     },
     component (app) {
-      t.deepEqual(Object.keys(app).length, 3)
+      t.deepEqual(Object.keys(app).length, 2)
 
       t.equal(typeof app.dispatch, 'function')
-
-      t.equal(app.next.name, 'next')
-
-      t.equal(typeof app.next, 'function')
 
       t.equal(app.state, newState)
 
       return newElement
     },
-    diff (target, newElement) {
+    morph (target, newElement) {
       t.equal(target, initialElement)
 
       t.deepEqual(newElement, newElement)
@@ -63,38 +50,6 @@ test('init to render', (t) => {
     t.equal(typeof dispatch, 'function')
 
     dispatch(dispatchArgument)
-  })
-})
-
-test('using next', (t) => {
-  t.plan(4)
-
-  let i = 0
-
-  require('./main.js')({
-    target: initialElement,
-    store: noopStore,
-    component ({ next }) {
-      next((target) => {
-        t.equal(target, initialElement)
-
-        t.equal(i, 0)
-
-        i += 1
-      })
-
-      next((target) => {
-        t.equal(target, initialElement)
-
-        t.equal(i, 1)
-
-        i += 1
-      })
-
-      return newElement
-    },
-    diff: noop,
-    raf
   })
 })
 
@@ -125,7 +80,7 @@ test('using dispatch', (t) => {
 
       return newElement
     },
-    diff: noop,
+    morph: noop,
     raf
   })
 })
@@ -151,7 +106,7 @@ test('dispatch multiple', (t) => {
 
       return newElement
     },
-    diff: noop,
+    morph: noop,
     raf
   })((dispatch) => {
     dispatch(dispatchArgument)

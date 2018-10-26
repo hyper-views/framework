@@ -1,13 +1,13 @@
 const assert = require('assert')
 
-module.exports = ({ target, store, component, diff, raf }) => {
+module.exports = ({ target, store, component, morph, raf }) => {
   raf = raf != null ? raf : window.requestAnimationFrame
 
   assert.strictEqual(typeof store, 'function', 'store must be a function')
 
   assert.strictEqual(typeof component, 'function', 'component must be a function')
 
-  assert.strictEqual(typeof diff, 'function', 'diff must be a function')
+  assert.strictEqual(typeof morph, 'function', 'morph must be a function')
 
   assert.strictEqual(typeof raf, 'function', 'raf must be a function')
 
@@ -42,20 +42,14 @@ module.exports = ({ target, store, component, diff, raf }) => {
   function render () {
     rafCalled = false
 
-    const element = component({ state, dispatch, next })
+    const element = component({ state, dispatch })
 
-    diff(target, element)
+    morph(target, element)
 
     while (nextQueue.length) {
       const callback = nextQueue.shift()
 
       callback(target)
     }
-  }
-
-  function next (callback) {
-    assert.strictEqual(typeof callback, 'function', 'callback must be a function')
-
-    nextQueue.push(callback)
   }
 }
