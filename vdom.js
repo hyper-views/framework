@@ -13,7 +13,7 @@ function vdom (tag) {
     let i = 0
 
     if (args[0] === false) {
-      return ''
+      return null
     }
 
     if (args[0] === true) {
@@ -33,9 +33,7 @@ function vdom (tag) {
           val = Object.keys(val).filter((k) => !!val[k]).join(' ')
         }
 
-        if (val !== false) {
-          attributes[key] = val
-        }
+        attributes[key] = val
       }
 
       children = args.slice(i + 1)
@@ -49,7 +47,7 @@ function vdom (tag) {
 
     result.attributes = attributes
 
-    result.children = children
+    result.children = children.filter((child) => child != null)
 
     return result
   }

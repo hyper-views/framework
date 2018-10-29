@@ -16,6 +16,8 @@ module.exports = () => {
   }
 
   function morph (target, next, previous) {
+    const document = target.ownerDocument
+
     if (!previous) {
       previous = defaultDom
     }
@@ -31,11 +33,25 @@ module.exports = () => {
 
       const val = next.attributes[key]
 
-      if (val !== previous.attributes[key]) {
-        if (key.startsWith('on')) {
-          target[key] = val
+      if (['selected', 'checked', 'disabled'].includes(key)) {
+        target[key] = val
+
+        if (val) {
+          target.setAttribute(key, '')
         } else {
-          target.setAttribute(key, val === true ? key : val)
+          target.removeAttribute(key)
+        }
+      } else if (key === 'value') {
+        target.value = val
+
+        target.setAttribute('value', val)
+      } else if (val !== previous.attributes[key]) {
+        if (key.startsWith('on')) {
+          if (key !== 'onmount') {
+            target[key] = val
+          }
+        } else {
+          target.setAttribute(key, val)
         }
       }
     }
@@ -46,8 +62,16 @@ module.exports = () => {
       const key = unusedAttrs[i]
 
       if (key.startsWith('on')) {
-        delete target[key]
+        if (key !== 'onmount') {
+          delete target[key]
+        }
       } else {
+        if (key === 'value') {
+          target.value = ''
+        } else if (['selected', 'checked', 'disabled'].includes(key)) {
+          target[key] = false
+        }
+
         target.removeAttribute(key)
       }
     }
@@ -67,21 +91,29 @@ module.exports = () => {
         let el = document.createElement(next.children[i].tag)
 
         target.appendChild(morph(el, next.children[i], previous.children[i]))
+
+        if (next.children[i].attributes.onmount) {
+          next.children[i].attributes.onmount.call(el)
+        }
       } else {
         let el = target.childNodes[i]
 
-        if (target.childNodes[i].nodeType !== 1 || (next.children[i].tag !== previous.children[i].tag && previous.children[i].tag != null)) {
+        if (target.childNodes[i].nodeType !== 1 || previous.children[i] == null || (next.children[i].tag !== previous.children[i].tag && previous.children[i].tag != null)) {
           el = document.createElement(next.children[i].tag)
 
           target.replaceChild(el, target.childNodes[i])
+
+          if (next.children[i].attributes.onmount) {
+            next.children[i].attributes.onmount.call(el)
+          }
         }
 
         morph(el, next.children[i], previous.children[i])
       }
     }
 
-    for (; i < target.childNodes.length; i++) {
-      target.childNodes[i].remove()
+    while (target.childNodes.length > i) {
+      target.removeChild(target.childNodes[i])
     }
 
     return target

@@ -1,3 +1,4 @@
+const morph = require('../morph.js')()
 const assert = require('assert')
 const chalk = require('chalk')
 const JSDOM = require('jsdom').JSDOM
@@ -35,15 +36,15 @@ module.exports = (deps) => {
       const state = current()
 
       const dom = new JSDOM(html)
-      const element = dom.window.document.querySelector(args.selector)
 
-      if (element) {
-        const fragment = new JSDOM(String(component({ state, dispatch, next })))
+      const target = dom.window.document.querySelector(args.selector)
 
-        element.parentNode.replaceChild(fragment.window.document.querySelector(args.selector), element)
-      }
+      const element = component({ state, dispatch })
+
+      morph(target, element)
 
       const result = dom.serialize()
+
       const location = get(state, args.location, 'index.html')
 
       assert.strictEqual(typeof location, 'string', 'location must be a string')
@@ -62,8 +63,4 @@ module.exports = (deps) => {
 
 function dispatch () {
   throw new Error('dispatch is unavailable')
-}
-
-function next () {
-
 }
