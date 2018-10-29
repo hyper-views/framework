@@ -4,10 +4,11 @@ module.exports = new Proxy({}, {
   }
 })
 
+const baseNode = {}
+
 function vdom (tag) {
   return (...args) => {
     let attributes = {}
-    let events = {}
     let children
     let i = 0
 
@@ -19,13 +20,20 @@ function vdom (tag) {
       i = 1
     }
 
-    if (typeof args[i] === 'object') {
-      for (const key of Object.keys(args[i])) {
-        const val = args[i][key]
+    if (typeof args[i] === 'object' && !baseNode.isPrototypeOf(args[i])) {
+      const keys = Object.keys(args[i])
 
-        if (key.startsWith('on')) {
-          events[key] = val
-        } else {
+      for (let j = 0; j < keys.length; j++) {
+        const key = keys[j]
+        let val = args[i][key]
+
+        if (Array.isArray(val)) {
+          val = val.join(' ')
+        } else if (typeof val === 'object') {
+          val = Object.keys(val).filter((k) => !!val[k]).join(' ')
+        }
+
+        if (val !== false) {
           attributes[key] = val
         }
       }
@@ -35,11 +43,14 @@ function vdom (tag) {
       children = args.slice(i)
     }
 
-    return {
-      tag,
-      attributes,
-      events,
-      children
-    }
+    const result = Object.create(baseNode)
+
+    result.tag = tag
+
+    result.attributes = attributes
+
+    result.children = children
+
+    return result
   }
 }
