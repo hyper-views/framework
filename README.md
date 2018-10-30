@@ -40,8 +40,6 @@ function component ({state, dispatch}) {
 
 ## API Reference
 
-### Framework Code
-
 #### framework
 
 _framework({store, component, update})_
@@ -52,7 +50,7 @@ The function exported by this module.
 - [component](#component)
 - [update](#update)
 
-Returns a function. See [init](#init)
+Returns a function. See [dispatch](#dispatch)
 
 #### state
 
@@ -66,16 +64,6 @@ It's passed a callback that receives the current state and should return the new
 
 - [current](#state): the current state
 - [next](#next): the next state
-
-#### init
-
-_init((dispatch) => { ... })_
-
-Call init to do some initial work that may require dispatch.
-
-- [dispatch](#dispatch)
-
-### Application Code
 
 #### store
 

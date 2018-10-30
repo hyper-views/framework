@@ -19,11 +19,7 @@ module.exports = ({ store, component, update, raf }) => {
 
   assert.strictEqual(typeof dispatch, 'function', 'dispatch must be a function')
 
-  return (init) => {
-    assert.strictEqual(typeof init, 'function', 'init must be a function')
-
-    init(dispatch)
-  }
+  return dispatch
 
   function commit (produce) {
     assert.strictEqual(typeof produce, 'function', 'produce must be a function')
