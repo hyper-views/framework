@@ -81,39 +81,42 @@ function morph (target, next, previous) {
 
   for (; i < next.children.length; i++) {
     let el
+    const nextChild = next.children[i]
+    const previousChild = previous.children[i]
+    const childNode = target.childNodes[i]
 
-    if (typeof next.children[i] !== 'object') {
-      el = document.createTextNode(next.children[i])
+    if (typeof nextChild !== 'object') {
+      el = document.createTextNode(nextChild)
 
-      if (target.childNodes[i] == null) {
+      if (childNode == null) {
         target.appendChild(el)
-      } else if (next.children[i] !== previous.children[i]) {
-        target.replaceChild(el, target.childNodes[i])
+      } else if (nextChild !== previousChild) {
+        target.replaceChild(el, childNode)
       }
-    } else if (target.childNodes[i] == null) {
-      el = document.createElement(next.children[i].tag)
+    } else if (childNode == null) {
+      el = document.createElement(nextChild.tag)
 
-      el = morph(el, next.children[i], previous.children[i])
+      el = morph(el, nextChild, previousChild)
 
       target.appendChild(el)
 
-      if (next.children[i].attributes.onmount) {
-        next.children[i].attributes.onmount.call(el)
+      if (nextChild.attributes.onmount) {
+        nextChild.attributes.onmount.call(el)
       }
-    } else if (target.childNodes[i].nodeType !== 1 || previous.children[i] == null || (next.children[i].tag !== previous.children[i].tag && previous.children[i].tag != null)) {
-      el = document.createElement(next.children[i].tag)
+    } else if (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag) {
+      el = document.createElement(nextChild.tag)
 
-      el = morph(el, next.children[i], previous.children[i])
+      el = morph(el, nextChild, previousChild)
 
-      target.replaceChild(el, target.childNodes[i])
+      target.replaceChild(el, childNode)
 
-      if (next.children[i].attributes.onmount) {
-        next.children[i].attributes.onmount.call(el)
+      if (nextChild.attributes.onmount) {
+        nextChild.attributes.onmount.call(el)
       }
     } else {
-      el = target.childNodes[i]
+      el = childNode
 
-      morph(el, next.children[i], previous.children[i])
+      morph(el, nextChild, previousChild)
     }
   }
 
