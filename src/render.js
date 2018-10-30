@@ -1,4 +1,4 @@
-const morph = require('../morph.js')()
+const update = require('../update.js')
 const assert = require('assert')
 const chalk = require('chalk')
 const JSDOM = require('jsdom').JSDOM
@@ -37,11 +37,7 @@ module.exports = (deps) => {
 
       const dom = new JSDOM(html)
 
-      const target = dom.window.document.querySelector(args.selector)
-
-      const element = component({ state, dispatch })
-
-      morph(target, element)
+      update(dom.window.document.querySelector(args.selector))(component({ state, dispatch }))
 
       const result = dom.serialize()
 

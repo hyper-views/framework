@@ -6,35 +6,34 @@ This scoped package is my personal framework. I use it on a number of small proj
 
 ``` javascript
 const framework = require('@erickmerchant/framework')
-const html = require('nanohtml')
-const morph = require('nanomorph')
-const target = document.querySelector('main')
+const { main, output, br, button } = require('@erickmerchant/framework/html')
+const update = require('@erickmerchant/framework/update')(document.querySelector('main'))
 
-framework({target, store, component, morph})()
+framework({store, component, update})()
 
 function store (commit) {
   commit(() => 0)
 
   return (action) => {
-    switch (action) {
-      case 'increment':
-      commit((state) => state + 1)
-      break
+    commit((state) => {
+      switch (action) {
+        case 'increment':
+        return state + 1
 
-      case 'decrement':
-      commit((state) => state - 1)
-      break
-    }
+        case 'decrement':
+        return state - 1
+      }
+    })
   }
 }
 
 function component ({state, dispatch}) {
-  return html`<main>
-    <output>${state}</output>
-    <br>
-    <button onclick=${() => dispatch('decrement')}>--</button>
-    <button onclick=${() => dispatch('increment')}>++</button>
-  </main>`
+  return main(
+    output(state),
+    br(),
+    button({ onclick () { dispatch('decrement') } }, '--'),
+    button({ onclick () { dispatch('increment') } }, '++')
+  )
 }
 ```
 
@@ -45,15 +44,13 @@ function component ({state, dispatch}) {
 
 #### framework
 
-_framework({target, store, component, morph, raf})_
+_framework({store, component, update})_
 
 The function exported by this module.
 
-- target: a DOM element. The place to render your application
 - [store](#store)
 - [component](#component)
-- [morph](#morph)
-- raf: optional. A replacement for window.requestAnimationFrame. It defaults to window.requestAnimationFrame
+- [update](#update)
 
 Returns a function. See [init](#init)
 
@@ -103,13 +100,12 @@ _component({state, dispatch})_
 - [state](#state)
 - [dispatch](#dispatch)
 
-Should return the element to pass to [morph](#morph)
+Should return the element to pass to [update](#update)
 
-#### morph
+#### update
 
-_morph(target, element)_
+_update(element)_
 
-- target: the target passed to [framework](#framework)
 - element: the new element returned from the [component](#component)
 
 

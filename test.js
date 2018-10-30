@@ -3,17 +3,15 @@ const noop = () => {}
 const raf = (callback) => {
   process.nextTick(() => { callback() })
 }
-const initialElement = Symbol('initial target')
 const newElement = Symbol('new target')
 const initialState = Symbol('initial state')
 const newState = Symbol('new state')
 const dispatchArgument = Symbol('dispatch argument')
 
 test('init to render', (t) => {
-  t.plan(10)
+  t.plan(9)
 
   require('./main.js')({
-    target: initialElement,
     store (commit) {
       t.equal(commit.name, 'commit')
 
@@ -40,9 +38,7 @@ test('init to render', (t) => {
 
       return newElement
     },
-    morph (target, newElement) {
-      t.equal(target, initialElement)
-
+    update (newElement) {
       t.deepEqual(newElement, newElement)
     },
     raf
@@ -57,7 +53,6 @@ test('using dispatch', (t) => {
   t.plan(2)
 
   require('./main.js')({
-    target: initialElement,
     store (commit) {
       commit(() => initialState)
 
@@ -80,7 +75,7 @@ test('using dispatch', (t) => {
 
       return newElement
     },
-    morph: noop,
+    update: noop,
     raf
   })
 })
@@ -89,7 +84,6 @@ test('dispatch multiple', (t) => {
   t.plan(3)
 
   require('./main.js')({
-    target: initialElement,
     store (commit) {
       commit(() => '')
 
@@ -106,7 +100,7 @@ test('dispatch multiple', (t) => {
 
       return newElement
     },
-    morph: noop,
+    update: noop,
     raf
   })((dispatch) => {
     dispatch(dispatchArgument)

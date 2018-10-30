@@ -1,12 +1,12 @@
+const baseNode = {}
+
 module.exports = new Proxy({}, {
-  get (target, prop, receiver) {
-    return vdom(prop)
+  get (_, tag) {
+    return html(tag)
   }
 })
 
-const baseNode = {}
-
-function vdom (tag) {
+function html (tag) {
   return (...args) => {
     let attributes = {}
     let children
