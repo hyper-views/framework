@@ -28,7 +28,7 @@ function html (tag) {
         let val = args[i][key]
 
         if (Array.isArray(val)) {
-          val = val.join(' ')
+          val = val.filter((v) => v != null).join(' ')
         } else if (typeof val === 'object') {
           val = Object.keys(val).filter((k) => !!val[k]).join(' ')
         }

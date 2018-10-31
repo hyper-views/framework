@@ -8,7 +8,7 @@ const initialState = Symbol('initial state')
 const newState = Symbol('new state')
 const dispatchArgument = Symbol('dispatch argument')
 
-test('init to render', (t) => {
+test('main.js - init to render', (t) => {
   t.plan(9)
 
   const dispatch = require('./main.js')({
@@ -49,7 +49,7 @@ test('init to render', (t) => {
   dispatch(dispatchArgument)
 })
 
-test('using dispatch', (t) => {
+test('main.js - using dispatch', (t) => {
   t.plan(2)
 
   require('./main.js')({
@@ -80,7 +80,7 @@ test('using dispatch', (t) => {
   })
 })
 
-test('dispatch multiple', (t) => {
+test('main.js - dispatch multiple', (t) => {
   t.plan(3)
 
   const dispatch = require('./main.js')({
@@ -107,6 +107,20 @@ test('dispatch multiple', (t) => {
   dispatch(dispatchArgument)
 
   dispatch(dispatchArgument)
+})
+
+test('html.js - producing virtual dom', (t) => {
+  t.plan(4)
+
+  const { div } = require('./html.js')
+
+  t.deepEquals(div(false, { class: 'test' }, 123), null)
+
+  t.deepEquals(div(true, { class: 'test' }, 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
+
+  t.deepEquals(div({ class: ['test', null] }, 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
+
+  t.deepEquals(div({ class: { test: true } }, 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
 })
 
 const execa = require('execa')
@@ -195,7 +209,7 @@ test('src/render.js - console', async (t) => {
   })
 })
 
-test('cli.js render', async (t) => {
+test('cli.js - render', async (t) => {
   t.plan(4)
 
   try {
