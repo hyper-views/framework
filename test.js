@@ -11,7 +11,7 @@ const dispatchArgument = Symbol('dispatch argument')
 test('init to render', (t) => {
   t.plan(9)
 
-  require('./main.js')({
+  const dispatch = require('./main.js')({
     store (commit) {
       t.equal(commit.name, 'commit')
 
@@ -42,11 +42,11 @@ test('init to render', (t) => {
       t.deepEqual(newElement, newElement)
     },
     raf
-  })((dispatch) => {
-    t.equal(typeof dispatch, 'function')
-
-    dispatch(dispatchArgument)
   })
+
+  t.equal(typeof dispatch, 'function')
+
+  dispatch(dispatchArgument)
 })
 
 test('using dispatch', (t) => {
@@ -83,7 +83,7 @@ test('using dispatch', (t) => {
 test('dispatch multiple', (t) => {
   t.plan(3)
 
-  require('./main.js')({
+  const dispatch = require('./main.js')({
     store (commit) {
       commit(() => '')
 
@@ -102,11 +102,11 @@ test('dispatch multiple', (t) => {
     },
     update: noop,
     raf
-  })((dispatch) => {
-    dispatch(dispatchArgument)
-
-    dispatch(dispatchArgument)
   })
+
+  dispatch(dispatchArgument)
+
+  dispatch(dispatchArgument)
 })
 
 const execa = require('execa')
