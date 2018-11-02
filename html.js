@@ -14,6 +14,13 @@ function html (tag) {
     let children
     let i = 0
     let hooks = {}
+    let hooksProxy = new Proxy({}, {
+      get (_, key) {
+        return (cb) => {
+          hooks[key] = cb
+        }
+      }
+    })
 
     if (args[0] === false) {
       return null
@@ -26,7 +33,7 @@ function html (tag) {
     if (typeof args[i] === 'function') {
       assert.strictEqual(args.length, i + 1, 'too many arguments')
 
-      args = [].concat(args[i]({ onmount }))
+      args = [].concat(args[i](hooksProxy))
 
       i = 0
     }
@@ -56,9 +63,5 @@ function html (tag) {
     result.children = children.filter((child) => child != null)
 
     return result
-
-    function onmount (cb) {
-      hooks.onmount = cb
-    }
   }
 }

@@ -114,6 +114,10 @@ function morph (target, next, previous) {
 
       morph(el, nextChild, previousChild)
     }
+
+    if (nextChild != null && typeof nextChild === 'object' && nextChild.hooks.onupdate) {
+      nextChild.hooks.onupdate(el)
+    }
   }
 
   while (target.childNodes.length > i) {
