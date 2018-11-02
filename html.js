@@ -36,15 +36,8 @@ function html (tag) {
 
       for (let j = 0; j < keys.length; j++) {
         const key = keys[j]
-        let val = args[i][key]
 
-        if (Array.isArray(val)) {
-          val = val.filter((v) => v != null).join(' ')
-        } else if (typeof val === 'object') {
-          val = Object.keys(val).filter((k) => !!val[k]).join(' ')
-        }
-
-        attributes[key] = val
+        attributes[key] = args[i][key]
       }
 
       children = args.slice(i + 1)

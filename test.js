@@ -110,7 +110,7 @@ test('main.js - dispatch multiple', (t) => {
 })
 
 test('html.js - producing virtual dom', (t) => {
-  t.plan(7)
+  t.plan(5)
 
   const { div } = require('./html.js')
 
@@ -127,10 +127,6 @@ test('html.js - producing virtual dom', (t) => {
 
     return [{ class: 'test' }, 123]
   }), { tag: 'div', hooks: { onmount: noop }, attributes: { class: 'test' }, children: [123] })
-
-  t.deepEquals(div({ class: ['test', null] }, 123), { tag: 'div', hooks: {}, attributes: { class: 'test' }, children: [123] })
-
-  t.deepEquals(div({ class: { test: true } }, 123), { tag: 'div', hooks: {}, attributes: { class: 'test' }, children: [123] })
 })
 
 const execa = require('execa')
