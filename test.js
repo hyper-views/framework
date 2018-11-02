@@ -110,17 +110,27 @@ test('main.js - dispatch multiple', (t) => {
 })
 
 test('html.js - producing virtual dom', (t) => {
-  t.plan(4)
+  t.plan(7)
 
   const { div } = require('./html.js')
 
   t.deepEquals(div(false, { class: 'test' }, 123), null)
 
-  t.deepEquals(div(true, { class: 'test' }, 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, { class: 'test' }, 123), { tag: 'div', hooks: {}, attributes: { class: 'test' }, children: [123] })
 
-  t.deepEquals(div({ class: ['test', null] }, 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
+  t.throws(() => div(true, () => [{ class: 'test' }], 123), /too many arguments/)
 
-  t.deepEquals(div({ class: { test: true } }, 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, () => [{ class: 'test' }, 123]), { tag: 'div', hooks: {}, attributes: { class: 'test' }, children: [123] })
+
+  t.deepEquals(div(true, ({ onmount }) => {
+    onmount(noop)
+
+    return [{ class: 'test' }, 123]
+  }), { tag: 'div', hooks: { onmount: noop }, attributes: { class: 'test' }, children: [123] })
+
+  t.deepEquals(div({ class: ['test', null] }, 123), { tag: 'div', hooks: {}, attributes: { class: 'test' }, children: [123] })
+
+  t.deepEquals(div({ class: { test: true } }, 123), { tag: 'div', hooks: {}, attributes: { class: 'test' }, children: [123] })
 })
 
 const execa = require('execa')

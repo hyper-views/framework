@@ -48,9 +48,7 @@ function morph (target, next, previous) {
       target.setAttribute('value', val)
     } else if (val !== previous.attributes[key]) {
       if (key.startsWith('on')) {
-        if (key !== 'onmount') {
-          target[key] = val
-        }
+        target[key] = val
       } else {
         target.setAttribute(key, val)
       }
@@ -63,9 +61,7 @@ function morph (target, next, previous) {
     const key = unusedAttrs[i]
 
     if (key.startsWith('on')) {
-      if (key !== 'onmount') {
-        delete target[key]
-      }
+      delete target[key]
     } else {
       if (key === 'value') {
         target.value = ''
@@ -100,8 +96,8 @@ function morph (target, next, previous) {
 
       target.appendChild(el)
 
-      if (nextChild.attributes.onmount) {
-        nextChild.attributes.onmount.call(el)
+      if (nextChild.hooks.onmount) {
+        nextChild.hooks.onmount(el)
       }
     } else if (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag) {
       el = document.createElement(nextChild.tag)
@@ -110,8 +106,8 @@ function morph (target, next, previous) {
 
       target.replaceChild(el, childNode)
 
-      if (nextChild.attributes.onmount) {
-        nextChild.attributes.onmount.call(el)
+      if (nextChild.hooks.onmount) {
+        nextChild.hooks.onmount(el)
       }
     } else {
       el = childNode

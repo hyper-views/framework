@@ -1,3 +1,5 @@
+const assert = require('assert')
+
 const baseNode = {}
 
 module.exports = new Proxy({}, {
@@ -11,6 +13,7 @@ function html (tag) {
     let attributes = {}
     let children
     let i = 0
+    let hooks = {}
 
     if (args[0] === false) {
       return null
@@ -18,6 +21,14 @@ function html (tag) {
 
     if (args[0] === true) {
       i = 1
+    }
+
+    if (typeof args[i] === 'function') {
+      assert.strictEqual(args.length, i + 1, 'too many arguments')
+
+      args = [].concat(args[i]({ onmount }))
+
+      i = 0
     }
 
     if (typeof args[i] === 'object' && !baseNode.isPrototypeOf(args[i])) {
@@ -45,10 +56,16 @@ function html (tag) {
 
     result.tag = tag
 
+    result.hooks = hooks
+
     result.attributes = attributes
 
     result.children = children.filter((child) => child != null)
 
     return result
+
+    function onmount (cb) {
+      hooks.onmount = cb
+    }
   }
 }
