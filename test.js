@@ -7,6 +7,10 @@ const newElement = Symbol('new target')
 const initialState = Symbol('initial state')
 const newState = Symbol('new state')
 const dispatchArgument = Symbol('dispatch argument')
+const JSDOM = require('jsdom').JSDOM
+const streamPromise = require('stream-to-promise')
+const fs = require('fs')
+const createReadStream = fs.createReadStream
 
 test('main.js - init to render', (t) => {
   t.plan(9)
@@ -127,6 +131,24 @@ test('html.js - producing virtual dom', (t) => {
 
     return [{ class: 'test' }, 123]
   }), { tag: 'div', hooks: { onmount: noop }, attributes: { class: 'test' }, children: [123] })
+})
+
+test('update.js - patching the dom', async (t) => {
+  t.plan(1)
+
+  const update = require('./update.js')
+
+  const component = require('./fixtures/component.js')
+
+  const html = await streamPromise(createReadStream('./fixtures/document.html', 'utf8'))
+
+  const dom = new JSDOM(html)
+
+  update(dom.window.document.querySelector('main'))(component({ state: { heading: 'Test 1 2 3' }, dispatch: noop }))
+
+  const result = dom.serialize()
+
+  t.equals(result.replace(/>\s+</g, '><'), `<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 1 2 3</h1></main></body></html>`)
 })
 
 const execa = require('execa')
