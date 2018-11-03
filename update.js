@@ -1,3 +1,6 @@
+
+const assert = require('assert')
+
 const defaultDom = {
   tag: null,
   attributes: {},
@@ -8,6 +11,8 @@ module.exports = (target) => {
   let previous
 
   return (next) => {
+    assert.strictEqual(target.nodeName.toLowerCase(), next.tag, 'unsupported node replacement')
+
     let result = morph(target, next, previous)
 
     previous = next
@@ -17,6 +22,7 @@ module.exports = (target) => {
 }
 
 function morph (target, next, previous) {
+  const targetNamespace = target.namespaceURI
   const document = target.ownerDocument
 
   if (!previous) {
@@ -76,35 +82,42 @@ function morph (target, next, previous) {
   let i = 0
 
   for (; i < next.children.length; i++) {
-    let el
     const nextChild = next.children[i]
     const previousChild = previous.children[i]
     const childNode = target.childNodes[i]
+    const shouldAppendChild = childNode == null
 
     if (typeof nextChild !== 'object') {
-      el = document.createTextNode(nextChild)
+      const el = document.createTextNode(nextChild)
 
-      if (childNode == null) {
+      if (shouldAppendChild) {
         target.appendChild(el)
       } else if (nextChild !== previousChild) {
         target.replaceChild(el, childNode)
       }
-    } else if (childNode == null) {
-      el = document.createElement(nextChild.tag)
 
-      el = morph(el, nextChild, previousChild)
+      continue
+    }
 
-      target.appendChild(el)
+    let nextNamespace
 
-      if (nextChild.hooks.onmount) {
-        nextChild.hooks.onmount(el)
+    if (typeof nextChild === 'object') {
+      nextNamespace = nextChild.attributes.xmlns != null ? nextChild.attributes.xmlns : targetNamespace
+    }
+
+    const shouldReplaceChild = !shouldAppendChild && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag)
+    let el
+
+    if (shouldAppendChild || shouldReplaceChild) {
+      el = nextNamespace ? document.createElementNS(nextNamespace, nextChild.tag) : document.createElement(nextChild.tag)
+
+      el = morph(el, nextChild)
+
+      if (shouldAppendChild) {
+        target.appendChild(el)
+      } else if (shouldReplaceChild) {
+        target.replaceChild(el, childNode)
       }
-    } else if (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag) {
-      el = document.createElement(nextChild.tag)
-
-      el = morph(el, nextChild, previousChild)
-
-      target.replaceChild(el, childNode)
 
       if (nextChild.hooks.onmount) {
         nextChild.hooks.onmount(el)
@@ -115,7 +128,7 @@ function morph (target, next, previous) {
       morph(el, nextChild, previousChild)
     }
 
-    if (nextChild != null && typeof nextChild === 'object' && nextChild.hooks.onupdate) {
+    if (nextChild.hooks.onupdate) {
       nextChild.hooks.onupdate(el)
     }
   }
