@@ -99,17 +99,13 @@ function morph (target, next, previous) {
       continue
     }
 
-    let nextNamespace
-
-    if (typeof nextChild === 'object') {
-      nextNamespace = nextChild.attributes.xmlns != null ? nextChild.attributes.xmlns : targetNamespace
-    }
+    const nextNamespace = typeof nextChild === 'object' && nextChild.attributes.xmlns != null ? nextChild.attributes.xmlns : targetNamespace
 
     const shouldReplaceChild = !shouldAppendChild && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag)
     let el
 
     if (shouldAppendChild || shouldReplaceChild) {
-      el = nextNamespace ? document.createElementNS(nextNamespace, nextChild.tag) : document.createElement(nextChild.tag)
+      el = document.createElementNS(nextNamespace, nextChild.tag)
 
       el = morph(el, nextChild)
 

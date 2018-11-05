@@ -134,7 +134,7 @@ test('html.js - producing virtual dom', (t) => {
 })
 
 test('update.js - patching the dom', async (t) => {
-  t.plan(1)
+  t.plan(8)
 
   const update = require('./update.js')
 
@@ -144,11 +144,103 @@ test('update.js - patching the dom', async (t) => {
 
   const dom = new JSDOM(html)
 
-  update(dom.window.document.querySelector('main'))(component({ state: { heading: 'Test 1 2 3' }, dispatch: noop }))
+  const u = update(dom.window.document.querySelector('main'))
 
-  const result = dom.serialize()
+  u(component({ state: { heading: 'Test 1' }, dispatch: noop }))
 
-  t.equals(result.replace(/>\s+</g, '><'), `<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 1 2 3</h1></main></body></html>`)
+  const result1 = dom.serialize()
+
+  t.equals(result1.replace(/>\s+</g, '><'), `<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 1</h1></main></body></html>`)
+
+  u(component({
+    state: {
+      heading: 'Test 2',
+      hasP: true,
+      isRed: true,
+      pText: 'lorem ipsum dolor ....'
+    },
+    dispatch: noop
+  }))
+
+  const result2 = dom.serialize()
+
+  t.equals(result2.replace(/>\s+</g, '><'), `<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><p class="red" data-red="yes">lorem ipsum dolor ....</p></main></body></html>`)
+
+  u(component({
+    state: {
+      heading: 'Test 3',
+      hasP: true,
+      isRed: false,
+      pText: 'lorem ipsum dolor ....'
+    },
+    dispatch: noop
+  }))
+
+  const result3 = dom.serialize()
+
+  t.equals(result3.replace(/>\s+</g, '><'), `<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 3</h1><p class="blue" data-blue="yes">lorem ipsum dolor ....</p></main></body></html>`)
+
+  u(component({
+    state: {
+      heading: 'Test 4',
+      hasForm: true,
+      formStep: 1
+    },
+    dispatch: noop
+  }))
+
+  const result4 = dom.serialize()
+
+  t.equals(result4.replace(/>\s+</g, '><'), `<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 4</h1><form><input value="1"><input type="checkbox"><select><option selected="">1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select><button type="button" disabled="">Next</button></form></main></body></html>`)
+
+  u(component({
+    state: {
+      heading: 'Test 5',
+      hasForm: true,
+      formStep: 2
+    },
+    dispatch: noop
+  }))
+
+  const result5 = dom.serialize()
+
+  t.equals(result5.replace(/>\s+</g, '><'), `<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 5</h1><form><input><input type="checkbox"><select><option>1</option><option selected="">2</option><option>3</option></select><button type="submit">Submit</button></form></main></body></html>`)
+
+  u(component({
+    state: {
+      heading: 'Test 6',
+      hasSvg: true
+    },
+    dispatch: noop
+  }))
+
+  const result6 = dom.serialize()
+
+  t.equals(result6.replace(/>\s+</g, '><'), `<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 6</h1><svg xmlns="http://www.w3.org/2000/svg"><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main></body></html>`)
+
+  u(component({
+    state: {
+      heading: 'Test 7',
+      hasOnmount: true
+    },
+    dispatch: noop
+  }))
+
+  const result7 = dom.serialize()
+
+  t.equals(result7.replace(/>\s+</g, '><'), `<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 7</h1><div>onmount set</div></main></body></html>`)
+
+  u(component({
+    state: {
+      heading: 'Test 8',
+      hasOnupdate: true
+    },
+    dispatch: noop
+  }))
+
+  const result8 = dom.serialize()
+
+  t.equals(result8.replace(/>\s+</g, '><'), `<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 8</h1><div>onupdate set</div></main></body></html>`)
 })
 
 const execa = require('execa')
