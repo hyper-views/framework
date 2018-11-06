@@ -15,6 +15,10 @@ module.exports = (target) => {
 
     let result = morph(target, next, previous)
 
+    if (typeof next === 'object' && next.hooks.onupdate) {
+      next.hooks.onupdate(target)
+    }
+
     previous = next
 
     return result
