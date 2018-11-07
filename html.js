@@ -10,11 +10,11 @@ module.exports = new Proxy({}, {
 
 function html (tag) {
   return (...args) => {
-    let attributes = {}
+    const attributes = {}
     let children
     let i = 0
-    let hooks = {}
-    let hooksProxy = new Proxy({}, {
+    const hooks = {}
+    const hooksProxy = new Proxy({}, {
       get (_, key) {
         return (cb) => {
           hooks[key] = cb

@@ -13,7 +13,7 @@ module.exports = (target) => {
   return (next) => {
     assert.strictEqual(target.nodeName.toLowerCase(), next.tag, 'unsupported node replacement')
 
-    let result = morph(target, next, previous)
+    const result = morph(target, next, previous)
 
     if (typeof next === 'object' && next.hooks.onupdate) {
       next.hooks.onupdate(target)
