@@ -1,8 +1,6 @@
-const assert = require('assert')
-
 const baseNode = {}
 
-module.exports = new Proxy({}, {
+export default new Proxy({}, {
   get (_, tag) {
     return html(tag)
   }
@@ -31,9 +29,7 @@ function html (tag) {
     }
 
     if (typeof args[i] === 'function') {
-      assert.strictEqual(args.length, i + 1, 'too many arguments')
-
-      args = [].concat(args[i](hooksProxy))
+      args = [].concat(args[i](hooksProxy)).concat(args.slice(i + 1))
 
       i = 0
     }

@@ -1,6 +1,8 @@
-const { main, h1, p, form, input, select, option, button, svg, path, div } = require('../html.js')
+import html from '../html.mjs'
 
-module.exports = function ({ state }) {
+const { main, h1, p, form, input, select, option, button, svg, path, div } = html
+
+export default function ({ state }) {
   return main(
     h1(state.heading),
     p(!!state.hasP, () => [

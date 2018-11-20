@@ -1,18 +1,14 @@
 
-const assert = require('assert')
-
 const defaultDom = {
   tag: null,
   attributes: {},
   children: []
 }
 
-module.exports = (target) => {
+export default (target) => {
   let previous
 
   return (next) => {
-    assert.strictEqual(target.nodeName.toLowerCase(), next.tag, 'unsupported node replacement')
-
     const result = morph(target, next, previous)
 
     if (typeof next === 'object' && next.hooks.onupdate) {
