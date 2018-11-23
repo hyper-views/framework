@@ -1,4 +1,4 @@
-import { html } from '../main.mjs'
+import { html } from '..'
 
 const { main, h1, p, form, input, select, option, button, svg, path, div } = html
 

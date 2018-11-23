@@ -2,7 +2,7 @@ import test from 'tape'
 import jsdom from 'jsdom'
 import streamPromise from 'stream-to-promise'
 import { createReadStream } from 'fs'
-import main, { html, update } from './main.mjs'
+import main, { html, update } from '.'
 import component from './fixtures/component.mjs'
 const noop = () => {}
 const raf = (callback) => {
