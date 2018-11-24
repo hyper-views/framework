@@ -106,9 +106,7 @@ function morph (target, next, previous) {
     }
   }
 
-  let i = 0
-
-  for (; i < next.children.length; i++) {
+  for (let i = 0; i < next.children.length; i++) {
     const nextChild = next.children[i]
     const previousChild = previous.children[i]
     const childNode = target.childNodes[i]
@@ -156,8 +154,8 @@ function morph (target, next, previous) {
     }
   }
 
-  while (target.childNodes.length > i) {
-    target.removeChild(target.childNodes[i])
+  while (target.childNodes.length > next.children.length) {
+    target.removeChild(target.childNodes[next.children.length])
   }
 
   return target
