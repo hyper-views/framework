@@ -38,8 +38,8 @@ export function update (target) {
   return (next) => {
     const result = morph(target, next, previous)
 
-    if (typeof next === 'object' && next.hooks.onupdate) {
-      next.hooks.onupdate(target)
+    if (typeof next === 'object' && next.attributes.onupdate) {
+      next.attributes.onupdate.call(target)
     }
 
     previous = next
@@ -81,7 +81,7 @@ function morph (target, next, previous) {
       target.setAttribute('value', val)
     } else if (val !== previous.attributes[key]) {
       if (key.startsWith('on')) {
-        target[key] = val
+        if (!['onmount', 'onupdate'].includes(key)) target[key] = val
       } else {
         target.setAttribute(key, val)
       }
@@ -94,7 +94,7 @@ function morph (target, next, previous) {
     const key = unusedAttrs[i]
 
     if (key.startsWith('on')) {
-      delete target[key]
+      if (!['onmount', 'onupdate'].includes(key)) delete target[key]
     } else {
       if (key === 'value') {
         target.value = ''
@@ -140,8 +140,8 @@ function morph (target, next, previous) {
         target.replaceChild(el, childNode)
       }
 
-      if (nextChild.hooks.onmount) {
-        nextChild.hooks.onmount(el)
+      if (nextChild.attributes.onmount) {
+        nextChild.attributes.onmount.call(el)
       }
     } else {
       el = childNode
@@ -149,8 +149,8 @@ function morph (target, next, previous) {
       morph(el, nextChild, previousChild)
     }
 
-    if (nextChild.hooks.onupdate) {
-      nextChild.hooks.onupdate(el)
+    if (nextChild.attributes.onupdate) {
+      nextChild.attributes.onupdate.call(el)
     }
   }
 
@@ -174,14 +174,6 @@ function create (tag) {
     const attributes = {}
     let children
     let i = 0
-    const hooks = {}
-    const hooksProxy = new Proxy({}, {
-      get (_, key) {
-        return (cb) => {
-          hooks[key] = cb
-        }
-      }
-    })
 
     if (args[0] === false) {
       return null
@@ -192,7 +184,7 @@ function create (tag) {
     }
 
     if (typeof args[i] === 'function') {
-      args = [].concat(args[i](hooksProxy)).concat(args.slice(i + 1))
+      args = [].concat(args[i]()).concat(args.slice(i + 1))
 
       i = 0
     }
@@ -214,8 +206,6 @@ function create (tag) {
     const result = Object.create(baseNode)
 
     result.tag = tag
-
-    result.hooks = hooks
 
     result.attributes = attributes
 

@@ -29,15 +29,15 @@ export default function ({ state }) {
       { xmlns: 'http://www.w3.org/2000/svg' },
       path({ d: 'M2 2 2 34 34 34 34 2 z' })
     ]),
-    div(!!state.hasOnmount, ({ onmount }) => {
-      onmount((el) => {
-        el.innerHTML = 'onmount set'
-      })
-    }),
-    div(!!state.hasOnupdate, ({ onupdate }) => {
-      onupdate((el) => {
-        el.innerHTML = 'onupdate set'
-      })
-    })
+    div(!!state.hasOnmount, () => ({
+      onmount () {
+        this.innerHTML = 'onmount set'
+      }
+    })),
+    div(!!state.hasOnupdate, () => ({
+      onupdate () {
+        this.innerHTML = 'onupdate set'
+      }
+    }))
   )
 }

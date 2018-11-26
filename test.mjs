@@ -121,17 +121,15 @@ test('html.mjs - producing virtual dom', (t) => {
 
   t.deepEquals(div(false, { class: 'test' }, 123), null)
 
-  t.deepEquals(div(true, { class: 'test' }, 123), { tag: 'div', hooks: {}, attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, { class: 'test' }, 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
 
-  t.deepEquals(div(true, () => [{ class: 'test' }], 123), { tag: 'div', hooks: {}, attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, () => ({ class: 'test' }), 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
 
-  t.deepEquals(div(true, () => [{ class: 'test' }, 123]), { tag: 'div', hooks: {}, attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, () => [{ class: 'test' }, 123]), { tag: 'div', attributes: { class: 'test' }, children: [123] })
 
-  t.deepEquals(div(true, ({ onmount }) => {
-    onmount(noop)
-
-    return [{ class: 'test' }, 123]
-  }), { tag: 'div', hooks: { onmount: noop }, attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, () => {
+    return [{ onmount: noop, class: 'test' }, 123]
+  }), { tag: 'div', attributes: { onmount: noop, class: 'test' }, children: [123] })
 })
 
 test('update.mjs - patching the dom', async (t) => {
