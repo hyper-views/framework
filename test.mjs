@@ -1,4 +1,9 @@
-const test = require('tape')
+import test from 'tape'
+import jsdom from 'jsdom'
+import streamPromise from 'stream-to-promise'
+import { createReadStream } from 'fs'
+import main, { html, update } from '.'
+import component from './fixtures/component.mjs'
 const noop = () => {}
 const raf = (callback) => {
   process.nextTick(() => { callback() })
@@ -7,15 +12,11 @@ const newElement = Symbol('new target')
 const initialState = Symbol('initial state')
 const newState = Symbol('new state')
 const dispatchArgument = Symbol('dispatch argument')
-const JSDOM = require('jsdom').JSDOM
-const streamPromise = require('stream-to-promise')
-const fs = require('fs')
-const createReadStream = fs.createReadStream
 
-test('main.js - init to render', (t) => {
+test('main.mjs - init to render', (t) => {
   t.plan(9)
 
-  const dispatch = require('./main.js')({
+  const dispatch = main({
     store (commit) {
       t.equal(commit.name, 'commit')
 
@@ -53,10 +54,10 @@ test('main.js - init to render', (t) => {
   dispatch(dispatchArgument)
 })
 
-test('main.js - using dispatch', (t) => {
+test('main.mjs - using dispatch', (t) => {
   t.plan(2)
 
-  require('./main.js')({
+  main({
     store (commit) {
       commit(() => initialState)
 
@@ -84,10 +85,10 @@ test('main.js - using dispatch', (t) => {
   })
 })
 
-test('main.js - dispatch multiple', (t) => {
+test('main.mjs - dispatch multiple', (t) => {
   t.plan(3)
 
-  const dispatch = require('./main.js')({
+  const dispatch = main({
     store (commit) {
       commit(() => '')
 
@@ -113,36 +114,30 @@ test('main.js - dispatch multiple', (t) => {
   dispatch(dispatchArgument)
 })
 
-test('html.js - producing virtual dom', (t) => {
+test('html.mjs - producing virtual dom', (t) => {
   t.plan(5)
 
-  const { div } = require('./html.js')
+  const { div } = html
 
   t.deepEquals(div(false, { class: 'test' }, 123), null)
 
-  t.deepEquals(div(true, { class: 'test' }, 123), { tag: 'div', hooks: {}, attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, { class: 'test' }, 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
 
-  t.throws(() => div(true, () => [{ class: 'test' }], 123), /too many arguments/)
+  t.deepEquals(div(true, () => ({ class: 'test' }), 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
 
-  t.deepEquals(div(true, () => [{ class: 'test' }, 123]), { tag: 'div', hooks: {}, attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, () => [{ class: 'test' }, 123]), { tag: 'div', attributes: { class: 'test' }, children: [123] })
 
-  t.deepEquals(div(true, ({ onmount }) => {
-    onmount(noop)
-
-    return [{ class: 'test' }, 123]
-  }), { tag: 'div', hooks: { onmount: noop }, attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, () => {
+    return [{ onmount: noop, class: 'test' }, 123]
+  }), { tag: 'div', attributes: { onmount: noop, class: 'test' }, children: [123] })
 })
 
-test('update.js - patching the dom', async (t) => {
+test('update.mjs - patching the dom', async (t) => {
   t.plan(8)
-
-  const update = require('./update.js')
-
-  const component = require('./fixtures/component.js')
 
   const html = await streamPromise(createReadStream('./fixtures/document.html', 'utf8'))
 
-  const dom = new JSDOM(html)
+  const dom = new jsdom.JSDOM(html)
 
   const u = update(dom.window.document.querySelector('main'))
 
@@ -241,106 +236,4 @@ test('update.js - patching the dom', async (t) => {
   const result8 = dom.serialize()
 
   t.equals(result8.replace(/>\s+</g, '><'), `<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 8</h1><div>onupdate set</div></main></body></html>`)
-})
-
-const execa = require('execa')
-const chalk = require('chalk')
-const promisify = require('util').promisify
-const readFile = promisify(require('fs').readFile)
-const stream = require('stream')
-const out = new stream.Writable()
-out._write = () => {}
-
-test('src/render.js - functionality', async (t) => {
-  t.plan(3)
-
-  const output = []
-  const [result1, result2] = await Promise.all([
-    readFile('./fixtures/heading-1.html', 'utf-8'),
-    readFile('./fixtures/heading-2.html', 'utf-8')
-  ])
-
-  await require('./src/render.js')({
-    async makeDir (directory) {
-      t.equal('fixtures', directory)
-
-      return true
-    },
-    async writeFile (path, content) {
-      output.push([path, content])
-
-      return true
-    },
-    out
-  })({
-    store: './fixtures/store.js',
-    component: './fixtures/component.js',
-    document: './fixtures/document.html',
-    selector: 'main',
-    location: 'location',
-    output: false
-  })
-
-  process.nextTick(() => {
-    t.deepEqual(output, [
-      [
-        'fixtures/heading-1.html',
-        result1
-      ],
-      [
-        'fixtures/heading-2.html',
-        result2
-      ]
-    ])
-  })
-})
-
-test('src/render.js - console', async (t) => {
-  t.plan(1)
-
-  const output = []
-
-  await require('./src/render.js')({
-    async makeDir (directory) {
-      return true
-    },
-    async writeFile (path, content) {
-      return true
-    },
-    out: {
-      write (str) {
-        output.push(str)
-      }
-    }
-  })({
-    store: './fixtures/store.js',
-    component: './fixtures/component.js',
-    document: './fixtures/document.html',
-    selector: 'main',
-    location: 'location',
-    output: false
-  })
-
-  process.nextTick(() => {
-    t.deepEqual(output, [
-      `${chalk.gray('[framework render]')} saved fixtures/heading-1.html\n`,
-      `${chalk.gray('[framework render]')} saved fixtures/heading-2.html\n`
-    ])
-  })
-})
-
-test('cli.js - render', async (t) => {
-  t.plan(4)
-
-  try {
-    await execa('node', ['./cli.js', 'render', '-h'])
-  } catch (e) {
-    t.ok(e)
-
-    t.equal(e.stderr.includes('Usage'), true)
-
-    t.equal(e.stderr.includes('Options'), true)
-
-    t.equal(e.stderr.includes('Parameters'), true)
-  }
 })

@@ -1,5 +1,30 @@
+export default ({ store, component, update, raf }) => {
+  raf = raf != null ? raf : window.requestAnimationFrame
 
-const assert = require('assert')
+  let rafCalled = false
+
+  let state
+
+  const dispatch = store(commit)
+
+  return dispatch
+
+  function commit (produce) {
+    state = produce(state)
+
+    if (!rafCalled) {
+      rafCalled = true
+
+      raf(render)
+    }
+  }
+
+  function render () {
+    rafCalled = false
+
+    update(component({ state, dispatch }))
+  }
+}
 
 const defaultDom = {
   tag: null,
@@ -7,16 +32,14 @@ const defaultDom = {
   children: []
 }
 
-module.exports = (target) => {
+export function update (target) {
   let previous
 
   return (next) => {
-    assert.strictEqual(target.nodeName.toLowerCase(), next.tag, 'unsupported node replacement')
-
     const result = morph(target, next, previous)
 
-    if (typeof next === 'object' && next.hooks.onupdate) {
-      next.hooks.onupdate(target)
+    if (typeof next === 'object' && next.attributes.onupdate) {
+      next.attributes.onupdate.call(target)
     }
 
     previous = next
@@ -58,7 +81,7 @@ function morph (target, next, previous) {
       target.setAttribute('value', val)
     } else if (val !== previous.attributes[key]) {
       if (key.startsWith('on')) {
-        target[key] = val
+        if (!['onmount', 'onupdate'].includes(key)) target[key] = val
       } else {
         target.setAttribute(key, val)
       }
@@ -71,7 +94,7 @@ function morph (target, next, previous) {
     const key = unusedAttrs[i]
 
     if (key.startsWith('on')) {
-      delete target[key]
+      if (!['onmount', 'onupdate'].includes(key)) delete target[key]
     } else {
       if (key === 'value') {
         target.value = ''
@@ -83,9 +106,7 @@ function morph (target, next, previous) {
     }
   }
 
-  let i = 0
-
-  for (; i < next.children.length; i++) {
+  for (let i = 0; i < next.children.length; i++) {
     const nextChild = next.children[i]
     const previousChild = previous.children[i]
     const childNode = target.childNodes[i]
@@ -119,8 +140,8 @@ function morph (target, next, previous) {
         target.replaceChild(el, childNode)
       }
 
-      if (nextChild.hooks.onmount) {
-        nextChild.hooks.onmount(el)
+      if (nextChild.attributes.onmount) {
+        nextChild.attributes.onmount.call(el)
       }
     } else {
       el = childNode
@@ -128,14 +149,68 @@ function morph (target, next, previous) {
       morph(el, nextChild, previousChild)
     }
 
-    if (nextChild.hooks.onupdate) {
-      nextChild.hooks.onupdate(el)
+    if (nextChild.attributes.onupdate) {
+      nextChild.attributes.onupdate.call(el)
     }
   }
 
-  while (target.childNodes.length > i) {
-    target.removeChild(target.childNodes[i])
+  while (target.childNodes.length > next.children.length) {
+    target.removeChild(target.childNodes[next.children.length])
   }
 
   return target
+}
+
+const baseNode = {}
+
+export const html = new Proxy({}, {
+  get (_, tag) {
+    return create(tag)
+  }
+})
+
+function create (tag) {
+  return (...args) => {
+    const attributes = {}
+    let children
+    let i = 0
+
+    if (args[0] === false) {
+      return null
+    }
+
+    if (args[0] === true) {
+      i = 1
+    }
+
+    if (typeof args[i] === 'function') {
+      args = [].concat(args[i]()).concat(args.slice(i + 1))
+
+      i = 0
+    }
+
+    if (typeof args[i] === 'object' && !baseNode.isPrototypeOf(args[i])) {
+      const keys = Object.keys(args[i])
+
+      for (let j = 0; j < keys.length; j++) {
+        const key = keys[j]
+
+        attributes[key] = args[i][key]
+      }
+
+      children = args.slice(i + 1)
+    } else {
+      children = args.slice(i)
+    }
+
+    const result = Object.create(baseNode)
+
+    result.tag = tag
+
+    result.attributes = attributes
+
+    result.children = children.filter((child) => child != null)
+
+    return result
+  }
 }

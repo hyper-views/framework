@@ -1,6 +1,8 @@
-const { main, h1, p, form, input, select, option, button, svg, path, div } = require('../html.js')
+import { html } from '..'
 
-module.exports = function ({ state }) {
+const { main, h1, p, form, input, select, option, button, svg, path, div } = html
+
+export default function ({ state }) {
   return main(
     h1(state.heading),
     p(!!state.hasP, () => [
@@ -27,15 +29,15 @@ module.exports = function ({ state }) {
       { xmlns: 'http://www.w3.org/2000/svg' },
       path({ d: 'M2 2 2 34 34 34 34 2 z' })
     ]),
-    div(!!state.hasOnmount, ({ onmount }) => {
-      onmount((el) => {
-        el.innerHTML = 'onmount set'
-      })
-    }),
-    div(!!state.hasOnupdate, ({ onupdate }) => {
-      onupdate((el) => {
-        el.innerHTML = 'onupdate set'
-      })
-    })
+    div(!!state.hasOnmount, () => ({
+      onmount () {
+        this.innerHTML = 'onmount set'
+      }
+    })),
+    div(!!state.hasOnupdate, () => ({
+      onupdate () {
+        this.innerHTML = 'onupdate set'
+      }
+    }))
   )
 }
