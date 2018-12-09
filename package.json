@@ -4,7 +4,7 @@
   "description": "A simple data down, actions up framework.",
   "main": "main.mjs",
   "scripts": {
-    "test": "standard && node --experimental-modules test.mjs"
+    "test": "standard '**/*.{js,mjs}' && node --experimental-modules test.mjs"
   },
   "repository": {
     "type": "git",
