@@ -5,11 +5,13 @@ export default ({ store, component, update, raf }) => {
 
   let state
 
-  const dispatch = store(commit)
+  const render = () => {
+    rafCalled = false
 
-  return dispatch
+    update(component({ state, dispatch }))
+  }
 
-  function commit (produce) {
+  const commit = (produce) => {
     state = produce(state)
 
     if (!rafCalled) {
@@ -19,11 +21,9 @@ export default ({ store, component, update, raf }) => {
     }
   }
 
-  function render () {
-    rafCalled = false
+  const dispatch = store(commit)
 
-    update(component({ state, dispatch }))
-  }
+  return dispatch
 }
 
 const defaultDom = {
@@ -32,23 +32,7 @@ const defaultDom = {
   children: []
 }
 
-export function update (target) {
-  let previous
-
-  return (next) => {
-    const result = morph(target, next, previous)
-
-    if (typeof next === 'object' && next.attributes.onupdate) {
-      next.attributes.onupdate.call(target)
-    }
-
-    previous = next
-
-    return result
-  }
-}
-
-function morph (target, next, previous) {
+const morph = (target, next, previous) => {
   const targetNamespace = target.namespaceURI
   const document = target.ownerDocument
 
@@ -161,15 +145,25 @@ function morph (target, next, previous) {
   return target
 }
 
+export const update = (target) => {
+  let previous
+
+  return (next) => {
+    const result = morph(target, next, previous)
+
+    if (typeof next === 'object' && next.attributes.onupdate) {
+      next.attributes.onupdate.call(target)
+    }
+
+    previous = next
+
+    return result
+  }
+}
+
 const baseNode = {}
 
-export const html = new Proxy({}, {
-  get (_, tag) {
-    return create(tag)
-  }
-})
-
-function create (tag) {
+const create = (tag) => {
   return (...args) => {
     const attributes = {}
     let children
@@ -214,3 +208,9 @@ function create (tag) {
     return result
   }
 }
+
+export const html = new Proxy({}, {
+  get (_, tag) {
+    return create(tag)
+  }
+})

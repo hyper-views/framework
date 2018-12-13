@@ -2,7 +2,7 @@ import { html } from '..'
 
 const { main, h1, p, form, input, select, option, button, svg, path, div } = html
 
-export default function ({ state }) {
+export default ({ state }) => {
   return main(
     h1(state.heading),
     p(!!state.hasP, () => [
