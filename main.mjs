@@ -1,3 +1,5 @@
+/* global window */
+
 export default ({ store, component, update, raf }) => {
   raf = raf != null ? raf : window.requestAnimationFrame
 
