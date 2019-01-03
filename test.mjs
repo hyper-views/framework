@@ -1,8 +1,8 @@
 import test from 'tape'
 import jsdom from 'jsdom'
 import streamPromise from 'stream-to-promise'
-import { createReadStream } from 'fs'
-import main, { html, update } from '.'
+import {createReadStream} from 'fs'
+import main, {html, update} from '.'
 import component from './fixtures/component.mjs'
 const noop = () => {}
 const raf = (callback) => {
@@ -71,7 +71,7 @@ test('main.mjs - using dispatch', (t) => {
         })
       }
     },
-    component ({ dispatch, state }) {
+    component ({dispatch, state}) {
       if (state === initialState) {
         process.nextTick(() => {
           dispatch(dispatchArgument)
@@ -115,17 +115,17 @@ test('main.mjs - dispatch multiple', (t) => {
 test('html.mjs - producing virtual dom', (t) => {
   t.plan(5)
 
-  const { div } = html
+  const {div} = html
 
-  t.deepEquals(div(false, { class: 'test' }, 123), null)
+  t.deepEquals(div(false, {class: 'test'}, 123), null)
 
-  t.deepEquals(div(true, { class: 'test' }, 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, {class: 'test'}, 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
 
-  t.deepEquals(div(true, () => ({ class: 'test' }), 123), { tag: 'div', attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, () => ({class: 'test'}), 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
 
-  t.deepEquals(div(true, () => [{ class: 'test' }, 123]), { tag: 'div', attributes: { class: 'test' }, children: [123] })
+  t.deepEquals(div(true, () => [{class: 'test'}, 123]), {tag: 'div', attributes: {class: 'test'}, children: [123]})
 
-  t.deepEquals(div(true, () => [{ onmount: noop, class: 'test' }, 123]), { tag: 'div', attributes: { onmount: noop, class: 'test' }, children: [123] })
+  t.deepEquals(div(true, () => [{onmount: noop, class: 'test'}, 123]), {tag: 'div', attributes: {onmount: noop, class: 'test'}, children: [123]})
 })
 
 test('update.mjs - patching the dom', async (t) => {
@@ -137,7 +137,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const u = update(dom.window.document.querySelector('main'))
 
-  u(component({ state: { heading: 'Test 1' }, dispatch: noop }))
+  u(component({state: {heading: 'Test 1'}, dispatch: noop}))
 
   const result1 = dom.serialize()
 

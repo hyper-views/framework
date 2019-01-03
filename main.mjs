@@ -1,6 +1,6 @@
 /* global window */
 
-export default ({ store, component, update, raf }) => {
+export default ({store, component, update, raf}) => {
   raf = raf != null ? raf : window.requestAnimationFrame
 
   let rafCalled = false
@@ -10,7 +10,7 @@ export default ({ store, component, update, raf }) => {
   const render = () => {
     rafCalled = false
 
-    update(component({ state, dispatch }))
+    update(component({state, dispatch}))
   }
 
   const commit = (produce) => {
