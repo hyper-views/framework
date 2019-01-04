@@ -121,7 +121,7 @@ test('html.mjs - producing virtual dom', (t) => {
 
   t.deepEquals(div(true, {class: 'test'}, 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
 
-  t.deepEquals(div(true, () => ({class: 'test'}), 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
+  t.deepEquals(div(true, () => { return {class: 'test'} }, 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
 
   t.deepEquals(div(true, () => [{class: 'test'}, 123]), {tag: 'div', attributes: {class: 'test'}, children: [123]})
 
