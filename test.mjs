@@ -17,7 +17,7 @@ test('main.mjs - init to render', (t) => {
   t.plan(9)
 
   const dispatch = main({
-    store (commit) {
+    store(commit) {
       t.equal(commit.name, 'commit')
 
       t.equal(typeof commit, 'function')
@@ -34,7 +34,7 @@ test('main.mjs - init to render', (t) => {
         })
       }
     },
-    component (app) {
+    component(app) {
       t.deepEqual(Object.keys(app).length, 2)
 
       t.equal(typeof app.dispatch, 'function')
@@ -43,7 +43,7 @@ test('main.mjs - init to render', (t) => {
 
       return newElement
     },
-    update (newElement) {
+    update(newElement) {
       t.deepEqual(newElement, newElement)
     },
     raf
@@ -58,7 +58,7 @@ test('main.mjs - using dispatch', (t) => {
   t.plan(2)
 
   main({
-    store (commit) {
+    store(commit) {
       commit(() => initialState)
 
       return (arg) => {
@@ -71,7 +71,7 @@ test('main.mjs - using dispatch', (t) => {
         })
       }
     },
-    component ({dispatch, state}) {
+    component({dispatch, state}) {
       if (state === initialState) {
         process.nextTick(() => {
           dispatch(dispatchArgument)
@@ -89,7 +89,7 @@ test('main.mjs - dispatch multiple', (t) => {
   t.plan(3)
 
   const dispatch = main({
-    store (commit) {
+    store(commit) {
       commit(() => '')
 
       return (arg) => {
@@ -98,7 +98,7 @@ test('main.mjs - dispatch multiple', (t) => {
         commit((state) => newState)
       }
     },
-    component (app) {
+    component(app) {
       t.equal(app.state, newState)
 
       return newElement

@@ -210,7 +210,7 @@ const create = (tag) => (...args) => {
 }
 
 export const html = new Proxy({}, {
-  get (_, tag) {
+  get(_, tag) {
     return create(tag)
   }
 })
