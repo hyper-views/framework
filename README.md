@@ -5,34 +5,29 @@ This scoped package is my personal framework. I use it on a number of small proj
 ## An Example
 
 ``` javascript
-const framework = require('@erickmerchant/framework')
-const { main, output, br, button } = require('@erickmerchant/framework/html')
-const update = require('@erickmerchant/framework/update')(document.querySelector('main'))
+import framework from '@erickmerchant/framework/main.mjs'
+import html from '@erickmerchant/framework/html.mjs'
+import update from '@erickmerchant/framework/dom-update.mjs'(document.querySelector('main'))
 
-framework({store, component, update})
+const { main, output, br, button } = html
+const initial = 0
 
-function store (commit) {
-  commit(() => 0)
+framework({component, update})
 
-  return (action) => {
-    commit((state) => {
-      switch (action) {
-        case 'increment':
-        return state + 1
-
-        case 'decrement':
-        return state - 1
-      }
-    })
-  }
-}
-
-function component ({state, dispatch}) {
+function component ({state, commit}) {
   return main(
     output(state),
     br(),
-    button({ onclick () { dispatch('decrement') } }, '--'),
-    button({ onclick () { dispatch('increment') } }, '++')
+    button({
+      onclick () {
+        commit((current = initial) => current - 1)
+      }
+    }, '--'),
+    button({
+      onclick () {
+        commit((current = initial) => current + 1)
+      }
+    }, '++')
   )
 }
 ```
