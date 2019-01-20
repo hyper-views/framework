@@ -1,28 +1,16 @@
-/* global window */
+export {default as domUpdate} from './dom-update.mjs'
 
-export default ({component, update, raf}) => {
-  raf = raf != null ? raf : window.requestAnimationFrame
+export {default as html} from './html.mjs'
 
-  let rafCalled = false
-
+export default ({component, update}) => {
   let state = null
 
-  const render = () => {
-    rafCalled = false
+  const defaultStore = (state) => state
 
-    update(component({state, commit}))
-  }
+  const commit = (store = defaultStore) => {
+    state = store(state)
 
-  const commit = (produce) => {
-    if (produce != null) {
-      state = produce(state)
-    }
-
-    if (!rafCalled) {
-      rafCalled = true
-
-      raf(render)
-    }
+    update(component(state, commit))
   }
 
   return commit

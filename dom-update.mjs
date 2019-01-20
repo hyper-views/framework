@@ -1,3 +1,5 @@
+/* global window */
+
 const defaultDom = {
   tag: null,
   attributes: {},
@@ -104,31 +106,34 @@ const morph = (target, next, previous) => {
 
       morph(el, nextChild, previousChild)
     }
-
-    if (nextChild.attributes.onupdate) {
-      nextChild.attributes.onupdate.call(el)
-    }
   }
 
   while (target.childNodes.length > next.children.length) {
     target.removeChild(target.childNodes[next.children.length])
   }
 
+  if (typeof next === 'object' && next.attributes.onupdate) {
+    next.attributes.onupdate.call(target)
+  }
+
   return target
 }
 
-export default (target) => {
+export default (target, raf = window.requestAnimationFrame) => {
   let previous
+  let called = false
 
   return (next) => {
-    const result = morph(target, next, previous)
+    if (!called) {
+      called = true
 
-    if (typeof next === 'object' && next.attributes.onupdate) {
-      next.attributes.onupdate.call(target)
+      raf(() => {
+        morph(target, next, previous)
+
+        called = false
+
+        previous = next
+      })
     }
-
-    previous = next
-
-    return result
   }
 }

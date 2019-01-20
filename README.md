@@ -5,19 +5,18 @@ This scoped package is my personal framework. I use it on a number of small proj
 ## An Example
 
 ``` javascript
-import framework from '@erickmerchant/framework/main.mjs'
-import html from '@erickmerchant/framework/html.mjs'
-import update from '@erickmerchant/framework/dom-update.mjs'(document.querySelector('main'))
+import framework, {html, domUpdate} from '@erickmerchant/framework'
 
+const update = domUpdate(document.querySelector('main'))
 const { main, output, br, button } = html
 const initial = 0
 
 framework({component, update})
 
-function component ({state, commit}) {
-  return main(
-    output(state),
-    br(),
+function component (state, commit) {
+  return main({},
+    output({}, state),
+    br({}),
     button({
       onclick () {
         commit((current = initial) => current - 1)

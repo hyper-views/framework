@@ -2,31 +2,26 @@ import test from 'tape'
 import jsdom from 'jsdom'
 import streamPromise from 'stream-to-promise'
 import {createReadStream} from 'fs'
-import main from '.'
-import html from './html.mjs'
-import domUpdate from './dom-update.mjs'
+import main, {html, domUpdate} from '.'
 import component from './fixtures/component.mjs'
+
 const noop = () => {}
-const raf = (callback) => {
-  process.nextTick(() => { callback() })
-}
 const newElement = Symbol('new target')
 
 test('main.mjs - init to render', (t) => {
   t.plan(4)
 
   const commit = main({
-    component(app) {
-      t.equal(typeof app.commit, 'function')
+    component(state, commit) {
+      t.equal(typeof commit, 'function')
 
-      t.equal(app.state, null)
+      t.equal(state, null)
 
       return newElement
     },
     update(element) {
       t.deepEqual(element, newElement)
-    },
-    raf
+    }
   })
 
   t.equal(typeof commit, 'function')
@@ -38,7 +33,7 @@ test('main.mjs - using commit', (t) => {
   t.plan(1)
 
   main({
-    component({commit, state}) {
+    component(state, commit) {
       if (state == null) {
         process.nextTick(() => {
           commit((state) => {
@@ -51,22 +46,20 @@ test('main.mjs - using commit', (t) => {
 
       return newElement
     },
-    update: noop,
-    raf
+    update: noop
   })()
 })
 
 test('main.mjs - commit multiple', (t) => {
-  t.plan(1)
+  t.plan(2)
 
   const commit = main({
-    component(app) {
-      t.equal(app.state, null)
+    component(state) {
+      t.equal(state, null)
 
       return newElement
     },
-    update: noop,
-    raf
+    update: noop
   })
 
   commit()
@@ -75,19 +68,17 @@ test('main.mjs - commit multiple', (t) => {
 })
 
 test('html.mjs - producing virtual dom', (t) => {
-  t.plan(5)
+  t.plan(4)
 
   const {div} = html
 
-  t.deepEquals(div(false, {class: 'test'}, 123), null)
+  t.deepEquals(div({class: 'test'}, 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
 
-  t.deepEquals(div(true, {class: 'test'}, 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
+  t.deepEquals(div({class: 'test'}, 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
 
-  t.deepEquals(div(true, () => { return {class: 'test'} }, 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
+  t.deepEquals(div({class: 'test'}, 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
 
-  t.deepEquals(div(true, () => [{class: 'test'}, 123]), {tag: 'div', attributes: {class: 'test'}, children: [123]})
-
-  t.deepEquals(div(true, () => [{onmount: noop, class: 'test'}, 123]), {tag: 'div', attributes: {onmount: noop, class: 'test'}, children: [123]})
+  t.deepEquals(div({onmount: noop, class: 'test'}, 123), {tag: 'div', attributes: {onmount: noop, class: 'test'}, children: [123]})
 })
 
 test('update.mjs - patching the dom', async (t) => {
@@ -97,7 +88,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const dom = new jsdom.JSDOM(html)
 
-  const update = domUpdate(dom.window.document.querySelector('main'))
+  const update = domUpdate(dom.window.document.querySelector('main'), (callback) => callback())
 
   update(component({state: {heading: 'Test 1'}, dispatch: noop}))
 
