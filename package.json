@@ -1,6 +1,6 @@
 {
   "name": "@erickmerchant/framework",
-  "version": "20.1.1",
+  "version": "20.2.0",
   "description": "A simple data down, actions up framework.",
   "main": "main.mjs",
   "scripts": {
