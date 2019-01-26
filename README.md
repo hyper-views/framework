@@ -9,9 +9,9 @@ import framework, {html, domUpdate} from '@erickmerchant/framework'
 
 const update = domUpdate(document.querySelector('main'))
 const { main, output, br, button } = html
-const initial = 0
+const state = 0
 
-framework({component, update})
+framework({state, component, update})
 
 function component (state, commit) {
   return main({},
@@ -19,12 +19,12 @@ function component (state, commit) {
     br({}),
     button({
       onclick () {
-        commit((current = initial) => current - 1)
+        commit((current) => current - 1)
       }
     }, '--'),
     button({
       onclick () {
-        commit((current = initial) => current + 1)
+        commit((current) => current + 1)
       }
     }, '++')
   )

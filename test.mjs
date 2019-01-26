@@ -9,9 +9,10 @@ const noop = () => {}
 const newElement = Symbol('new target')
 
 test('main.mjs - init to render', (t) => {
-  t.plan(4)
+  t.plan(3)
 
-  const commit = main({
+  main({
+    state: null,
     component(state, commit) {
       t.equal(typeof commit, 'function')
 
@@ -23,16 +24,13 @@ test('main.mjs - init to render', (t) => {
       t.deepEqual(element, newElement)
     }
   })
-
-  t.equal(typeof commit, 'function')
-
-  commit()
 })
 
 test('main.mjs - using commit', (t) => {
   t.plan(1)
 
   main({
+    state: null,
     component(state, commit) {
       if (state == null) {
         process.nextTick(() => {
@@ -47,13 +45,14 @@ test('main.mjs - using commit', (t) => {
       return newElement
     },
     update: noop
-  })()
+  })
 })
 
 test('main.mjs - commit multiple', (t) => {
-  t.plan(2)
+  t.plan(1)
 
-  const commit = main({
+  main({
+    state: null,
     component(state) {
       t.equal(state, null)
 
@@ -61,10 +60,6 @@ test('main.mjs - commit multiple', (t) => {
     },
     update: noop
   })
-
-  commit()
-
-  commit()
 })
 
 test('html.mjs - producing virtual dom', (t) => {

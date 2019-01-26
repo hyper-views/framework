@@ -2,16 +2,12 @@ export {default as domUpdate} from './dom-update.mjs'
 
 export {default as html} from './html.mjs'
 
-export default ({component, update}) => {
-  let state = null
-
-  const defaultStore = (state) => state
-
-  const commit = (store = defaultStore) => {
-    state = store(state)
+export default ({state, component, update}) => {
+  const commit = (produce) => {
+    state = produce(state)
 
     update(component(state, commit))
   }
 
-  return commit
+  commit((state) => state)
 }

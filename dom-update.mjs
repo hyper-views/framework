@@ -97,10 +97,6 @@ const morph = (target, next, previous) => {
       } else if (shouldReplaceChild) {
         target.replaceChild(el, childNode)
       }
-
-      if (nextChild.attributes.onmount) {
-        nextChild.attributes.onmount.call(el)
-      }
     } else {
       el = childNode
 
@@ -114,6 +110,12 @@ const morph = (target, next, previous) => {
 
   if (typeof next === 'object' && next.attributes.onupdate) {
     next.attributes.onupdate.call(target)
+  }
+
+  if (previous === defaultDom) {
+    if (next.attributes.onmount) {
+      next.attributes.onmount.call(target)
+    }
   }
 
   return target
