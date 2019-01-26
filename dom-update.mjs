@@ -108,15 +108,17 @@ const morph = (target, next, previous) => {
     target.removeChild(target.childNodes[next.children.length])
   }
 
-  if (typeof next === 'object' && next.attributes.onupdate) {
-    next.attributes.onupdate.call(target)
-  }
-
-  if (previous === defaultDom) {
-    if (next.attributes.onmount) {
-      next.attributes.onmount.call(target)
+  setTimeout(() => {
+    if (typeof next === 'object' && next.attributes.onupdate) {
+      next.attributes.onupdate.call(target)
     }
-  }
+
+    if (previous === defaultDom) {
+      if (next.attributes.onmount) {
+        next.attributes.onmount.call(target)
+      }
+    }
+  }, 0)
 
   return target
 }
@@ -124,8 +126,11 @@ const morph = (target, next, previous) => {
 export default (target, raf = window.requestAnimationFrame) => {
   let previous
   let called = false
+  let next
 
-  return (next) => {
+  return (current) => {
+    next = current
+
     if (!called) {
       called = true
 
