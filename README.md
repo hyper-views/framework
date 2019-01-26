@@ -11,24 +11,26 @@ const update = domUpdate(document.querySelector('main'))
 const { main, output, br, button } = html
 const state = 0
 
-framework({state, component, update})
-
-function component (state, commit) {
-  return main({},
-    output({}, state),
-    br({}),
-    button({
-      onclick () {
-        commit((current) => current - 1)
-      }
-    }, '--'),
-    button({
-      onclick () {
-        commit((current) => current + 1)
-      }
-    }, '++')
-  )
-}
+framework({
+  state,
+  update,
+  component (state, commit) {
+    return main({},
+      output({}, state),
+      br({}),
+      button({
+        onclick () {
+          commit((current) => current - 1)
+        }
+      }, '--'),
+      button({
+        onclick () {
+          commit((current) => current + 1)
+        }
+      }, '++')
+    )
+  }
+})
 ```
 
 ## Related Projects
