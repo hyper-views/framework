@@ -6,6 +6,8 @@ const defaultDom = {
   children: []
 }
 
+const hooks = ['onmount', 'onupdate']
+
 const morph = (target, next, previous) => {
   const targetNamespace = target.namespaceURI
   const document = target.ownerDocument
@@ -38,10 +40,12 @@ const morph = (target, next, previous) => {
 
       target.setAttribute('value', val)
     } else if (val !== previous.attributes[key]) {
-      if (key.startsWith('on')) {
-        if (!['onmount', 'onupdate'].includes(key)) target[key] = val
-      } else {
-        target.setAttribute(key, val)
+      if (!hooks.includes(key)) {
+        if (key.startsWith('on')) {
+          target[key] = val
+        } else {
+          target.setAttribute(key, val)
+        }
       }
     }
   }
@@ -51,16 +55,18 @@ const morph = (target, next, previous) => {
   for (let i = 0; i < unusedAttrs.length; i++) {
     const key = unusedAttrs[i]
 
-    if (key.startsWith('on')) {
-      if (!['onmount', 'onupdate'].includes(key)) delete target[key]
-    } else {
-      if (key === 'value') {
-        target.value = ''
-      } else if (['selected', 'checked', 'disabled'].includes(key)) {
-        target[key] = false
-      }
+    if (!hooks.includes(key)) {
+      if (key.startsWith('on')) {
+        delete target[key]
+      } else {
+        if (key === 'value') {
+          target.value = ''
+        } else if (['selected', 'checked', 'disabled'].includes(key)) {
+          target[key] = false
+        }
 
-      target.removeAttribute(key)
+        target.removeAttribute(key)
+      }
     }
   }
 
@@ -97,28 +103,30 @@ const morph = (target, next, previous) => {
       } else if (shouldReplaceChild) {
         target.replaceChild(el, childNode)
       }
+
+      if (typeof nextChild === 'object') {
+        if (nextChild.attributes.onmount) {
+          nextChild.attributes.onmount.call(el)
+        }
+
+        if (nextChild.attributes.onupdate) {
+          nextChild.attributes.onupdate.call(el)
+        }
+      }
     } else {
       el = childNode
 
       morph(el, nextChild, previousChild)
+
+      if (typeof nextChild === 'object' && nextChild.attributes.onupdate) {
+        nextChild.attributes.onupdate.call(el)
+      }
     }
   }
 
   while (target.childNodes.length > next.children.length) {
     target.removeChild(target.childNodes[next.children.length])
   }
-
-  setTimeout(() => {
-    if (typeof next === 'object' && next.attributes.onupdate) {
-      next.attributes.onupdate.call(target)
-    }
-
-    if (previous === defaultDom) {
-      if (next.attributes.onmount) {
-        next.attributes.onmount.call(target)
-      }
-    }
-  }, 0)
 
   return target
 }
@@ -136,6 +144,16 @@ export default (target, raf = window.requestAnimationFrame) => {
 
       raf(() => {
         morph(target, next, previous)
+
+        if (previous == null) {
+          if (typeof next === 'object' && next.attributes.onmount) {
+            next.attributes.onmount.call(target)
+          }
+        }
+
+        if (typeof next === 'object' && next.attributes.onupdate) {
+          next.attributes.onupdate.call(target)
+        }
 
         called = false
 
