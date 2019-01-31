@@ -105,12 +105,12 @@ const morph = (target, next, previous) => {
       }
 
       if (typeof nextChild === 'object') {
-        if (nextChild.attributes.onmount) {
-          nextChild.attributes.onmount.call(el)
-        }
+        for (let i = 0; i < hooks.length; i++) {
+          const hook = hooks[i]
 
-        if (nextChild.attributes.onupdate) {
-          nextChild.attributes.onupdate.call(el)
+          if (nextChild.attributes[hook]) {
+            nextChild.attributes[hook].call(el)
+          }
         }
       }
     } else {
