@@ -77,12 +77,12 @@ const morph = (target, next, previous) => {
     const shouldAppendChild = childNode == null
 
     if (typeof nextChild !== 'object') {
-      const el = document.createTextNode(nextChild)
-
       if (shouldAppendChild) {
+        const el = document.createTextNode(nextChild)
+
         target.appendChild(el)
       } else if (nextChild !== previousChild) {
-        target.replaceChild(el, childNode)
+        childNode.nodeValue = nextChild
       }
 
       continue
@@ -132,13 +132,10 @@ const morph = (target, next, previous) => {
 }
 
 export default (target, raf = window.requestAnimationFrame) => {
-  let previous
   let called = false
-  let next
+  let previous
 
-  return (current) => {
-    next = current
-
+  return (next) => {
     if (!called) {
       called = true
 
