@@ -1,4 +1,5 @@
 import test from 'tape'
+import delay from 'delay'
 import jsdom from 'jsdom'
 import streamPromise from 'stream-to-promise'
 import {createReadStream} from 'fs'
@@ -87,6 +88,8 @@ test('update.mjs - patching the dom', async (t) => {
 
   update(component({state: {heading: 'Test 1'}, dispatch: noop}))
 
+  await delay(0)
+
   const result1 = dom.serialize()
 
   t.equals(result1.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 1</h1></main></body></html>')
@@ -100,6 +103,8 @@ test('update.mjs - patching the dom', async (t) => {
     },
     dispatch: noop
   }))
+
+  await delay(0)
 
   const result2 = dom.serialize()
 
@@ -115,6 +120,8 @@ test('update.mjs - patching the dom', async (t) => {
     dispatch: noop
   }))
 
+  await delay(0)
+
   const result3 = dom.serialize()
 
   t.equals(result3.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 3</h1><p class="blue" data-blue="yes">lorem ipsum dolor ....</p></main></body></html>')
@@ -127,6 +134,8 @@ test('update.mjs - patching the dom', async (t) => {
     },
     dispatch: noop
   }))
+
+  await delay(0)
 
   const result4 = dom.serialize()
 
@@ -141,6 +150,8 @@ test('update.mjs - patching the dom', async (t) => {
     dispatch: noop
   }))
 
+  await delay(0)
+
   const result5 = dom.serialize()
 
   t.equals(result5.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 5</h1><form><input><input type="checkbox"><select><option>1</option><option selected="">2</option><option>3</option></select><button type="submit">Submit</button></form></main></body></html>')
@@ -152,6 +163,8 @@ test('update.mjs - patching the dom', async (t) => {
     },
     dispatch: noop
   }))
+
+  await delay(0)
 
   const result6 = dom.serialize()
 
@@ -165,6 +178,8 @@ test('update.mjs - patching the dom', async (t) => {
     dispatch: noop
   }))
 
+  await delay(0)
+
   const result7 = dom.serialize()
 
   t.equals(result7.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 7</h1><div>onmount set</div></main></body></html>')
@@ -176,6 +191,8 @@ test('update.mjs - patching the dom', async (t) => {
     },
     dispatch: noop
   }))
+
+  await delay(0)
 
   const result8 = dom.serialize()
 

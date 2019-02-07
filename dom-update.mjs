@@ -105,12 +105,12 @@ const morph = (target, next, previous) => {
       }
 
       if (typeof nextChild === 'object') {
-        for (let i = 0; i < hooks.length; i++) {
-          const hook = hooks[i]
+        if (nextChild.attributes.onmount) {
+          setTimeout(() => nextChild.attributes.onmount.call(el), 0)
+        }
 
-          if (nextChild.attributes[hook]) {
-            nextChild.attributes[hook].call(el)
-          }
+        if (nextChild.attributes.onupdate) {
+          setTimeout(() => nextChild.attributes.onupdate.call(el), 0)
         }
       }
     } else {
@@ -119,7 +119,7 @@ const morph = (target, next, previous) => {
       morph(el, nextChild, previousChild)
 
       if (typeof nextChild === 'object' && nextChild.attributes.onupdate) {
-        nextChild.attributes.onupdate.call(el)
+        setTimeout(() => nextChild.attributes.onupdate.call(el), 0)
       }
     }
   }
@@ -144,12 +144,12 @@ export default (target, raf = window.requestAnimationFrame) => {
 
         if (previous == null) {
           if (typeof next === 'object' && next.attributes.onmount) {
-            next.attributes.onmount.call(target)
+            setTimeout(() => next.attributes.onmount.call(target), 0)
           }
         }
 
         if (typeof next === 'object' && next.attributes.onupdate) {
-          next.attributes.onupdate.call(target)
+          setTimeout(() => next.attributes.onupdate.call(target), 0)
         }
 
         called = false
