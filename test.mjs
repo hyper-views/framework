@@ -99,6 +99,7 @@ test('update.mjs - patching the dom', async (t) => {
   update(component({
     state: {
       heading: 'Test 2',
+      hasSafe: true,
       hasP: true,
       isRed: true,
       pText: 'lorem ipsum dolor ....'
@@ -110,7 +111,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result2 = dom.serialize()
 
-  t.equals(result2.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><p class="red" data-red="yes">lorem ipsum dolor ....</p></main></body></html>')
+  t.equals(result2.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><div>some</div><div>raw</div><div>html</div><p class="red" data-red="yes">lorem ipsum dolor ....</p></main></body></html>')
 
   update(component({
     state: {

@@ -1,4 +1,4 @@
-/* global window, document */
+/* global window */
 
 const defaultDom = {
   tag: null,
@@ -9,20 +9,21 @@ const defaultDom = {
 const hooks = ['onmount', 'onupdate']
 const booleanAttributes = ['selected', 'checked', 'disabled']
 
-const fromHTML = (html) => {
-  const div = document.createElement('div')
-
-  div.innerHTML = html
-
-  return div.childNodes
-}
-
 const callAsync = (fn, target) => {
   setTimeout(() => fn.call(target), 0)
 }
 
 export default (target, w = window) => {
   const raf = w.requestAnimationFrame
+
+  const fromHTML = (html) => {
+    const document = target.ownerDocument
+    const div = document.createElement('div')
+
+    div.innerHTML = html
+
+    return Array.from(div.childNodes).filter((node) => node.nodeType === 1 || node.nodeValue.trim() !== '')
+  }
 
   const morph = (target, next, previous) => {
     const targetNamespace = target.namespaceURI
@@ -99,24 +100,16 @@ export default (target, w = window) => {
       const previousChild = previous.children[i]
       const childNode = target.childNodes[i]
       const shouldAppendChild = childNode == null
+      const isText = typeof nextChild !== 'object'
+      const isHTML = !isText && (nextChild instanceof w.Element || nextChild instanceof w.Text)
 
-      if (typeof nextChild !== 'object') {
+      if (isText || isHTML) {
+        const el = isText ? document.createTextNode(nextChild) : nextChild
+
         if (shouldAppendChild) {
-          const el = document.createTextNode(nextChild)
-
           target.appendChild(el)
         } else if (nextChild !== previousChild) {
-          childNode.nodeValue = nextChild
-        }
-
-        continue
-      }
-
-      if (nextChild instanceof w.Element || nextChild instanceof w.Text) {
-        if (shouldAppendChild) {
-          target.appendChild(nextChild)
-        } else {
-          target.replaceChild(nextChild, childNode)
+          target.replaceChild(el, childNode)
         }
 
         continue

@@ -1,10 +1,13 @@
-import {html} from '..'
+import {html, safe} from '..'
 
 const {main, h1, p, form, input, select, option, button, svg, path, div} = html
 
 export default ({state}) => main(
   {},
   h1({}, state.heading),
+  Boolean(state.hasSafe)
+    ? safe(`<div>some</div><div>raw</div><div>html</div>`)
+    : null,
   Boolean(state.hasP)
     ? p(
       {
