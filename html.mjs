@@ -1,7 +1,5 @@
-const baseNode = {}
-
 const create = (tag) => (attributes, ...children) => {
-  const result = Object.create(baseNode)
+  const result = {}
 
   result.tag = tag
 
@@ -17,3 +15,7 @@ export default new Proxy({}, {
     return create(tag)
   }
 })
+
+export const safe = (html) => {
+  return {html}
+}
