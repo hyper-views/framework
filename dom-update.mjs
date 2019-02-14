@@ -7,7 +7,6 @@ const defaultDom = {
 }
 
 const hooks = ['onmount', 'onupdate']
-const booleanAttributes = ['selected', 'checked', 'disabled']
 
 const callAsync = (fn, target) => {
   setTimeout(() => fn.call(target), 0)
@@ -22,7 +21,7 @@ export default (target, w = window) => {
 
     div.innerHTML = html
 
-    return Array.from(div.childNodes).filter((node) => node.nodeType === 1 || node.nodeValue.trim() !== '')
+    return [...div.childNodes].filter((node) => node.nodeType === 1 || node.nodeValue.trim() !== '')
   }
 
   const morph = (target, next, previous) => {
@@ -44,7 +43,7 @@ export default (target, w = window) => {
 
       const val = next.attributes[key]
 
-      if (booleanAttributes.includes(key)) {
+      if (typeof val === 'boolean') {
         target[key] = val
 
         if (val) {
@@ -78,7 +77,7 @@ export default (target, w = window) => {
         } else {
           if (key === 'value') {
             target.value = ''
-          } else if (booleanAttributes.includes(key)) {
+          } else if (typeof previous.attributes[key] === 'boolean') {
             target[key] = false
           }
 
@@ -90,10 +89,6 @@ export default (target, w = window) => {
     for (let i = 0; i < next.children.length; i++) {
       if (next.children[i].html != null) {
         next.children.splice(i, 1, ...fromHTML(next.children[i].html))
-      }
-
-      if (previous.children[i] != null && previous.children[i].html != null) {
-        previous.children.splice(i, 1, ...fromHTML(previous.children[i].html))
       }
 
       const nextChild = next.children[i]
@@ -132,12 +127,10 @@ export default (target, w = window) => {
         }
 
         if (typeof nextChild === 'object') {
-          if (nextChild.attributes.onmount) {
-            callAsync(nextChild.attributes.onmount, el)
-          }
-
-          if (nextChild.attributes.onupdate) {
-            callAsync(nextChild.attributes.onupdate, el)
+          for (const hook of hooks) {
+            if (nextChild.attributes[hook]) {
+              callAsync(nextChild.attributes[hook], el)
+            }
           }
         }
       } else {
@@ -169,12 +162,12 @@ export default (target, w = window) => {
         morph(target, next, previous)
 
         if (previous == null) {
-          if (typeof next === 'object' && next.attributes.onmount) {
+          if (next.attributes.onmount) {
             callAsync(next.attributes.onmount, target)
           }
         }
 
-        if (typeof next === 'object' && next.attributes.onupdate) {
+        if (next.attributes.onupdate) {
           callAsync(next.attributes.onupdate, target)
         }
 
