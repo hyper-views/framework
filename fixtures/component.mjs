@@ -40,19 +40,5 @@ export default ({state}) => main(
       {xmlns: 'http://www.w3.org/2000/svg'},
       path({d: 'M2 2 2 34 34 34 34 2 z'})
     )
-    : null,
-  Boolean(state.hasOnmount)
-    ? div({
-      onmount() {
-        this.innerHTML = 'onmount set'
-      }
-    })
-    : null,
-  Boolean(state.hasOnupdate)
-    ? div({
-      onupdate() {
-        this.innerHTML = 'onupdate set'
-      }
-    })
     : null
 )

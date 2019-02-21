@@ -6,17 +6,11 @@ const defaultDom = {
   children: []
 }
 
-const hooks = ['onmount', 'onupdate']
-
-const callAsync = (fn, target) => {
-  setTimeout(() => fn.call(target), 0)
-}
-
 export default (target, w = window) => {
   const raf = w.requestAnimationFrame
+  const document = target.ownerDocument
 
   const fromHTML = (html) => {
-    const document = target.ownerDocument
     const div = document.createElement('div')
 
     div.innerHTML = html
@@ -26,7 +20,6 @@ export default (target, w = window) => {
 
   const morph = (target, next, previous) => {
     const targetNamespace = target.namespaceURI
-    const document = target.ownerDocument
 
     if (!previous) {
       previous = defaultDom
@@ -56,12 +49,10 @@ export default (target, w = window) => {
 
         target.setAttribute('value', val)
       } else if (val !== previous.attributes[key]) {
-        if (!hooks.includes(key)) {
-          if (key.startsWith('on')) {
-            target[key] = val
-          } else {
-            target.setAttribute(key, val)
-          }
+        if (key.startsWith('on')) {
+          target[key] = val
+        } else {
+          target.setAttribute(key, val)
         }
       }
     }
@@ -71,18 +62,16 @@ export default (target, w = window) => {
     for (let i = 0; i < unusedAttrs.length; i++) {
       const key = unusedAttrs[i]
 
-      if (!hooks.includes(key)) {
-        if (key.startsWith('on')) {
-          delete target[key]
-        } else {
-          if (key === 'value') {
-            target.value = ''
-          } else if (typeof previous.attributes[key] === 'boolean') {
-            target[key] = false
-          }
-
-          target.removeAttribute(key)
+      if (key.startsWith('on')) {
+        delete target[key]
+      } else {
+        if (key === 'value') {
+          target.value = ''
+        } else if (typeof previous.attributes[key] === 'boolean') {
+          target[key] = false
         }
+
+        target.removeAttribute(key)
       }
     }
 
@@ -125,22 +114,10 @@ export default (target, w = window) => {
         } else if (shouldReplaceChild) {
           target.replaceChild(el, childNode)
         }
-
-        if (typeof nextChild === 'object') {
-          for (const hook of hooks) {
-            if (nextChild.attributes[hook]) {
-              callAsync(nextChild.attributes[hook], el)
-            }
-          }
-        }
       } else {
         el = childNode
 
         morph(el, nextChild, previousChild)
-
-        if (typeof nextChild === 'object' && nextChild.attributes.onupdate) {
-          callAsync(nextChild.attributes.onupdate, el)
-        }
       }
     }
 
@@ -160,16 +137,6 @@ export default (target, w = window) => {
 
       raf(() => {
         morph(target, next, previous)
-
-        if (previous == null) {
-          if (next.attributes.onmount) {
-            callAsync(next.attributes.onmount, target)
-          }
-        }
-
-        if (next.attributes.onupdate) {
-          callAsync(next.attributes.onupdate, target)
-        }
 
         called = false
 

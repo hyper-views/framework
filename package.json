@@ -20,7 +20,6 @@
   "homepage": "https://github.com/erickmerchant/framework#readme",
   "devDependencies": {
     "@erickmerchant/lint": "^1.10.2",
-    "delay": "^4.1.0",
     "esm": "^3.2.5",
     "jsdom": "^13.2.0",
     "stream-to-promise": "^2.2.0",
