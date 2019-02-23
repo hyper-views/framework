@@ -29,7 +29,11 @@ export default (target, w = window) => {
 
     const nextAttrs = Object.keys(next.attributes)
 
-    for (let i = 0; i < nextAttrs.length; i++) {
+    let i
+
+    i = -1
+
+    while (++i < nextAttrs.length) {
       const key = nextAttrs[i]
 
       usedAttributes.push(key)
@@ -59,7 +63,9 @@ export default (target, w = window) => {
 
     const unusedAttrs = Object.keys(previous.attributes).filter((key) => !usedAttributes.includes(key))
 
-    for (let i = 0; i < unusedAttrs.length; i++) {
+    i = -1
+
+    while (++i < unusedAttrs.length) {
       const key = unusedAttrs[i]
 
       if (key.startsWith('on')) {
@@ -75,7 +81,9 @@ export default (target, w = window) => {
       }
     }
 
-    for (let i = 0; i < next.children.length; i++) {
+    i = -1
+
+    while (++i < next.children.length) {
       if (next.children[i].html != null) {
         next.children.splice(i, 1, ...fromHTML(next.children[i].html))
       }
