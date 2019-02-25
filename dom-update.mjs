@@ -15,7 +15,7 @@ export default (target, w = window) => {
 
     div.innerHTML = html
 
-    return [...div.childNodes].filter((node) => node.nodeType === 1 || node.nodeValue.trim() !== '')
+    return div.childNodes
   }
 
   const morph = (target, next, previous) => {
@@ -61,15 +61,19 @@ export default (target, w = window) => {
       }
     }
 
-    const unusedAttrs = Object.keys(previous.attributes).filter((key) => !usedAttributes.includes(key))
+    const prevAttrs = Object.keys(previous.attributes)
 
     i = -1
 
-    while (++i < unusedAttrs.length) {
-      const key = unusedAttrs[i]
+    while (++i < prevAttrs.length) {
+      const key = prevAttrs[i]
+
+      if (usedAttributes.includes(key)) {
+        continue
+      }
 
       if (key.startsWith('on')) {
-        delete target[key]
+        target[key] = null
       } else {
         if (key === 'value') {
           target.value = ''
