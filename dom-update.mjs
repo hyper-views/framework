@@ -142,8 +142,11 @@ export default (target, w = window) => {
 
   let called = false
   let previous
+  let next
 
-  return (next) => {
+  return (current) => {
+    next = current
+
     if (!called) {
       called = true
 
