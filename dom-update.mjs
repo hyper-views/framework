@@ -6,6 +6,11 @@ const defaultDom = {
   children: []
 }
 
+const SHOULD_APPEND = 0b0001
+const SHOULD_REPLACE = 0b0010
+const IS_TEXT = 0b0100
+const IS_HTML = 0b1000
+
 export default (target, w = window) => {
   const raf = w.requestAnimationFrame
   const document = target.ownerDocument
@@ -103,17 +108,26 @@ export default (target, w = window) => {
       const nextChild = next.children[i]
       const previousChild = previous.children[i]
       const childNode = target.childNodes[i]
-      const shouldAppendChild = childNode == null
-      const isText = typeof nextChild !== 'object'
-      const isHTML = nextChild instanceof w.Element || nextChild instanceof w.Text
-      const shouldReplaceChild = (!shouldAppendChild && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag)) || isHTML || isText
+      let mode = 0b0000
 
-      if (shouldAppendChild || shouldReplaceChild) {
+      if (typeof nextChild !== 'object') {
+        mode = IS_TEXT
+      } else if (nextChild instanceof w.Element || nextChild instanceof w.Text) {
+        mode = IS_HTML
+      }
+
+      if (childNode == null) {
+        mode |= SHOULD_APPEND
+      } else if (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag) {
+        mode |= SHOULD_REPLACE
+      }
+
+      if (mode & (SHOULD_APPEND | SHOULD_REPLACE)) {
         let el
 
-        if (isText) {
+        if (mode & IS_TEXT) {
           el = document.createTextNode(nextChild)
-        } else if (isHTML) {
+        } else if (mode & IS_HTML) {
           el = nextChild
         } else {
           el = document.createElementNS(nextChild.attributes.xmlns != null ? nextChild.attributes.xmlns : targetNamespace, nextChild.tag)
@@ -121,9 +135,9 @@ export default (target, w = window) => {
           el = morph(el, nextChild)
         }
 
-        if (shouldAppendChild) {
+        if (mode & SHOULD_APPEND) {
           target.appendChild(el)
-        } else if (shouldReplaceChild) {
+        } else if (mode & SHOULD_REPLACE) {
           target.replaceChild(el, childNode)
         }
       } else {
