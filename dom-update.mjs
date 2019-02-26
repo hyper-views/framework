@@ -38,26 +38,34 @@ export default (target, w = window) => {
 
       usedAttributes.push(key)
 
-      const val = next.attributes[key]
+      let val = next.attributes[key]
+      let set = true
+      let remove = false
 
       if (typeof val === 'boolean') {
         target[key] = val
 
         if (val) {
-          target.setAttribute(key, '')
+          val = ''
         } else {
-          target.removeAttribute(key)
+          remove = true
         }
       } else if (key === 'value') {
         target.value = val
-
-        target.setAttribute('value', val)
       } else if (val !== previous.attributes[key]) {
         if (key.startsWith('on')) {
           target[key] = val
-        } else {
-          target.setAttribute(key, val)
+
+          set = false
         }
+      } else {
+        set = false
+      }
+
+      if (set && !remove) {
+        target.setAttribute(key, val)
+      } else if (remove) {
+        target.removeAttribute(key)
       }
     }
 
@@ -97,29 +105,21 @@ export default (target, w = window) => {
       const childNode = target.childNodes[i]
       const shouldAppendChild = childNode == null
       const isText = typeof nextChild !== 'object'
-      const isHTML = !isText && (nextChild instanceof w.Element || nextChild instanceof w.Text)
-
-      if (isText || isHTML) {
-        const el = isText ? document.createTextNode(nextChild) : nextChild
-
-        if (shouldAppendChild) {
-          target.appendChild(el)
-        } else if (nextChild !== previousChild) {
-          target.replaceChild(el, childNode)
-        }
-
-        continue
-      }
-
-      const nextNamespace = typeof nextChild === 'object' && nextChild.attributes.xmlns != null ? nextChild.attributes.xmlns : targetNamespace
-
-      const shouldReplaceChild = !shouldAppendChild && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag)
-      let el
+      const isHTML = nextChild instanceof w.Element || nextChild instanceof w.Text
+      const shouldReplaceChild = (!shouldAppendChild && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag)) || isHTML || isText
 
       if (shouldAppendChild || shouldReplaceChild) {
-        el = document.createElementNS(nextNamespace, nextChild.tag)
+        let el
 
-        el = morph(el, nextChild)
+        if (isText) {
+          el = document.createTextNode(nextChild)
+        } else if (isHTML) {
+          el = nextChild
+        } else {
+          el = document.createElementNS(nextChild.attributes.xmlns != null ? nextChild.attributes.xmlns : targetNamespace, nextChild.tag)
+
+          el = morph(el, nextChild)
+        }
 
         if (shouldAppendChild) {
           target.appendChild(el)
@@ -127,9 +127,7 @@ export default (target, w = window) => {
           target.replaceChild(el, childNode)
         }
       } else {
-        el = childNode
-
-        morph(el, nextChild, previousChild)
+        morph(childNode, nextChild, previousChild)
       }
     }
 
