@@ -6,11 +6,6 @@ const defaultDom = {
   children: []
 }
 
-const SHOULD_APPEND = 0b0001
-const SHOULD_REPLACE = 0b0010
-const IS_TEXT = 0b0100
-const IS_HTML = 0b1000
-
 export default (target, w = window) => {
   const raf = w.requestAnimationFrame
   const document = target.ownerDocument
@@ -41,36 +36,30 @@ export default (target, w = window) => {
     while (++i < nextAttrs.length) {
       const key = nextAttrs[i]
 
-      usedAttributes.push(key)
-
-      let val = next.attributes[key]
-      let set = true
-      let remove = false
+      const val = next.attributes[key]
 
       if (typeof val === 'boolean') {
         target[key] = val
 
         if (val) {
-          val = ''
-        } else {
-          remove = true
-        }
-      } else if (key === 'value') {
-        target.value = val
-      } else if (val !== previous.attributes[key]) {
-        if (key.startsWith('on')) {
-          target[key] = val
+          target.setAttribute(key, '')
 
-          set = false
+          usedAttributes.push(key)
         }
       } else {
-        set = false
-      }
+        usedAttributes.push(key)
 
-      if (set && !remove) {
-        target.setAttribute(key, val)
-      } else if (remove) {
-        target.removeAttribute(key)
+        if (key.startsWith('on')) {
+          target[key] = val
+        } else {
+          if (val !== previous.attributes[key]) {
+            target.setAttribute(key, val)
+          }
+
+          if (key === 'value') {
+            target[key] = val
+          }
+        }
       }
     }
 
@@ -108,26 +97,33 @@ export default (target, w = window) => {
       const nextChild = next.children[i]
       const previousChild = previous.children[i]
       const childNode = target.childNodes[i]
-      let mode = 0b0000
 
-      if (typeof nextChild !== 'object') {
-        mode = IS_TEXT
-      } else if (nextChild instanceof w.Element || nextChild instanceof w.Text) {
-        mode = IS_HTML
-      }
+      const isText = typeof nextChild !== 'object'
+      const isHTML = nextChild instanceof w.Element || nextChild instanceof w.Text
+
+      let append = false
+      let replace = false
 
       if (childNode == null) {
-        mode |= SHOULD_APPEND
-      } else if (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag) {
-        mode |= SHOULD_REPLACE
+        append = true
+      } else if (isText && nextChild === previousChild) {
+        continue
+      } else if (isHTML && childNode.isEqualNode(nextChild)) {
+        continue
       }
 
-      if (mode & (SHOULD_APPEND | SHOULD_REPLACE)) {
+      if (isText || isHTML) {
+        replace = !append
+      } else if (childNode != null && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag)) {
+        replace = true
+      }
+
+      if (append || replace) {
         let el
 
-        if (mode & IS_TEXT) {
+        if (isText) {
           el = document.createTextNode(nextChild)
-        } else if (mode & IS_HTML) {
+        } else if (isHTML) {
           el = nextChild
         } else {
           el = document.createElementNS(nextChild.attributes.xmlns != null ? nextChild.attributes.xmlns : targetNamespace, nextChild.tag)
@@ -135,9 +131,9 @@ export default (target, w = window) => {
           el = morph(el, nextChild)
         }
 
-        if (mode & SHOULD_APPEND) {
+        if (append) {
           target.appendChild(el)
-        } else if (mode & SHOULD_REPLACE) {
+        } else {
           target.replaceChild(el, childNode)
         }
       } else {
