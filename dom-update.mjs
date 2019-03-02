@@ -37,29 +37,19 @@ export default (target, w = window) => {
       const key = nextAttrs[i]
 
       const val = next.attributes[key]
+      const isBoolean = typeof val === 'boolean'
+      const isEvent = key.startsWith('on')
 
-      if (typeof val === 'boolean') {
+      if (isBoolean || isEvent || key === 'value') {
         target[key] = val
+      }
 
-        if (val) {
-          target.setAttribute(key, '')
+      if (!isEvent && val !== previous.attributes[key] && (!isBoolean || val)) {
+        target.setAttribute(key, isBoolean ? '' : val)
+      }
 
-          usedAttributes.push(key)
-        }
-      } else {
+      if (!isBoolean || val) {
         usedAttributes.push(key)
-
-        if (key.startsWith('on')) {
-          target[key] = val
-        } else {
-          if (val !== previous.attributes[key]) {
-            target.setAttribute(key, val)
-          }
-
-          if (key === 'value') {
-            target[key] = val
-          }
-        }
       }
     }
 
@@ -74,15 +64,17 @@ export default (target, w = window) => {
         continue
       }
 
-      if (key.startsWith('on')) {
-        target[key] = null
-      } else {
-        if (key === 'value') {
-          target.value = ''
-        } else if (typeof previous.attributes[key] === 'boolean') {
-          target[key] = false
-        }
+      const isEvent = key.startsWith('on')
 
+      if (isEvent) {
+        target[key] = null
+      } else if (key === 'value') {
+        target.value = ''
+      } else if (typeof previous.attributes[key] === 'boolean') {
+        target[key] = false
+      }
+
+      if (!isEvent) {
         target.removeAttribute(key)
       }
     }
