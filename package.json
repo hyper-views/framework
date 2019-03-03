@@ -21,7 +21,7 @@
   "devDependencies": {
     "@erickmerchant/lint": "^2.0.1",
     "eslint": "^5.15.0",
-    "esm": "^3.2.9",
+    "esm": "^3.2.10",
     "jsdom": "^13.2.0",
     "stream-to-promise": "^2.2.0",
     "tape": "^4.10.0"
