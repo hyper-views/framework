@@ -1,7 +1,5 @@
 # @erickmerchant/framework
 
-This scoped package is my personal framework. I use it on a number of small projects.
-
 ## An Example
 
 ``` javascript
@@ -33,11 +31,15 @@ framework({
 })
 ```
 
-## Related Projects
+## See Also
 
 - [@erickmerchant/router](https://github.com/erickmerchant/router)
 
   A module to do routing inside your components.
+
+- [@erickmerchant/onappend](https://github.com/erickmerchant/onappend)
+
+  Uses a MutationObserver to call onappend and onremove events on elements.
 
 - [A TodoMVC example](https://todo.erickmerchant.com)
 

@@ -26,5 +26,8 @@
     "stream-to-promise": "^2.2.0",
     "tape": "^4.10.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "engines": {
+    "node": ">=8"
+  }
 }
