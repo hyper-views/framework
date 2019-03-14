@@ -1,5 +1,6 @@
 import test from 'tape'
 import jsdom from 'jsdom'
+import delay from 'delay'
 import streamPromise from 'stream-to-promise'
 import {createReadStream} from 'fs'
 import main, {html, domUpdate} from '.'
@@ -81,11 +82,11 @@ test('update.mjs - patching the dom', async (t) => {
 
   const dom = new jsdom.JSDOM(html)
 
-  const requestAnimationFrame = (callback) => callback()
-
-  const update = domUpdate(dom.window.document.querySelector('main'), {Element: dom.window.Element, Text: dom.window.Text, requestAnimationFrame})
+  const update = domUpdate(dom.window.document.querySelector('main'), {Element: dom.window.Element, Text: dom.window.Text})
 
   update(component({state: {heading: 'Test 1'}, dispatch: noop}))
+
+  await delay(0)
 
   const result1 = dom.serialize()
 
@@ -102,6 +103,8 @@ test('update.mjs - patching the dom', async (t) => {
     dispatch: noop
   }))
 
+  await delay(0)
+
   const result2 = dom.serialize()
 
   t.equals(result2.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><div>some</div><div>raw</div><div>html</div><p class="red" data-red="yes">lorem ipsum dolor ....</p></main></body></html>')
@@ -116,6 +119,8 @@ test('update.mjs - patching the dom', async (t) => {
     dispatch: noop
   }))
 
+  await delay(0)
+
   const result3 = dom.serialize()
 
   t.equals(result3.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 3</h1><p class="blue" data-blue="yes">lorem ipsum dolor ....</p></main></body></html>')
@@ -128,6 +133,8 @@ test('update.mjs - patching the dom', async (t) => {
     },
     dispatch: noop
   }))
+
+  await delay(0)
 
   const result4 = dom.serialize()
 
@@ -142,6 +149,8 @@ test('update.mjs - patching the dom', async (t) => {
     dispatch: noop
   }))
 
+  await delay(0)
+
   const result5 = dom.serialize()
 
   t.equals(result5.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 5</h1><form><input><input type="checkbox"><select><option>1</option><option selected="">2</option><option>3</option></select><button type="submit">Submit</button></form></main></body></html>')
@@ -153,6 +162,8 @@ test('update.mjs - patching the dom', async (t) => {
     },
     dispatch: noop
   }))
+
+  await delay(0)
 
   const result6 = dom.serialize()
 

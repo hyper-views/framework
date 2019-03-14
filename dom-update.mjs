@@ -7,7 +7,6 @@ const defaultDom = {
 }
 
 export default (target, w = window) => {
-  const raf = w.requestAnimationFrame
   const document = target.ownerDocument
 
   const fromHTML = (html) => {
@@ -19,8 +18,6 @@ export default (target, w = window) => {
   }
 
   const morph = (target, next, previous) => {
-    const targetNamespace = target.namespaceURI
-
     if (!previous) {
       previous = defaultDom
     }
@@ -91,7 +88,7 @@ export default (target, w = window) => {
       const childNode = target.childNodes[i]
 
       const isText = typeof nextChild !== 'object'
-      const isHTML = nextChild instanceof w.Element || nextChild instanceof w.Text
+      const isHTML = !isText && (nextChild instanceof w.Element || nextChild instanceof w.Text)
 
       let append = false
       let replace = false
@@ -118,7 +115,7 @@ export default (target, w = window) => {
         } else if (isHTML) {
           el = nextChild
         } else {
-          el = document.createElementNS(nextChild.attributes.xmlns != null ? nextChild.attributes.xmlns : targetNamespace, nextChild.tag)
+          el = document.createElementNS(nextChild.attributes.xmlns != null ? nextChild.attributes.xmlns : target.namespaceURI, nextChild.tag)
 
           el = morph(el, nextChild)
         }
@@ -140,23 +137,13 @@ export default (target, w = window) => {
     return target
   }
 
-  let called = false
   let previous
-  let next
 
   return (current) => {
-    next = current
+    setTimeout(() => {
+      morph(target, current, previous)
 
-    if (!called) {
-      called = true
-
-      raf(() => {
-        morph(target, next, previous)
-
-        called = false
-
-        previous = next
-      })
-    }
+      previous = current
+    }, 0)
   }
 }
