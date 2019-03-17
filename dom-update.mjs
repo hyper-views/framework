@@ -33,6 +33,17 @@ export default (target, w = window) => {
     while (++i < nextAttrs.length) {
       const key = nextAttrs[i]
 
+      const colonIndex = key.indexOf(':')
+      let attrNS
+
+      if (colonIndex > -1) {
+        const prefix = key.substring(0, colonIndex)
+
+        if (next.attributes[`xmlns:${prefix}`]) {
+          attrNS = next.attributes[`xmlns:${prefix}`]
+        }
+      }
+
       const val = next.attributes[key]
       const isBoolean = typeof val === 'boolean'
       const isEvent = key.startsWith('on')
@@ -42,7 +53,11 @@ export default (target, w = window) => {
       }
 
       if (!isEvent && val !== previous.attributes[key] && (!isBoolean || val)) {
-        target.setAttribute(key, isBoolean ? '' : val)
+        if (attrNS != null) {
+          target.setAttributeNS(attrNS, key, isBoolean ? '' : val)
+        } else {
+          target.setAttribute(key, isBoolean ? '' : val)
+        }
       }
 
       if (!isBoolean || val) {
@@ -56,6 +71,18 @@ export default (target, w = window) => {
 
     while (++i < prevAttrs.length) {
       const key = prevAttrs[i]
+
+      const colonIndex = key.indexOf(':')
+
+      let attrNS
+
+      if (colonIndex > -1) {
+        const prefix = key.substring(0, colonIndex)
+
+        if (next.attributes[`xmlns:${prefix}`]) {
+          attrNS = next.attributes[`xmlns:${prefix}`]
+        }
+      }
 
       if (usedAttributes.includes(key)) {
         continue
@@ -72,7 +99,11 @@ export default (target, w = window) => {
       }
 
       if (!isEvent) {
-        target.removeAttribute(key)
+        if (attrNS != null) {
+          target.removeAttributeNS(attrNS, key.substring(colonIndex + 1))
+        } else {
+          target.removeAttribute(key)
+        }
       }
     }
 
