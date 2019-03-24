@@ -1,14 +1,14 @@
-const create = (tag) => (attributes, ...children) => {
-  const result = {}
+class VNode {
+  constructor(tag, attributes, children) {
+    this.tag = tag
 
-  result.tag = tag
+    this.attributes = attributes
 
-  result.attributes = attributes
-
-  result.children = children.filter((child) => child != null)
-
-  return result
+    this.children = children.filter((child) => child != null)
+  }
 }
+
+const create = (tag) => (attributes, ...children) => new VNode(tag, attributes, children)
 
 export default new Proxy({}, {
   get(_, tag) {

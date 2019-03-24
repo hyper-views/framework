@@ -17,74 +17,67 @@ export default (target, w = window) => {
     return div.childNodes
   }
 
-  const morph = (target, next, previous) => {
-    if (!previous) {
-      previous = defaultDom
+  const getAttributeNS = (key, attributes) => {
+    const colonIndex = key.indexOf(':')
+
+    if (colonIndex > -1) {
+      const prefix = key.substring(0, colonIndex)
+
+      const key = `xmlns:${prefix}`
+
+      if (attributes[key]) {
+        return [attributes[key], key.substring(colonIndex + 1)]
+      }
     }
 
-    const usedAttributes = []
+    return []
+  }
 
-    const nextAttrs = Object.keys(next.attributes)
+  const morphAttributes = (target, nextAttributes, previousAttributes) => {
+    const nextKeys = Object.keys(nextAttributes)
 
-    let i
+    let nextAttributeIndex = -1
 
-    i = -1
+    while (++nextAttributeIndex < nextKeys.length) {
+      const key = nextKeys[nextAttributeIndex]
 
-    while (++i < nextAttrs.length) {
-      const key = nextAttrs[i]
+      const [attributeNS] = getAttributeNS(key, nextAttributes)
 
-      const colonIndex = key.indexOf(':')
-      let attrNS
+      const val = nextAttributes[key]
 
-      if (colonIndex > -1) {
-        const prefix = key.substring(0, colonIndex)
-
-        if (next.attributes[`xmlns:${prefix}`]) {
-          attrNS = next.attributes[`xmlns:${prefix}`]
-        }
-      }
-
-      const val = next.attributes[key]
       const isBoolean = typeof val === 'boolean'
+
       const isEvent = key.startsWith('on')
 
       if (isBoolean || isEvent || key === 'value') {
         target[key] = val
       }
 
-      if (!isEvent && val !== previous.attributes[key] && (!isBoolean || val)) {
-        if (attrNS != null) {
-          target.setAttributeNS(attrNS, key, isBoolean ? '' : val)
+      if (!isEvent && val !== previousAttributes[key] && (!isBoolean || val)) {
+        if (attributeNS != null) {
+          target.setAttributeNS(attributeNS, key, isBoolean ? '' : val)
         } else {
           target.setAttribute(key, isBoolean ? '' : val)
         }
       }
 
       if (!isBoolean || val) {
-        usedAttributes.push(key)
+        previousAttributes[key] = null
       }
     }
+  }
 
-    const prevAttrs = Object.keys(previous.attributes)
+  const removeUnusedAttributes = (target, previousAttributes) => {
+    const previousKeys = Object.keys(previousAttributes)
 
-    i = -1
+    let previousAttributeIndex = -1
 
-    while (++i < prevAttrs.length) {
-      const key = prevAttrs[i]
+    while (++previousAttributeIndex < previousKeys.length) {
+      const key = previousKeys[previousAttributeIndex]
 
-      const colonIndex = key.indexOf(':')
+      const [attributeNS, unnamespaced] = getAttributeNS(key, previousAttributes)
 
-      let attrNS
-
-      if (colonIndex > -1) {
-        const prefix = key.substring(0, colonIndex)
-
-        if (next.attributes[`xmlns:${prefix}`]) {
-          attrNS = next.attributes[`xmlns:${prefix}`]
-        }
-      }
-
-      if (usedAttributes.includes(key)) {
+      if (previousAttributes[key] == null) {
         continue
       }
 
@@ -94,40 +87,43 @@ export default (target, w = window) => {
         target[key] = null
       } else if (key === 'value') {
         target.value = ''
-      } else if (typeof previous.attributes[key] === 'boolean') {
+      } else if (typeof previousAttributes[key] === 'boolean') {
         target[key] = false
       }
 
       if (!isEvent) {
-        if (attrNS != null) {
-          target.removeAttributeNS(attrNS, key.substring(colonIndex + 1))
+        if (attributeNS != null) {
+          target.removeAttributeNS(attributeNS, unnamespaced)
         } else {
           target.removeAttribute(key)
         }
       }
     }
+  }
 
-    i = -1
+  const morphChildren = (target, nextChildren, previousChildren) => {
+    let nextChildIndex = -1
 
     let htmlCount = 0
 
-    while (++i < next.children.length) {
+    while (++nextChildIndex < nextChildren.length) {
       htmlCount--
 
-      let nextChild = next.children[i]
+      let nextChild = nextChildren[nextChildIndex]
 
       if (nextChild.html != null) {
         const html = fromHTML(nextChild.html)
 
-        next.children.splice(i, 1, ...html)
+        nextChildren.splice(nextChildIndex, 1, ...html)
 
         htmlCount = html.length
 
-        nextChild = next.children[i]
+        nextChild = nextChildren[nextChildIndex]
       }
 
-      const previousChild = previous.children[i]
-      const childNode = target.childNodes[i]
+      const previousChild = previousChildren[nextChildIndex]
+
+      const childNode = target.childNodes[nextChildIndex]
 
       const isHTML = htmlCount > 0
 
@@ -136,7 +132,9 @@ export default (target, w = window) => {
       }
 
       const isText = typeof nextChild !== 'object'
+
       let append = false
+
       let replace = false
 
       if (childNode == null) {
@@ -159,7 +157,7 @@ export default (target, w = window) => {
             el = document.createElement(nextChild.tag)
           }
 
-          el = morph(el, nextChild)
+          morph(el, nextChild)
         }
 
         if (append) {
@@ -173,12 +171,26 @@ export default (target, w = window) => {
         morph(childNode, nextChild, previousChild)
       }
     }
+  }
 
-    while (target.childNodes.length > next.children.length) {
-      target.removeChild(target.childNodes[next.children.length])
+  const truncateChildren = (target, length) => {
+    while (target.childNodes.length > length) {
+      target.removeChild(target.childNodes[length])
+    }
+  }
+
+  const morph = (target, next, previous) => {
+    if (!previous) {
+      previous = defaultDom
     }
 
-    return target
+    morphAttributes(target, next.attributes, previous.attributes)
+
+    removeUnusedAttributes(target, previous.attributes)
+
+    morphChildren(target, next.children, previous.children)
+
+    truncateChildren(target, next.children.length)
   }
 
   let previous
