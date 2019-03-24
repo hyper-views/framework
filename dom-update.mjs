@@ -109,32 +109,39 @@ export default (target, w = window) => {
 
     i = -1
 
+    let htmlCount = 0
+
     while (++i < next.children.length) {
-      if (next.children[i].html != null) {
-        next.children.splice(i, 1, ...fromHTML(next.children[i].html))
+      htmlCount--
+
+      let nextChild = next.children[i]
+
+      if (nextChild.html != null) {
+        const html = fromHTML(nextChild.html)
+
+        next.children.splice(i, 1, ...html)
+
+        htmlCount = html.length
+
+        nextChild = next.children[i]
       }
 
-      const nextChild = next.children[i]
       const previousChild = previous.children[i]
       const childNode = target.childNodes[i]
 
-      const isText = typeof nextChild !== 'object'
-      const isHTML = !isText && (nextChild instanceof w.Element || nextChild instanceof w.Text)
+      const isHTML = htmlCount > 0
 
+      if (nextChild === previousChild || (isHTML && childNode && childNode.isEqualNode(nextChild))) {
+        continue
+      }
+
+      const isText = typeof nextChild !== 'object'
       let append = false
       let replace = false
 
       if (childNode == null) {
         append = true
-      } else if (isText && nextChild === previousChild) {
-        continue
-      } else if (isHTML && childNode.isEqualNode(nextChild)) {
-        continue
-      }
-
-      if (isText || isHTML) {
-        replace = !append
-      } else if (childNode != null && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag)) {
+      } else if (isHTML || (isText && childNode.nodeType !== 3) || (!isText && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag))) {
         replace = true
       }
 
@@ -146,7 +153,11 @@ export default (target, w = window) => {
         } else if (isHTML) {
           el = nextChild
         } else {
-          el = document.createElementNS(nextChild.attributes.xmlns != null ? nextChild.attributes.xmlns : target.namespaceURI, nextChild.tag)
+          if (nextChild.attributes.xmlns != null) {
+            el = document.createElementNS(nextChild.attributes.xmlns, nextChild.tag)
+          } else {
+            el = document.createElement(nextChild.tag)
+          }
 
           el = morph(el, nextChild)
         }
@@ -156,6 +167,8 @@ export default (target, w = window) => {
         } else {
           target.replaceChild(el, childNode)
         }
+      } else if (isText) {
+        childNode.nodeValue = nextChild
       } else {
         morph(childNode, nextChild, previousChild)
       }
