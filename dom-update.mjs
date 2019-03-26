@@ -23,10 +23,10 @@ export default (target, w = window) => {
     if (colonIndex > -1) {
       const prefix = key.substring(0, colonIndex)
 
-      const key = `xmlns:${prefix}`
+      const nsKey = `xmlns:${prefix}`
 
-      if (attributes[key]) {
-        return [attributes[key], key.substring(colonIndex + 1)]
+      if (attributes[nsKey]) {
+        return [attributes[nsKey], key.substring(colonIndex + 1)]
       }
     }
 
