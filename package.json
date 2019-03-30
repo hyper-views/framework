@@ -21,7 +21,7 @@
   "devDependencies": {
     "@erickmerchant/lint": "^2.2.0",
     "delay": "^4.1.0",
-    "eslint": "^5.15.3",
+    "eslint": "^5.16.0",
     "esm": "^3.2.22",
     "jsdom": "^14.0.0",
     "stream-to-promise": "^2.2.0",
