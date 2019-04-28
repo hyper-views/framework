@@ -82,7 +82,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const dom = new jsdom.JSDOM(html)
 
-  const update = domUpdate(dom.window.document.querySelector('main'), {Element: dom.window.Element, Text: dom.window.Text})
+  const update = domUpdate(dom.window.document.querySelector('main'))
 
   update(component({state: {heading: 'Test 1'}, dispatch: noop}))
 

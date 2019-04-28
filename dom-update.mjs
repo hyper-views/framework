@@ -1,12 +1,10 @@
-/* global window */
-
 const defaultDom = {
   tag: null,
   attributes: {},
   children: []
 }
 
-export default (target, w = window) => {
+export default (target) => {
   const document = target.ownerDocument
 
   const fromHTML = (html) => {
