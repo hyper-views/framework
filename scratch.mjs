@@ -1,6 +1,6 @@
-const nameChars = 'abcdefghijklmnopqrstuvwxyz0123456789-:'
-const spaceChars = ' \t\n\r'
-const quoteChars = '\'"'
+const isNameChar = (char) => char && 'abcdefghijklmnopqrstuvwxyz0123456789-:'.indexOf(char) > -1
+const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
+const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
 
 const tokenize = (str, inTag = false) => {
   const acc = []
@@ -22,7 +22,7 @@ const tokenize = (str, inTag = false) => {
         i++
       }
 
-      while (next() && nameChars.includes(next())) {
+      while (isNameChar(next())) {
         i++
 
         value += current()
@@ -38,7 +38,7 @@ const tokenize = (str, inTag = false) => {
       continue
     }
 
-    if (inTag && current() && spaceChars.includes(current())) {
+    if (inTag && isSpaceChar(current())) {
       i++
 
       continue
@@ -70,12 +70,12 @@ const tokenize = (str, inTag = false) => {
       continue
     }
 
-    if (inTag && current() && nameChars.includes(current())) {
+    if (inTag && isNameChar(current())) {
       let value = ''
 
       i--
 
-      while (next() && nameChars.includes(next())) {
+      while (isNameChar(next())) {
         i++
 
         value += current()
@@ -92,12 +92,12 @@ const tokenize = (str, inTag = false) => {
         let quote = ''
         let value = ''
 
-        if (next() && quoteChars.includes(next())) {
+        if (isQuoteChar(next())) {
           i++
 
           quote = current()
 
-          while (next() && next() !== quote) {
+          while (next() !== quote) {
             i++
 
             value += current()
@@ -124,7 +124,7 @@ const tokenize = (str, inTag = false) => {
         i--
       }
 
-      while (next() && next() !== '<') {
+      while (next() !== '<') {
         i++
 
         value += current()
@@ -159,4 +159,4 @@ const html = (strs, ...vars) => strs.reduce((acc, str, i) => {
   return acc
 }, [])
 
-console.log(html`<div attr1 attr2=${2} attr3="3" ${{attr4: 4}}><p>${'text'} more text<img src="" /></p></div>`)
+console.log(html`afds<div attr1 attr2=${2} attr3="3" ${{attr4: 4}}><p>${'text'} more text<img src="" /></p>dsfa</div>`)
