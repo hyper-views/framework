@@ -1,89 +1,162 @@
-const tokenize = (str) => {
-  const tokens = []
+const nameChars = 'abcdefghijklmnopqrstuvwxyz0123456789-:'
+const spaceChars = ' \t\n\r'
+const quoteChars = '\'"'
 
-  for (const token of str.split(/(\s|\n)+/).filter((token) => token.trim())) {
-    const offset = token.endsWith('/>') ? 2 : token.endsWith('>') ? 1 : 0
+const tokenize = (str, inTag = false) => {
+  const acc = []
+  let i = 0
 
-    switch (true) {
-      case token.startsWith('</'):
-      tokens.push({
-        type: 'lt_slash',
-        value: token.substring(2, token.length - offset)
+  const current = () => str.charAt(i)
+  const next = () => str.charAt(i + 1)
+
+  while (current()) {
+    if (!inTag && current() === '<') {
+      inTag = true
+
+      let value = ''
+      let end = false
+
+      if (next() === '/') {
+        end = true
+
+        i++
+      }
+
+      while (next() && nameChars.includes(next())) {
+        i++
+
+        value += current()
+      }
+
+      acc.push({
+        type: !end ? 'tag' : 'endtag',
+        value
       })
-      break
 
-      case token.startsWith('<'):
-      tokens.push({
-        type: 'lt',
-        value: token.substring(1, token.length - offset)
+      i++
+
+      continue
+    }
+
+    if (inTag && current() && spaceChars.includes(current())) {
+      i++
+
+      continue
+    }
+
+    if (inTag && current() === '/' && next() === '>') {
+      acc.push({
+        type: 'endtag',
+        value: ''
       })
-      break
 
-      case token.endsWith('='):
-      tokens.push({
-        type: 'key_equals',
-        value: token.substring(0, token.length - 1)
+      inTag = false
+
+      i++
+
+      continue
+    }
+
+    if (inTag && current() === '>') {
+      acc.push({
+        type: 'end',
+        value: ''
       })
-      break
 
-      case !offset:
-      tokens.push({
+      inTag = false
+
+      i++
+
+      continue
+    }
+
+    if (inTag && current() && nameChars.includes(current())) {
+      let value = ''
+
+      i--
+
+      while (next() && nameChars.includes(next())) {
+        i++
+
+        value += current()
+      }
+
+      acc.push({
         type: 'key',
-        value: token
+        value
       })
-      break
+
+      if (next() === '=') {
+        i++
+
+        let quote = ''
+        let value = ''
+
+        if (next() && quoteChars.includes(next())) {
+          i++
+
+          quote = current()
+
+          while (next() && next() !== quote) {
+            i++
+
+            value += current()
+          }
+
+          i++
+
+          acc.push({
+            type: 'value',
+            value
+          })
+        }
+      }
+
+      i++
+
+      continue
     }
 
-    switch (offset) {
-      case 2:
-      tokens.push({
-        type: 'slash_gt'
-      })
-      break
+    if (!inTag) {
+      let value = ''
 
-      case 1:
-      tokens.push({
-        type: 'gt'
-      })
-      break
+      if (current() !== '>') {
+        i--
+      }
+
+      while (next() && next() !== '<') {
+        i++
+
+        value += current()
+      }
+
+      if (value) {
+        acc.push({
+          type: 'text',
+          value
+        })
+      }
     }
+
+    i++
   }
 
-  return tokens
+  return acc
 }
 
-const html = (strs, ...vars) => {
-  return strs.reduce((acc, str, i) => {
-    acc.push(...tokenize(str))
+const html = (strs, ...vars) => strs.reduce((acc, str, i) => {
+  const inTag = acc.length - 2 > -1 ? ['tag', 'key', 'value'].includes(acc[acc.length - 2].type) : false
 
-    if (i < vars.length) {
-      acc.push({
-        type: 'variable',
-        value: vars[i]
-      })
-    }
+  acc.push(...tokenize(str, inTag))
 
-    return acc
-  }, [])
-}
+  if (i < vars.length) {
+    acc.push({
+      type: 'variable',
+      value: vars[i]
+    })
+  }
 
+  return acc
+}, [])
 
-console.log(html`<tag>${'text'}</tag>`)
-
-console.log('.................................')
-
-console.log(html`<tag>
-<sub>${1}</sub>
-</tag>`)
-
-console.log('.................................')
-
-console.log(html`<tag attr=${'val'}>${'text'}</tag>`)
-
-console.log('.................................')
-
-console.log(html`<tag bool attr=${123} />`)
-
-console.log('.................................')
-
-console.log(html`<tag ${{attr: 123}} />`)
+console.log(html`<div attr1 attr2=${2} attr3="3" ${{attr4: 4}}><p>${'text'} more text<img src="" /></p></div>`)
