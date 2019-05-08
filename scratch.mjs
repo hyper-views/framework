@@ -46,7 +46,13 @@ const tokenize = (str, inTag = false) => {
 
     if (inTag && current() === '/' && next() === '>') {
       acc.push({
+        type: 'end',
+        value: inTag
+      }, {
         type: 'endtag',
+        value: inTag
+      }, {
+        type: 'end',
         value: inTag
       })
 
@@ -151,35 +157,89 @@ const tokenize = (str, inTag = false) => {
   return acc
 }
 
-const html = (strs, ...vars) => strs.reduce((acc, str, i) => {
-  let inTag = false
+const parse = (tokens, child) => {
+  while (tokens.length) {
+    const token = tokens.shift()
 
-  if (acc.length - 2 > -1) {
-    const prev = acc[acc.length - 2]
-
-    if (['tag', 'key', 'value'].includes(prev.type)) {
-      inTag = acc.filter((val) => val.type === 'tag')[0]
+    if (token.type === 'end') {
+      break
+    } else {
+      child.attributes.push(token)
     }
   }
 
-  acc.push(...tokenize(str, inTag))
+  while (tokens.length) {
+    const token = tokens.shift()
 
-  if (i < vars.length) {
-    acc.push({
-      type: 'variable',
-      value: vars[i]
-    })
+    if (token.type === 'endtag' && token.value === child.tag) {
+      break
+    } else if (token.type === 'tag') {
+      const grand = {
+        tag: token.value,
+        attributes: [],
+        children: []
+      }
+
+      child.children.push(parse(tokens, grand))
+    } else if (token.type === 'text' || token.type === 'variable') {
+      child.children.push(token.value)
+    }
   }
 
-  return acc
-}, [])
+  return child
+}
 
-console.log(html`afds
-  <div attr1 attr2=${2} attr3=3 attr4="4" ${{attr5: 5}}>
-    <p>
-      ${'text'} more text
-      <img src="" />
-    </p>
-    dsfa
-  </div>
-`)
+const html = (strs, ...vars) => {
+  const tokens = strs.reduce((acc, str, i) => {
+    let inTag = false
+
+    if (acc.length - 2 > -1) {
+      const prev = acc[acc.length - 2]
+
+      if (['tag', 'key', 'value'].includes(prev.type)) {
+        inTag = acc.filter((val) => val.type === 'tag')[0]
+      }
+    }
+
+    acc.push(...tokenize(str, inTag))
+
+    if (i < vars.length) {
+      acc.push({
+        type: 'variable',
+        value: vars[i]
+      })
+    }
+
+    return acc
+  }, [])
+
+  console.log(tokens)
+
+  const children = []
+
+  while (tokens.length) {
+    const token = tokens.shift()
+
+    if (token.type === 'tag') {
+      const child = {
+        tag: token.value,
+        attributes: [],
+        children: []
+      }
+
+      children.push(parse(tokens, child))
+    } else if (token.type === 'text') {
+      children.push(token.value)
+    }
+  }
+
+  return children
+}
+
+console.log(JSON.stringify(html`<div attr1 attr2=${2} attr3=3 attr4="4" ${{attr5: 5}}>
+  <p>
+    ${'text'} more text
+    <img src="" />
+  </p>
+  dsfa
+</div>`, null, 2))
