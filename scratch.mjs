@@ -155,7 +155,7 @@ const html = (strs, ...vars) => strs.reduce((acc, str, i) => {
   let inTag = false
 
   if (acc.length - 2 > -1) {
-    let prev = acc[acc.length - 2]
+    const prev = acc[acc.length - 2]
 
     if (['tag', 'key', 'value'].includes(prev.type)) {
       inTag = acc.filter((val) => val.type === 'tag')[0]
