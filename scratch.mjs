@@ -11,8 +11,6 @@ const tokenize = (str, inTag = false) => {
 
   while (current()) {
     if (!inTag && current() === '<') {
-      inTag = true
-
       let value = ''
       let end = false
 
@@ -33,6 +31,8 @@ const tokenize = (str, inTag = false) => {
         value
       })
 
+      inTag = value
+
       i++
 
       continue
@@ -47,12 +47,12 @@ const tokenize = (str, inTag = false) => {
     if (inTag && current() === '/' && next() === '>') {
       acc.push({
         type: 'endtag',
-        value: ''
+        value: inTag
       })
 
       inTag = false
 
-      i++
+      i += 2
 
       continue
     }
@@ -109,6 +109,19 @@ const tokenize = (str, inTag = false) => {
             type: 'value',
             value
           })
+        } else if (next()) {
+          while (!isSpaceChar(next())) {
+            i++
+
+            value += current()
+          }
+
+          i++
+
+          acc.push({
+            type: 'value',
+            value
+          })
         }
       }
 
@@ -120,32 +133,34 @@ const tokenize = (str, inTag = false) => {
     if (!inTag) {
       let value = ''
 
-      if (current() !== '>') {
-        i--
-      }
-
-      while (next() !== '<') {
-        i++
-
+      while (current() && current() !== '<') {
         value += current()
+
+        i++
       }
 
-      if (value) {
+      if (value.trim()) {
         acc.push({
           type: 'text',
           value
         })
       }
     }
-
-    i++
   }
 
   return acc
 }
 
 const html = (strs, ...vars) => strs.reduce((acc, str, i) => {
-  const inTag = acc.length - 2 > -1 ? ['tag', 'key', 'value'].includes(acc[acc.length - 2].type) : false
+  let inTag = false
+
+  if (acc.length - 2 > -1) {
+    let prev = acc[acc.length - 2]
+
+    if (['tag', 'key', 'value'].includes(prev.type)) {
+      inTag = acc.filter((val) => val.type === 'tag')[0]
+    }
+  }
 
   acc.push(...tokenize(str, inTag))
 
@@ -159,4 +174,12 @@ const html = (strs, ...vars) => strs.reduce((acc, str, i) => {
   return acc
 }, [])
 
-console.log(html`afds<div attr1 attr2=${2} attr3="3" ${{attr4: 4}}><p>${'text'} more text<img src="" /></p>dsfa</div>`)
+console.log(html`afds
+  <div attr1 attr2=${2} attr3=3 attr4="4" ${{attr5: 5}}>
+    <p>
+      ${'text'} more text
+      <img src="" />
+    </p>
+    dsfa
+  </div>
+`)
