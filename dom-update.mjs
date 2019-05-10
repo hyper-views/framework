@@ -186,9 +186,9 @@ export default (target) => {
 
     removeUnusedAttributes(target, previous.attributes)
 
-    morphChildren(target, next.children, previous.children, namespaces)
+    morphChildren(target, next.children.flat(), (previous.children || []).flat(), namespaces)
 
-    truncateChildren(target, next.children.length)
+    truncateChildren(target, next.children.flat().length)
   }
 
   let previous
