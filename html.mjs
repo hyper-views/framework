@@ -1,4 +1,4 @@
-const isNameChar = (char) => char && 'abcdefghijklmnopqrstuvwxyz0123456789-:'.indexOf(char) > -1
+const isNameChar = (char) => char && 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-:'.indexOf(char) > -1
 const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
 const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
 
@@ -280,11 +280,12 @@ export default (key) => {
     const tokens = strs.reduce((acc, str, i) => {
       let inTag = false
 
-      if (acc.length - 2 > -1) {
+      if (acc.length - 2 > -1 && acc[acc.length - 1].type !== 'end') {
         const prev = acc[acc.length - 2]
 
         if (['tag', 'key', 'value'].includes(prev.type)) {
-          inTag = acc.filter((val) => val.type === 'tag')[0]
+          const filtered = acc.filter((val) => val.type === 'tag')
+          inTag = filtered[filtered.length - 1].value
         }
       }
 
