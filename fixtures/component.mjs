@@ -5,14 +5,10 @@ const {main, p, svg, step1, step2, option} = html
 export default ({state}) => main`<main>
   <h1>${state.heading}</h1>
   ${Boolean(state.hasSafe)
-    ? safe(`<div>some</div><div>raw</div><div>html</div>`)
+    ? safe('<div>some</div><div>raw</div><div>html</div>')
     : null}
   ${Boolean(state.hasP)
-    ? p`<p
-        ${{
-          class: state.isRed ? 'red' : 'blue',
-          [state.isRed ? 'data-red' : 'data-blue']: 'yes'
-        }}>
+    ? p`<p ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
         ${state.pText}
       </p>`
     : null}
@@ -27,7 +23,7 @@ export default ({state}) => main`<main>
   ${Boolean(state.hasForm) && state.formStep === 2
     ? step2`<form
         onsubmit=${() => {}}>
-        <input />
+        <input value=${null} />
         <input type=checkbox />
         <select>${[1, 2, 3].map((v) => option`<option selected=${v === 2}>${v}</option>`)}</select>
         <button type=submit disabled=${false}>Submit</button>
@@ -39,5 +35,5 @@ export default ({state}) => main`<main>
         <path d="M2 2 2 34 34 34 34 2 z" />
       </svg>`
     : null
-  }
+}
 </main>`

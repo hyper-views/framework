@@ -1,9 +1,3 @@
-const defaultDom = {
-  tag: null,
-  attributes: {},
-  children: []
-}
-
 export default (target) => {
   const document = target.ownerDocument
 
@@ -15,7 +9,7 @@ export default (target) => {
     return div.childNodes
   }
 
-  const morphAttributes = (target, nextAttributes, previousAttributes, namespaces) => {
+  const morphAttributes = (target, nextAttributes, namespaces) => {
     const nextKeys = Object.keys(nextAttributes)
 
     let nextAttributeIndex = -1
@@ -47,51 +41,19 @@ export default (target) => {
         target[key] = val
       }
 
-      if (!isEvent && val !== previousAttributes[key] && (!isBoolean || val)) {
-        if (attributeNS != null) {
+      if (!isEvent) {
+        if (val == null || val === false) {
+          target.removeAttribute(key)
+        } else if (attributeNS != null) {
           target.setAttributeNS(attributeNS, key, isBoolean ? '' : val)
         } else {
           target.setAttribute(key, isBoolean ? '' : val)
         }
       }
-
-      if (!isBoolean || val) {
-        previousAttributes[key] = null
-      }
     }
   }
 
-  const removeUnusedAttributes = (target, previousAttributes) => {
-    const previousKeys = Object.keys(previousAttributes)
-
-    let previousAttributeIndex = -1
-
-    while (++previousAttributeIndex < previousKeys.length) {
-      const key = previousKeys[previousAttributeIndex]
-
-      if (previousAttributes[key] == null) {
-        continue
-      }
-
-      const isEvent = key.startsWith('on')
-
-      if (isEvent) {
-        target[key] = null
-      } else if (key === 'value') {
-        target.value = ''
-      } else if (typeof previousAttributes[key] === 'boolean') {
-        target[key] = false
-      }
-
-      if (!isEvent) {
-        const attr = target.getAttributeNode(key)
-
-        if (attr) target.removeAttributeNode(attr)
-      }
-    }
-  }
-
-  const morphChildren = (target, nextChildren, previousChildren, namespaces) => {
+  const morphChildren = (target, nextChildren, namespaces) => {
     let nextChildIndex = -1
 
     let htmlCount = 0
@@ -111,13 +73,11 @@ export default (target) => {
         nextChild = nextChildren[nextChildIndex]
       }
 
-      const previousChild = previousChildren[nextChildIndex]
-
       const childNode = target.childNodes[nextChildIndex]
 
       const isHTML = htmlCount > 0
 
-      if (nextChild === previousChild || (isHTML && childNode && childNode.isEqualNode(nextChild))) {
+      if (isHTML && childNode && childNode.isEqualNode(nextChild)) {
         continue
       }
 
@@ -149,7 +109,7 @@ export default (target) => {
             el = document.createElement(nextChild.tag)
           }
 
-          morph(el, nextChild, null, namespaces)
+          morph(el, nextChild, namespaces)
         }
 
         if (append) {
@@ -160,7 +120,7 @@ export default (target) => {
       } else if (isText) {
         childNode.nodeValue = nextChild
       } else {
-        morph(childNode, nextChild, previousChild, namespaces)
+        morph(childNode, nextChild, namespaces)
       }
     }
   }
@@ -171,35 +131,25 @@ export default (target) => {
     }
   }
 
-  const morph = (target, next, previous, namespaces = {}) => {
-    if (!previous) {
-      previous = defaultDom
-    }
-
+  const morph = (target, next, namespaces = {}) => {
     for (const key of Object.keys(next.attributes)) {
       if (key === 'xmlns' || key.startsWith('xmlns:')) {
         namespaces[key] = next.attributes[key]
       }
     }
 
-    morphAttributes(target, next.attributes, previous.attributes, namespaces)
+    morphAttributes(target, next.attributes, namespaces)
 
-    removeUnusedAttributes(target, previous.attributes)
+    const children = next.children.flat().filter((child) => child != null)
 
-    next.children = next.children.flat().filter((child) => child != null)
+    morphChildren(target, children, namespaces)
 
-    morphChildren(target, next.children, previous.children, namespaces)
-
-    truncateChildren(target, next.children.length)
+    truncateChildren(target, children.length)
   }
-
-  let previous
 
   return (current) => {
     setTimeout(() => {
-      morph(target, current, previous)
-
-      previous = current
+      morph(target, current)
     }, 0)
   }
 }
