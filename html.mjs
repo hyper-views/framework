@@ -235,7 +235,7 @@ const parse = (tokens, child, path, emit) => {
 
 const cache = {}
 
-export default (key) => {
+const makeTag = (key) => {
   const saturate = (vars) => {
     const copy = clone(cache[key])
     let i = -1
@@ -248,10 +248,10 @@ export default (key) => {
       let key
       let j = -1
 
-      while(++j < length) {
+      while (++j < length) {
         key = path[j]
 
-        if(j < length - 1) {
+        if (j < length - 1) {
           current = current[key]
         }
       }
@@ -338,6 +338,12 @@ export default (key) => {
     return build(strs, vars)
   }
 }
+
+export default new Proxy({}, {
+  get(_, tag) {
+    return makeTag(tag)
+  }
+})
 
 export const safe = (html) => {
   return {html}
