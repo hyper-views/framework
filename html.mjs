@@ -2,6 +2,32 @@ const isNameChar = (char) => char && 'abcdefghijklmnopqrstuvwxyz0123456789-:'.in
 const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
 const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
 
+const clone = (obj) => {
+  if (obj == null) {
+    return obj
+  }
+
+  if (typeof obj !== 'object') {
+    return obj
+  }
+
+  let result
+
+  if (Array.isArray(obj)) {
+    result = []
+
+    return obj.map(clone)
+  }
+
+  result = {}
+
+  for (const key of Object.keys(obj)) {
+    result[key] = clone(obj[key])
+  }
+
+  return result
+}
+
 const tokenize = (str, inTag = false) => {
   const acc = []
   let i = 0
@@ -211,28 +237,28 @@ const cache = {}
 
 export default (key) => {
   const saturate = (vars) => {
-    const copy = JSON.parse(cache[key])
+    const copy = clone(cache[key])
     let i = -1
 
     while (++i < vars.length) {
       const variable = vars[i]
       const path = copy.paths[i]
-      let assign = path.length - 1 >= 0 && path[path.length - 1] === 'attributes'
-      let set = path.length - 2 >= 0 && path[path.length - 2] === 'attributes'
+      const length = path.length
       let current = copy.children
       let key
+      let j = -1
 
-      while(path.length) {
-        key = path.shift()
+      while(++j < length) {
+        key = path[j]
 
-        if(path.length) {
+        if(j < length - 1) {
           current = current[key]
         }
       }
 
-      if (set) {
+      if (length >= 2 && path[length - 2] === 'attributes') {
         current[key] = variable
-      } else if (assign) {
+      } else if (length >= 1 && path[length - 1] === 'attributes') {
         for (const attr of Object.keys(variable)) {
           current[key][attr] = variable[attr]
         }
@@ -295,10 +321,10 @@ export default (key) => {
       throw Error('one root element expected')
     }
 
-    cache[key] = JSON.stringify({
+    cache[key] = {
       children,
       paths
-    })
+    }
 
     return saturate(vars)
   }
