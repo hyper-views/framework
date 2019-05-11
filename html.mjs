@@ -142,13 +142,13 @@ const tokenize = (str, inTag = false) => {
             value
           })
         } else if (next()) {
-          while (next() && !isSpaceChar(next())) {
+          while (next() && !isSpaceChar(next()) && next() !== '>') {
             i++
 
             value += current()
           }
 
-          i++
+          if (next() !== '>') i++
 
           acc.push({
             type: 'value',

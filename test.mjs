@@ -68,11 +68,11 @@ test('html.mjs - producing virtual dom', (t) => {
 
   const {div} = html
 
-  t.deepEquals(div({class: 'test'}, 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
+  t.deepEquals(div`<div class=${'a'}>${1}</div>`, {tag: 'div', attributes: {class: 'a'}, children: [1]})
 
-  t.deepEquals(div({class: 'test'}, 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
+  t.deepEquals(div`<div class=${'b'}>${2}</div>`, {tag: 'div', attributes: {class: 'b'}, children: [2]})
 
-  t.deepEquals(div({class: 'test'}, 123), {tag: 'div', attributes: {class: 'test'}, children: [123]})
+  t.deepEquals(div`<div class=${'c'}>${3}</div>`, {tag: 'div', attributes: {class: 'c'}, children: [3]})
 })
 
 test('update.mjs - patching the dom', async (t) => {

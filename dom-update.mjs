@@ -186,7 +186,7 @@ export default (target) => {
 
     removeUnusedAttributes(target, previous.attributes)
 
-    next.children = next.children.flat()
+    next.children = next.children.flat().filter((child) => child != null)
 
     morphChildren(target, next.children, previous.children, namespaces)
 
