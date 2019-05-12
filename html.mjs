@@ -2,33 +2,6 @@ const isNameChar = (char) => char && 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
 const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
 
-const clone = (obj, variables, prefix = '') => {
-  const isObject = obj != null && typeof obj === 'object'
-
-  if (isObject && Array.isArray(obj)) {
-    return obj.map((item, i) => clone(item, variables, `${prefix}.${i}`))
-  }
-
-  const variable = variables.find((variable) => variable.path === prefix)
-  let result = {}
-
-  if (variable != null) {
-    if (!isObject) {
-      return variable.value
-    } else {
-      result = variable.value
-    }
-  } else if (!isObject) {
-    return obj
-  }
-
-  for (const key of Object.keys(obj)) {
-    result[key] = clone(obj[key], variables, `${prefix}.${key}`)
-  }
-
-  return result
-}
-
 const tokenize = (str, inTag = false) => {
   const acc = []
   let i = 0
@@ -238,15 +211,31 @@ const parse = (tokens, child, path, emit) => {
 
 const cache = {}
 
-const saturate = (key, vars) => {
-  const variables = cache[key].paths.map((path, i) => {
-    return {
-      path,
-      value: vars[i]
-    }
-  })
+const saturate = (obj, variables, prefix = '') => {
+  const isObject = obj != null && typeof obj === 'object'
 
-  return clone(cache[key].root, variables)
+  if (isObject && Array.isArray(obj)) {
+    return obj.map((item, i) => saturate(item, variables, `${prefix}.${i}`))
+  }
+
+  const variable = variables.find((variable) => variable.path === prefix)
+  let result = {}
+
+  if (variable != null) {
+    if (!isObject) {
+      return variable.value
+    } else {
+      result = variable.value
+    }
+  } else if (!isObject) {
+    return obj
+  }
+
+  for (const key of Object.keys(obj)) {
+    result[key] = saturate(obj[key], variables, `${prefix}.${key}`)
+  }
+
+  return result
 }
 
 const build = (key, strs, vars) => {
@@ -303,22 +292,27 @@ const build = (key, strs, vars) => {
 
   const root = children[0]
 
-  cache[key] = {
+  return {
     root,
     paths
   }
-
-  return saturate(key, vars)
 }
 
 export default new Proxy({}, {
   get(_, key) {
     return (strs, ...vars) => {
-      if (cache[key]) {
-        return saturate(key, vars)
+      if (!cache[key]) {
+        cache[key] = build(key, strs, vars)
       }
 
-      return build(key, strs, vars)
+      const variables = cache[key].paths.map((path, i) => {
+        return {
+          path,
+          value: vars[i]
+        }
+      })
+
+      return saturate(cache[key].root, variables)
     }
   }
 })
