@@ -237,14 +237,15 @@ const cache = {}
 
 const makeTag = (key) => {
   const saturate = (vars) => {
-    const copy = clone(cache[key])
+    const root = clone(cache[key].root)
+    const paths = cache[key].paths
     let i = -1
 
     while (++i < vars.length) {
       const variable = vars[i]
-      const path = copy.paths[i]
+      const path = paths[i]
       const length = path.length
-      let current = copy.children
+      let current = root
       let key
       let j = -1
 
@@ -267,7 +268,7 @@ const makeTag = (key) => {
       }
     }
 
-    return copy.children[0]
+    return root
   }
 
   const build = (strs, vars) => {
@@ -312,7 +313,7 @@ const makeTag = (key) => {
           children: []
         }
 
-        children.push(parse(tokens, child, [children.length], emit))
+        children.push(parse(tokens, child, [], emit))
       } else if (token.type === 'text') {
         children.push(token.value)
       }
@@ -322,8 +323,10 @@ const makeTag = (key) => {
       throw Error('one root element expected')
     }
 
+    const root = children[0]
+
     cache[key] = {
-      children,
+      root,
       paths
     }
 
