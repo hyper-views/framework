@@ -8,7 +8,7 @@ export default ({state}) => main`<main>
     ? safe('<div>some</div><div>raw</div><div>html</div>')
     : null}
   ${Boolean(state.hasP)
-    ? p`<p ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
+    ? p`<p a='b' ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
         ${state.pText}
       </p>`
     : null}

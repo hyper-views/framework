@@ -1,4 +1,6 @@
-export default (target) => {
+/* global window */
+
+export default (target, requestAnimationFrame = window.requestAnimationFrame) => {
   const document = target.ownerDocument
 
   const fromHTML = (html) => {
@@ -148,8 +150,8 @@ export default (target) => {
   }
 
   return (current) => {
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       morph(target, current)
-    }, 0)
+    })
   }
 }

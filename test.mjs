@@ -82,7 +82,9 @@ test('update.mjs - patching the dom', async (t) => {
 
   const dom = new jsdom.JSDOM(html)
 
-  const update = domUpdate(dom.window.document.querySelector('main'))
+  const update = domUpdate(dom.window.document.querySelector('main'), (cb) => {
+    setTimeout(cb, 0)
+  })
 
   update(component({state: {heading: 'Test 1'}, dispatch: noop}))
 
@@ -107,7 +109,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result2 = dom.serialize()
 
-  t.equals(result2.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><div>some</div><div>raw</div><div>html</div><p class="red" data-red="yes">lorem ipsum dolor ....</p></main></body></html>')
+  t.equals(result2.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><div>some</div><div>raw</div><div>html</div><p class="red" data-red="yes" a="b">lorem ipsum dolor ....</p></main></body></html>')
 
   update(component({
     state: {
@@ -123,7 +125,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result3 = dom.serialize()
 
-  t.equals(result3.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 3</h1><p class="blue" data-blue="yes">lorem ipsum dolor ....</p></main></body></html>')
+  t.equals(result3.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 3</h1><p class="blue" data-blue="yes" a="b">lorem ipsum dolor ....</p></main></body></html>')
 
   update(component({
     state: {

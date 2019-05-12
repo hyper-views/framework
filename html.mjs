@@ -2,27 +2,35 @@ const isNameChar = (char) => char && 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
 const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
 
-const clone = (obj) => {
-  if (obj == null) {
-    return obj
+const clone = (obj, variables, prefix = '') => {
+  const variable = variables.find((variable) => variable.path === prefix)
+
+  if (variable != null) {
+    if (obj != null && typeof obj === 'object') {
+      const result = variable.value
+
+      for (const key of Object.keys(obj)) {
+        result[key] = clone(obj[key], variables, `${prefix}.${key}`)
+      }
+
+      return result
+    }
+
+    return variable.value
   }
 
-  if (typeof obj !== 'object') {
+  if (obj == null || typeof obj !== 'object') {
     return obj
   }
-
-  let result
 
   if (Array.isArray(obj)) {
-    result = []
-
-    return obj.map(clone)
+    return obj.map((item, i) => clone(item, variables, `${prefix}.${i}`))
   }
 
-  result = {}
+  const result = {}
 
   for (const key of Object.keys(obj)) {
-    result[key] = clone(obj[key])
+    result[key] = clone(obj[key], variables, `${prefix}.${key}`)
   }
 
   return result
@@ -199,6 +207,8 @@ const parse = (tokens, child, path, emit) => {
       } else if (tokens[0] && tokens[0].type === 'variable') {
         emit([...path, 'attributes', token.value])
 
+        child.attributes[token.value] = null
+
         tokens.shift()
       } else {
         child.attributes[token.value] = true
@@ -235,111 +245,85 @@ const parse = (tokens, child, path, emit) => {
 
 const cache = {}
 
-const makeTag = (key) => {
-  const saturate = (vars) => {
-    const root = clone(cache[key].root)
-    const paths = cache[key].paths
-    let i = -1
-
-    while (++i < vars.length) {
-      const variable = vars[i]
-      const path = paths[i]
-      const length = path.length
-      let current = root
-      let key
-      let j = -1
-
-      while (++j < length) {
-        key = path[j]
-
-        if (j < length - 1) {
-          current = current[key]
-        }
-      }
-
-      if (length >= 2 && path[length - 2] === 'attributes') {
-        current[key] = variable
-      } else if (length >= 1 && path[length - 1] === 'attributes') {
-        for (const attr of Object.keys(variable)) {
-          current[key][attr] = variable[attr]
-        }
-      } else {
-        current.splice(key, 1, variable)
-      }
+const saturate = (key, vars) => {
+  const variables = cache[key].paths.map((path, i) => {
+    return {
+      path,
+      value: vars[i]
     }
+  })
 
-    return root
+  return clone(cache[key].root, variables)
+}
+
+const build = (key, strs, vars) => {
+  const paths = []
+
+  const emit = (path) => {
+    paths.push(path.join('.'))
   }
 
-  const build = (strs, vars) => {
-    const paths = []
+  const tokens = strs.reduce((acc, str, i) => {
+    let inTag = false
 
-    const emit = (path) => {
-      paths.push(path)
-    }
+    if (acc.length - 2 > -1 && acc[acc.length - 1].type !== 'end') {
+      const prev = acc[acc.length - 2]
 
-    const tokens = strs.reduce((acc, str, i) => {
-      let inTag = false
-
-      if (acc.length - 2 > -1 && acc[acc.length - 1].type !== 'end') {
-        const prev = acc[acc.length - 2]
-
-        if (['tag', 'key', 'value'].includes(prev.type)) {
-          const filtered = acc.filter((val) => val.type === 'tag')
-          inTag = filtered[filtered.length - 1].value
-        }
-      }
-
-      acc.push(...tokenize(str, inTag))
-
-      if (i < vars.length) {
-        acc.push({
-          type: 'variable'
-        })
-      }
-
-      return acc
-    }, [])
-
-    const children = []
-
-    while (tokens.length) {
-      const token = tokens.shift()
-
-      if (token.type === 'tag') {
-        const child = {
-          tag: token.value,
-          attributes: {},
-          children: []
-        }
-
-        children.push(parse(tokens, child, [], emit))
-      } else if (token.type === 'text') {
-        children.push(token.value)
+      if (['tag', 'key', 'value'].includes(prev.type)) {
+        const filtered = acc.filter((val) => val.type === 'tag')
+        inTag = filtered[filtered.length - 1].value
       }
     }
 
-    if (children.length !== 1) {
-      throw Error('one root element expected')
+    acc.push(...tokenize(str, inTag))
+
+    if (i < vars.length) {
+      acc.push({
+        type: 'variable'
+      })
     }
 
-    const root = children[0]
+    return acc
+  }, [])
 
-    cache[key] = {
-      root,
-      paths
+  const children = []
+
+  while (tokens.length) {
+    const token = tokens.shift()
+
+    if (token.type === 'tag') {
+      const child = {
+        tag: token.value,
+        attributes: {},
+        children: []
+      }
+
+      children.push(parse(tokens, child, [''], emit))
+    } else if (token.type === 'text') {
+      children.push(token.value)
     }
-
-    return saturate(vars)
   }
 
-  return (strs, ...vars) => {
-    if (cache[key]) {
-      return saturate(vars)
-    }
-
-    return build(strs, vars)
+  if (children.length !== 1) {
+    throw Error('one root element expected')
   }
+
+  const root = children[0]
+
+  cache[key] = {
+    root,
+    paths
+  }
+
+  return saturate(key, vars)
+}
+
+const makeTag = (key) => (strs, ...vars) => {
+  if (cache[key]) {
+    return saturate(key, vars)
+  }
+
+  return build(key, strs, vars)
 }
 
 export default new Proxy({}, {
