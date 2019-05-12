@@ -3,31 +3,24 @@ const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
 const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
 
 const clone = (obj, variables, prefix = '') => {
-  const variable = variables.find((variable) => variable.path === prefix)
+  const isObject = obj != null && typeof obj === 'object'
 
-  if (variable != null) {
-    if (obj != null && typeof obj === 'object') {
-      const result = variable.value
-
-      for (const key of Object.keys(obj)) {
-        result[key] = clone(obj[key], variables, `${prefix}.${key}`)
-      }
-
-      return result
-    }
-
-    return variable.value
-  }
-
-  if (obj == null || typeof obj !== 'object') {
-    return obj
-  }
-
-  if (Array.isArray(obj)) {
+  if (isObject && Array.isArray(obj)) {
     return obj.map((item, i) => clone(item, variables, `${prefix}.${i}`))
   }
 
-  const result = {}
+  const variable = variables.find((variable) => variable.path === prefix)
+  let result = {}
+
+  if (variable != null) {
+    if (!isObject) {
+      return variable.value
+    } else {
+      result = variable.value
+    }
+  } else if (!isObject) {
+    return obj
+  }
 
   for (const key of Object.keys(obj)) {
     result[key] = clone(obj[key], variables, `${prefix}.${key}`)
@@ -318,17 +311,15 @@ const build = (key, strs, vars) => {
   return saturate(key, vars)
 }
 
-const makeTag = (key) => (strs, ...vars) => {
-  if (cache[key]) {
-    return saturate(key, vars)
-  }
-
-  return build(key, strs, vars)
-}
-
 export default new Proxy({}, {
-  get(_, tag) {
-    return makeTag(tag)
+  get(_, key) {
+    return (strs, ...vars) => {
+      if (cache[key]) {
+        return saturate(key, vars)
+      }
+
+      return build(key, strs, vars)
+    }
   }
 })
 
