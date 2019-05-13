@@ -120,7 +120,9 @@ export default (target, requestAnimationFrame = window.requestAnimationFrame) =>
           target.replaceChild(el, childNode)
         }
       } else if (isText) {
-        childNode.nodeValue = nextChild
+        if (childNode.nodeValue !== nextChild) {
+          childNode.nodeValue = nextChild
+        }
       } else {
         morph(childNode, nextChild, namespaces)
       }
