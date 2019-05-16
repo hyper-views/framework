@@ -145,7 +145,11 @@ export default (target) => {
 
       if (Array.isArray(child)) {
         while(child.length) {
-          nextChildren.push(child.shift())
+          const c = child.shift()
+
+          if (c == null) continue
+
+          nextChildren.push(c)
         }
 
         continue
