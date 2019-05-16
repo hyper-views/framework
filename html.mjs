@@ -211,14 +211,33 @@ const parse = (tokens, child, path, emit) => {
 
 const cache = {}
 
-const saturate = (obj, variables, prefix = '') => {
+const update = (obj, variables, path = '') => {
   const isObject = obj != null && typeof obj === 'object'
 
   if (isObject && Array.isArray(obj)) {
-    return obj.map((item, i) => saturate(item, variables, `${prefix}.${i}`))
+    const arr = []
+
+    for (let i = 0; i < obj.length; i++) {
+      arr.push(update(obj[i], variables, `${path}.${i}`))
+    }
+
+    return arr
   }
 
-  const variable = variables.find((variable) => variable.path === prefix)
+  let variable
+
+  for (let variableIndex = 0; variableIndex < variables.length; variableIndex++) {
+    if (variables[variableIndex].path === path) {
+      variable = variables[variableIndex]
+
+      variables[variableIndex] = variables[variables.length - 1]
+
+      variables.pop()
+
+      break
+    }
+  }
+
   let result = {}
 
   if (variable != null) {
@@ -231,14 +250,14 @@ const saturate = (obj, variables, prefix = '') => {
     return obj
   }
 
-  for (const key of Object.keys(obj)) {
-    result[key] = saturate(obj[key], variables, `${prefix}.${key}`)
+  for (const key in obj) {
+    result[key] = update(obj[key], variables, `${path}.${key}`)
   }
 
   return result
 }
 
-const build = (key, strs, vars) => {
+const create = (strs, vars) => {
   const paths = []
 
   const emit = (path) => {
@@ -302,7 +321,7 @@ export default new Proxy({}, {
   get(_, key) {
     return (strs, ...vars) => {
       if (!cache[key]) {
-        cache[key] = build(key, strs, vars)
+        cache[key] = create(strs, vars)
       }
 
       const variables = cache[key].paths.map((path, i) => {
@@ -312,7 +331,7 @@ export default new Proxy({}, {
         }
       })
 
-      return saturate(cache[key].root, variables)
+      return update(cache[key].root, variables)
     }
   }
 })

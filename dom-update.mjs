@@ -1,6 +1,6 @@
 /* global window */
 
-export default (target, requestAnimationFrame = window.requestAnimationFrame) => {
+export default (target) => {
   const document = target.ownerDocument
 
   const fromHTML = (html) => {
@@ -12,13 +12,7 @@ export default (target, requestAnimationFrame = window.requestAnimationFrame) =>
   }
 
   const morphAttributes = (target, nextAttributes, namespaces) => {
-    const nextKeys = Object.keys(nextAttributes)
-
-    let nextAttributeIndex = -1
-
-    while (++nextAttributeIndex < nextKeys.length) {
-      const key = nextKeys[nextAttributeIndex]
-
+    for (const key in nextAttributes) {
       let attributeNS
 
       const colonIndex = key.indexOf(':')
@@ -56,11 +50,9 @@ export default (target, requestAnimationFrame = window.requestAnimationFrame) =>
   }
 
   const morphChildren = (target, nextChildren, namespaces) => {
-    let nextChildIndex = -1
-
     let htmlCount = 0
 
-    while (++nextChildIndex < nextChildren.length) {
+    for (let nextChildIndex = 0; nextChildIndex < nextChildren.length; nextChildIndex++) {
       htmlCount--
 
       let nextChild = nextChildren[nextChildIndex]
@@ -136,7 +128,7 @@ export default (target, requestAnimationFrame = window.requestAnimationFrame) =>
   }
 
   const morph = (target, next, namespaces = {}) => {
-    for (const key of Object.keys(next.attributes)) {
+    for (const key in next.attributes) {
       if (key === 'xmlns' || key.startsWith('xmlns:')) {
         namespaces[key] = next.attributes[key]
       }
@@ -144,16 +136,34 @@ export default (target, requestAnimationFrame = window.requestAnimationFrame) =>
 
     morphAttributes(target, next.attributes, namespaces)
 
-    const children = next.children.flat().filter((child) => child != null)
+    const nextChildren = []
 
-    morphChildren(target, children, namespaces)
+    while (next.children.length) {
+      const child = next.children.shift()
 
-    truncateChildren(target, children.length)
+      if (child == null) continue
+
+      if (Array.isArray(child)) {
+        while(child.length) {
+          nextChildren.push(child.shift())
+        }
+
+        continue
+      }
+
+      nextChildren.push(child)
+    }
+
+    next.children = nextChildren
+
+    morphChildren(target, next.children, namespaces)
+
+    truncateChildren(target, nextChildren.length)
   }
 
   return (current) => {
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       morph(target, current)
-    })
+    }, 0)
   }
 }
