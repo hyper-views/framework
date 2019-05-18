@@ -3,10 +3,10 @@
 export default (target) => {
   const document = target.ownerDocument
 
-  const fromHTML = (html) => {
+  const fromHTML = (raw) => {
     const div = document.createElement('div')
 
-    div.innerHTML = html
+    div.innerHTML = raw
 
     return div.childNodes
   }
@@ -49,76 +49,105 @@ export default (target) => {
     }
   }
 
-  const morphChildren = (target, nextChildren, namespaces) => {
+  const morphChildren = (target, nextChildren, variables, namespaces) => {
     let htmlCount = 0
+
+    let nextChildrenLength = 0
 
     for (let nextChildIndex = 0; nextChildIndex < nextChildren.length; nextChildIndex++) {
       htmlCount--
 
-      let nextChild = nextChildren[nextChildIndex]
+      let subChildren = nextChildren[nextChildIndex]
 
-      if (nextChild.html != null) {
-        const html = fromHTML(nextChild.html)
+      if (subChildren == null) continue
 
-        nextChildren.splice(nextChildIndex, 1, ...html)
-
-        htmlCount = html.length
-
-        nextChild = nextChildren[nextChildIndex]
+      if (typeof subChildren === 'function') {
+        subChildren = subChildren(variables)
       }
 
-      const childNode = target.childNodes[nextChildIndex]
-
-      const isHTML = htmlCount > 0
-
-      if (isHTML && childNode && childNode.isEqualNode(nextChild)) {
-        continue
+      if (!Array.isArray(subChildren)) {
+        subChildren = [subChildren]
       }
 
-      const isText = typeof nextChild !== 'object'
+      let subIndex = -1
 
-      let append = false
+      while (++subIndex < subChildren.length) {
+        let nextChild = subChildren[subIndex]
 
-      let replace = false
+        if (nextChild == null) continue
 
-      if (childNode == null) {
-        append = true
-      } else if (isHTML || (isText && childNode.nodeType !== 3) || (!isText && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tag))) {
-        replace = true
-      }
+        const isText = typeof nextChild !== 'object'
 
-      if (append || replace) {
-        let el
+        if (nextChild.raw != null) {
+          const html = fromHTML(nextChild.raw)
 
-        if (isText) {
-          el = document.createTextNode(nextChild)
-        } else if (isHTML) {
-          el = nextChild
-        } else {
-          const namespace = nextChild.attributes.xmlns || namespaces.xmlns
+          subChildren.splice(subIndex, 1, ...html)
 
-          if (namespace != null) {
-            el = document.createElementNS(namespace, nextChild.tag)
+          htmlCount = html.length
+
+          nextChild = subChildren[subIndex]
+        } else if (!isText && nextChild.tree == null) {
+          nextChild = {
+            tree: nextChild,
+            variables
+          }
+        }
+
+        const childNode = target.childNodes[nextChildrenLength]
+
+        nextChildrenLength++
+
+        const isHTML = htmlCount > 0
+
+        if (isHTML && childNode && childNode.isEqualNode(nextChild)) {
+          continue
+        }
+
+        let append = false
+
+        let replace = false
+
+        if (childNode == null) {
+          append = true
+        } else if (isHTML || (isText && childNode.nodeType !== 3) || (!isText && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tree.tag))) {
+          replace = true
+        }
+
+        if (append || replace) {
+          let el
+
+          if (isText) {
+            el = document.createTextNode(nextChild)
+          } else if (isHTML) {
+            el = nextChild
           } else {
-            el = document.createElement(nextChild.tag)
+            const namespace = nextChild.tree.attributes.xmlns || namespaces.xmlns
+
+            if (namespace != null) {
+              el = document.createElementNS(namespace, nextChild.tree.tag)
+            } else {
+              el = document.createElement(nextChild.tree.tag)
+            }
+
+            morph(el, nextChild, namespaces)
           }
 
-          morph(el, nextChild, namespaces)
-        }
-
-        if (append) {
-          target.appendChild(el)
+          if (append) {
+            target.appendChild(el)
+          } else {
+            target.replaceChild(el, childNode)
+          }
+        } else if (isText) {
+          if (childNode.nodeValue !== nextChild) {
+            childNode.nodeValue = nextChild
+          }
         } else {
-          target.replaceChild(el, childNode)
+          morph(childNode, nextChild, namespaces)
         }
-      } else if (isText) {
-        if (childNode.nodeValue !== nextChild) {
-          childNode.nodeValue = nextChild
-        }
-      } else {
-        morph(childNode, nextChild, namespaces)
       }
     }
+
+    return nextChildrenLength
   }
 
   const truncateChildren = (target, length) => {
@@ -128,41 +157,37 @@ export default (target) => {
   }
 
   const morph = (target, next, namespaces = {}) => {
-    for (const key in next.attributes) {
-      if (key === 'xmlns' || key.startsWith('xmlns:')) {
-        namespaces[key] = next.attributes[key]
+    const attributes = {}
+
+    const {tree, variables} = next
+
+    for (const key in tree.attributes) {
+      let value = tree.attributes[key]
+
+      if (typeof value === 'function') {
+        value = value(variables)
       }
-    }
 
-    morphAttributes(target, next.attributes, namespaces)
+      if (key === 'xmlns' || key.startsWith('xmlns:')) {
+        namespaces[key] = value
+      }
 
-    const nextChildren = []
-
-    while (next.children.length) {
-      const child = next.children.shift()
-
-      if (child == null) continue
-
-      if (Array.isArray(child)) {
-        while(child.length) {
-          const c = child.shift()
-
-          if (c == null) continue
-
-          nextChildren.push(c)
+      if (key === '_') {
+        for (const k in value) {
+          attributes[k] = value[k]
         }
 
         continue
       }
 
-      nextChildren.push(child)
+      attributes[key] = value
     }
 
-    next.children = nextChildren
+    morphAttributes(target, attributes, namespaces)
 
-    morphChildren(target, next.children, namespaces)
+    const nextChildrenLength = morphChildren(target, next.tree.children, variables, namespaces)
 
-    truncateChildren(target, nextChildren.length)
+    truncateChildren(target, nextChildrenLength)
   }
 
   return (current) => {

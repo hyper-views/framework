@@ -161,7 +161,7 @@ const tokenize = (str, inTag = false) => {
   return acc
 }
 
-const parse = (tokens, child, path, emit) => {
+const parse = (tokens, child) => {
   while (tokens.length) {
     const token = tokens.shift()
 
@@ -171,16 +171,12 @@ const parse = (tokens, child, path, emit) => {
       if (tokens[0] && tokens[0].type === 'value') {
         child.attributes[token.value] = tokens.shift().value
       } else if (tokens[0] && tokens[0].type === 'variable') {
-        emit([...path, 'attributes', token.value])
-
-        child.attributes[token.value] = null
-
-        tokens.shift()
+        child.attributes[token.value] = tokens.shift().value
       } else {
         child.attributes[token.value] = true
       }
     } else if (token.type === 'variable') {
-      emit([...path, 'attributes'])
+      child.attributes['_'] = token.value
     }
   }
 
@@ -196,13 +192,11 @@ const parse = (tokens, child, path, emit) => {
         children: []
       }
 
-      child.children.push(parse(tokens, grand, [...path, 'children', child.children.length], emit))
+      child.children.push(parse(tokens, grand))
     } else if (token.type === 'text') {
       child.children.push(token.value)
     } else if (token.type === 'variable') {
-      emit([...path, 'children', child.children.length])
-
-      child.children.push(null)
+      child.children.push(token.value)
     }
   }
 
@@ -211,60 +205,8 @@ const parse = (tokens, child, path, emit) => {
 
 const cache = {}
 
-const update = (obj, variables, path = '') => {
-  const isObject = obj != null && typeof obj === 'object'
-
-  if (isObject && Array.isArray(obj)) {
-    const arr = []
-
-    for (let i = 0; i < obj.length; i++) {
-      arr.push(update(obj[i], variables, `${path}.${i}`))
-    }
-
-    return arr
-  }
-
-  let variable
-
-  for (let variableIndex = 0; variableIndex < variables.length; variableIndex++) {
-    if (variables[variableIndex].path === path) {
-      variable = variables[variableIndex]
-
-      variables[variableIndex] = variables[variables.length - 1]
-
-      variables.pop()
-
-      break
-    }
-  }
-
-  let result = {}
-
-  if (variable != null) {
-    if (!isObject) {
-      return variable.value
-    } else {
-      result = variable.value
-    }
-  } else if (!isObject) {
-    return obj
-  }
-
-  for (const key in obj) {
-    result[key] = update(obj[key], variables, `${path}.${key}`)
-  }
-
-  return result
-}
-
-const create = (strs, vars) => {
-  const paths = []
-
-  const emit = (path) => {
-    paths.push(path.join('.'))
-  }
-
-  const tokens = strs.reduce((acc, str, i) => {
+const create = (strs, vlength) => {
+  const tokens = strs.reduce((acc, str, index) => {
     let inTag = false
 
     if (acc.length - 2 > -1 && acc[acc.length - 1].type !== 'end') {
@@ -278,9 +220,10 @@ const create = (strs, vars) => {
 
     acc.push(...tokenize(str, inTag))
 
-    if (i < vars.length) {
+    if (index < vlength) {
       acc.push({
-        type: 'variable'
+        type: 'variable',
+        value: new Function('variables', `return variables[${index}]`)
       })
     }
 
@@ -299,7 +242,7 @@ const create = (strs, vars) => {
         children: []
       }
 
-      children.push(parse(tokens, child, [''], emit))
+      children.push(parse(tokens, child))
     } else if (token.type === 'text') {
       children.push(token.value)
     }
@@ -309,33 +252,23 @@ const create = (strs, vars) => {
     throw Error('one root element expected')
   }
 
-  const root = children[0]
-
-  return {
-    root,
-    paths
-  }
+  return children[0]
 }
 
 export default new Proxy({}, {
   get(_, key) {
-    return (strs, ...vars) => {
+    return (strs, ...variables) => {
       if (!cache[key]) {
-        cache[key] = create(strs, vars)
+        cache[key] = create(strs, variables.length)
       }
 
-      const variables = cache[key].paths.map((path, i) => {
-        return {
-          path,
-          value: vars[i]
-        }
-      })
+      const tree = cache[key]
 
-      return update(cache[key].root, variables)
+      return {tree, variables}
     }
   }
 })
 
-export const safe = (html) => {
-  return {html}
+export const safe = (raw) => {
+  return {raw}
 }
