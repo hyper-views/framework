@@ -3,7 +3,7 @@ import jsdom from 'jsdom'
 import delay from 'delay'
 import streamPromise from 'stream-to-promise'
 import {createReadStream} from 'fs'
-import main, {html, domUpdate} from '.'
+import main, {view, domUpdate} from '.'
 import component from './fixtures/component.mjs'
 
 const noop = () => {}
@@ -63,16 +63,16 @@ test('main.mjs - commit multiple', (t) => {
   })
 })
 
-test('html.mjs - producing virtual dom', (t) => {
+test('view.mjs - producing virtual dom', (t) => {
   t.plan(3)
 
-  const {div} = html
+  const {div} = view
 
-  t.deepEquals(div`<div class=${'a'}>${1}</div>`, {tag: 'div', attributes: {class: 'a'}, children: [1]})
+  t.deepEquals(JSON.stringify(div`<div class=${'a'}>${1}</div>`), JSON.stringify({tree: {tag: 'div', attributes: {class: undefined}, children: [undefined]}, variables: ['a', 1]}))
 
-  t.deepEquals(div`<div class=${'b'}>${2}</div>`, {tag: 'div', attributes: {class: 'b'}, children: [2]})
+  t.deepEquals(JSON.stringify(div`<div class=${'b'}>${2}</div>`), JSON.stringify({tree: {tag: 'div', attributes: {class: undefined}, children: [undefined]}, variables: ['b', 2]}))
 
-  t.deepEquals(div`<div class=${'c'}>${3}</div>`, {tag: 'div', attributes: {class: 'c'}, children: [3]})
+  t.deepEquals(JSON.stringify(div`<div class=${'c'}>${3}</div>`), JSON.stringify({tree: {tag: 'div', attributes: {class: undefined}, children: [undefined]}, variables: ['c', 3]}))
 })
 
 test('update.mjs - patching the dom', async (t) => {
@@ -84,7 +84,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const update = domUpdate(dom.window.document.querySelector('main'))
 
-  update(component({state: {heading: 'Test 1'}, dispatch: noop}))
+  update(component({state: {heading: 'Test 1'}}))
 
   await delay(0)
 
@@ -99,15 +99,14 @@ test('update.mjs - patching the dom', async (t) => {
       hasP: true,
       isRed: true,
       pText: 'lorem ipsum dolor ....'
-    },
-    dispatch: noop
+    }
   }))
 
   await delay(0)
 
   const result2 = dom.serialize()
 
-  t.equals(result2.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><div>some</div><div>raw</div><div>html</div><p class="red" data-red="yes" a="b">lorem ipsum dolor ....</p></main></body></html>')
+  t.equals(result2.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><div>some</div><div>raw</div><div>html</div><p a="b" class="red" data-red="yes">lorem ipsum dolor ....</p></main></body></html>')
 
   update(component({
     state: {
@@ -115,23 +114,21 @@ test('update.mjs - patching the dom', async (t) => {
       hasP: true,
       isRed: false,
       pText: 'lorem ipsum dolor ....'
-    },
-    dispatch: noop
+    }
   }))
 
   await delay(0)
 
   const result3 = dom.serialize()
 
-  t.equals(result3.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 3</h1><p class="blue" data-blue="yes" a="b">lorem ipsum dolor ....</p></main></body></html>')
+  t.equals(result3.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 3</h1><p a="b" class="blue" data-blue="yes">lorem ipsum dolor ....</p></main></body></html>')
 
   update(component({
     state: {
       heading: 'Test 4',
       hasForm: true,
       formStep: 1
-    },
-    dispatch: noop
+    }
   }))
 
   await delay(0)
@@ -145,8 +142,7 @@ test('update.mjs - patching the dom', async (t) => {
       heading: 'Test 5',
       hasForm: true,
       formStep: 2
-    },
-    dispatch: noop
+    }
   }))
 
   await delay(0)
@@ -159,13 +155,12 @@ test('update.mjs - patching the dom', async (t) => {
     state: {
       heading: 'Test 6',
       hasSvg: true
-    },
-    dispatch: noop
+    }
   }))
 
   await delay(0)
 
   const result6 = dom.serialize()
 
-  t.equals(result6.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 6</h1><svg xmlns="http://www.w3.org/2000/svg"><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main></body></html>')
+  t.equals(result6.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 6</h1><svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main></body></html>')
 })

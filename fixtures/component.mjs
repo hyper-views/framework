@@ -1,6 +1,6 @@
-import {html, safe} from '..'
+import {view, safe} from '..'
 
-const {main, p, svg, step1, step2, option} = html
+const {main, paragraph, svg, step1, step2, option} = view
 
 export default ({state}) => main`<main>
   <h1>${state.heading}</h1>
@@ -8,7 +8,7 @@ export default ({state}) => main`<main>
     ? safe('<div>some</div><div>raw</div><div>html</div>')
     : null}
   ${Boolean(state.hasP)
-    ? p`<p a='b' ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
+    ? paragraph`<p a='b' ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
         ${state.pText}
       </p>`
     : null}
@@ -30,8 +30,7 @@ export default ({state}) => main`<main>
       </form>`
     : null}
   ${Boolean(state.hasSvg)
-    ? svg`<svg
-        xmlns="http://www.w3.org/2000/svg">
+    ? svg`<svg>
         <path d="M2 2 2 34 34 34 34 2 z" />
       </svg>`
     : null

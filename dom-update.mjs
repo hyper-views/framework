@@ -1,195 +1,167 @@
 /* global window */
 
-export default (target) => {
+const svgNamespace = 'http://www.w3.org/2000/svg'
+
+const xlinkNamespace = 'http://www.w3.org/1999/xlink'
+
+const fromHTML = (raw, document) => {
+  const div = document.createElement('div')
+
+  div.innerHTML = raw
+
+  return div.childNodes
+}
+
+const morphAttributes = (target, attributes, variables) => {
+  for (const key in attributes) {
+    let value = attributes[key]
+
+    if (typeof value === 'function') {
+      value = value(variables)
+    }
+
+    if (key === '*') {
+      morphAttributes(target, value, variables)
+
+      continue
+    }
+
+    const isBoolean = typeof value === 'boolean'
+
+    const isEvent = key.substring(0, 2) === 'on'
+
+    if (isBoolean || isEvent || key === 'value') {
+      target[key] = value
+    }
+
+    if (!isEvent) {
+      if (value == null || value === false) {
+        target.removeAttribute(key)
+      } else {
+        const namespace = key.substring(0, 6) === 'xlink:' ? xlinkNamespace : null
+
+        target.setAttributeNS(namespace, key, isBoolean ? '' : value)
+      }
+    }
+  }
+}
+
+const morphChildren = (target, children, variables) => {
   const document = target.ownerDocument
 
-  const fromHTML = (raw) => {
-    const div = document.createElement('div')
+  let childrenLength = 0
 
-    div.innerHTML = raw
+  for (let childIndex = 0; childIndex < children.length; childIndex++) {
+    let subChildren = children[childIndex]
 
-    return div.childNodes
-  }
+    if (subChildren == null) continue
 
-  const morphAttributes = (target, nextAttributes, namespaces) => {
-    for (const key in nextAttributes) {
-      let attributeNS
-
-      const colonIndex = key.indexOf(':')
-
-      if (colonIndex > -1) {
-        const prefix = key.substring(0, colonIndex)
-
-        const nsKey = `xmlns:${prefix}`
-
-        if (namespaces[nsKey]) {
-          attributeNS = namespaces[nsKey]
-        }
-      }
-
-      const val = nextAttributes[key]
-
-      const isBoolean = typeof val === 'boolean'
-
-      const isEvent = key.startsWith('on')
-
-      if (isBoolean || isEvent || key === 'value') {
-        target[key] = val
-      }
-
-      if (!isEvent) {
-        if (val == null || val === false) {
-          target.removeAttribute(key)
-        } else if (attributeNS != null) {
-          target.setAttributeNS(attributeNS, key, isBoolean ? '' : val)
-        } else {
-          target.setAttribute(key, isBoolean ? '' : val)
-        }
-      }
+    if (typeof subChildren === 'function') {
+      subChildren = subChildren(variables)
     }
-  }
 
-  const morphChildren = (target, nextChildren, variables, namespaces) => {
+    if (!Array.isArray(subChildren)) {
+      subChildren = [subChildren]
+    }
+
+    let subIndex = -1
     let htmlCount = 0
 
-    let nextChildrenLength = 0
-
-    for (let nextChildIndex = 0; nextChildIndex < nextChildren.length; nextChildIndex++) {
+    while (++subIndex < subChildren.length) {
       htmlCount--
 
-      let subChildren = nextChildren[nextChildIndex]
+      let child = subChildren[subIndex]
 
-      if (subChildren == null) continue
+      if (child == null) continue
 
-      if (typeof subChildren === 'function') {
-        subChildren = subChildren(variables)
-      }
+      const isText = typeof child !== 'object'
+      let isHTML = htmlCount > 0
 
-      if (!Array.isArray(subChildren)) {
-        subChildren = [subChildren]
-      }
+      if (child.raw != null) {
+        const html = fromHTML(child.raw, document)
 
-      let subIndex = -1
+        subChildren.splice(subIndex, 1, ...html)
 
-      while (++subIndex < subChildren.length) {
-        let nextChild = subChildren[subIndex]
+        htmlCount = html.length
 
-        if (nextChild == null) continue
+        child = subChildren[subIndex]
 
-        const isText = typeof nextChild !== 'object'
-
-        if (nextChild.raw != null) {
-          const html = fromHTML(nextChild.raw)
-
-          subChildren.splice(subIndex, 1, ...html)
-
-          htmlCount = html.length
-
-          nextChild = subChildren[subIndex]
-        } else if (!isText && nextChild.tree == null) {
-          nextChild = {
-            tree: nextChild,
-            variables
-          }
-        }
-
-        const childNode = target.childNodes[nextChildrenLength]
-
-        nextChildrenLength++
-
-        const isHTML = htmlCount > 0
-
-        if (isHTML && childNode && childNode.isEqualNode(nextChild)) {
-          continue
-        }
-
-        let append = false
-
-        let replace = false
-
-        if (childNode == null) {
-          append = true
-        } else if (isHTML || (isText && childNode.nodeType !== 3) || (!isText && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== nextChild.tree.tag))) {
-          replace = true
-        }
-
-        if (append || replace) {
-          let el
-
-          if (isText) {
-            el = document.createTextNode(nextChild)
-          } else if (isHTML) {
-            el = nextChild
-          } else {
-            const namespace = nextChild.tree.attributes.xmlns || namespaces.xmlns
-
-            if (namespace != null) {
-              el = document.createElementNS(namespace, nextChild.tree.tag)
-            } else {
-              el = document.createElement(nextChild.tree.tag)
-            }
-
-            morph(el, nextChild, namespaces)
-          }
-
-          if (append) {
-            target.appendChild(el)
-          } else {
-            target.replaceChild(el, childNode)
-          }
-        } else if (isText) {
-          if (childNode.nodeValue !== nextChild) {
-            childNode.nodeValue = nextChild
-          }
-        } else {
-          morph(childNode, nextChild, namespaces)
+        isHTML = true
+      } else if (!isHTML && !isText && child.tree == null) {
+        child = {
+          tree: child,
+          variables
         }
       }
-    }
 
-    return nextChildrenLength
-  }
+      const childNode = target.childNodes[childrenLength]
 
-  const truncateChildren = (target, length) => {
-    while (target.childNodes.length > length) {
-      target.removeChild(target.childNodes[length])
-    }
-  }
+      childrenLength++
 
-  const morph = (target, next, namespaces = {}) => {
-    const attributes = {}
-
-    const {tree, variables} = next
-
-    for (const key in tree.attributes) {
-      let value = tree.attributes[key]
-
-      if (typeof value === 'function') {
-        value = value(variables)
-      }
-
-      if (key === 'xmlns' || key.startsWith('xmlns:')) {
-        namespaces[key] = value
-      }
-
-      if (key === '_') {
-        for (const k in value) {
-          attributes[k] = value[k]
-        }
-
+      if (isHTML && childNode && childNode.isEqualNode(child)) {
         continue
       }
 
-      attributes[key] = value
+      let append = false
+
+      let replace = false
+
+      if (childNode == null) {
+        append = true
+      } else if (isHTML || (isText && childNode.nodeType !== 3) || (!isText && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== child.tree.tag))) {
+        replace = true
+      }
+
+      if (append || replace) {
+        let el
+
+        if (isText) {
+          el = document.createTextNode(child)
+        } else if (isHTML) {
+          el = child
+        } else {
+          const namespace = child.tree.tag === 'svg' ? svgNamespace : target.namespaceURI
+
+          el = document.createElementNS(namespace, child.tree.tag)
+
+          morph(el, child)
+        }
+
+        if (append) {
+          target.appendChild(el)
+        } else {
+          target.replaceChild(el, childNode)
+        }
+      } else if (isText) {
+        if (childNode.nodeValue !== child) {
+          childNode.nodeValue = child
+        }
+      } else {
+        morph(childNode, child)
+      }
     }
-
-    morphAttributes(target, attributes, namespaces)
-
-    const nextChildrenLength = morphChildren(target, next.tree.children, variables, namespaces)
-
-    truncateChildren(target, nextChildrenLength)
   }
 
+  return childrenLength
+}
+
+const truncateChildren = (target, length) => {
+  while (target.childNodes.length > length) {
+    target.removeChild(target.childNodes[length])
+  }
+}
+
+const morph = (target, next) => {
+  const {tree, variables} = next
+
+  morphAttributes(target, tree.attributes, variables)
+
+  const childrenLength = morphChildren(target, tree.children, variables)
+
+  truncateChildren(target, childrenLength)
+}
+
+export default (target) => {
   return (current) => {
     setTimeout(() => {
       morph(target, current)

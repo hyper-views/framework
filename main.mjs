@@ -1,6 +1,6 @@
 export {default as domUpdate} from './dom-update.mjs'
 
-export {default as html, safe} from './html.mjs'
+export {default as view, safe} from './view.mjs'
 
 export default ({state, component, update}) => {
   const commit = (produce) => {

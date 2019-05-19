@@ -2,6 +2,8 @@ const isNameChar = (char) => char && 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
 const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
 
+const getValue = (index) => (variables) => variables[index]
+
 const tokenize = (str, inTag = false) => {
   const acc = []
   let i = 0
@@ -176,7 +178,7 @@ const parse = (tokens, child) => {
         child.attributes[token.value] = true
       }
     } else if (token.type === 'variable') {
-      child.attributes['_'] = token.value
+      child.attributes['*'] = token.value
     }
   }
 
@@ -223,7 +225,7 @@ const create = (strs, vlength) => {
     if (index < vlength) {
       acc.push({
         type: 'variable',
-        value: new Function('variables', `return variables[${index}]`)
+        value: getValue(index)
       })
     }
 

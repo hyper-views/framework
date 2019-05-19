@@ -3,10 +3,10 @@
 ## An Example
 
 ``` javascript
-import framework, {html, domUpdate} from '@erickmerchant/framework'
+import framework, {view, domUpdate} from '@erickmerchant/framework'
 
 const update = domUpdate(document.querySelector('main'))
-const { app } = html
+const { app } = view
 const state = 0
 
 framework({
