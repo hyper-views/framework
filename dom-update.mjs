@@ -98,17 +98,13 @@ const morphChildren = (target, children, variables) => {
 
       childrenLength++
 
-      if (isHTML && childNode && childNode.isEqualNode(child)) {
-        continue
-      }
-
       let append = false
 
       let replace = false
 
       if (childNode == null) {
         append = true
-      } else if (isHTML || (isText && childNode.nodeType !== 3) || (!isText && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== child.tree.tag))) {
+      } else if ((isHTML && !childNode.isEqualNode(child)) || (isText && childNode.nodeType !== 3) || (!isText && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== child.tree.tag))) {
         replace = true
       }
 
@@ -133,8 +129,8 @@ const morphChildren = (target, children, variables) => {
           target.replaceChild(el, childNode)
         }
       } else if (isText) {
-        if (childNode.nodeValue !== child) {
-          childNode.nodeValue = child
+        if (childNode.data !== child) {
+          childNode.data = child
         }
       } else {
         morph(childNode, child)
