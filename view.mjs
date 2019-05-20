@@ -178,7 +178,7 @@ const parse = (tokens, child) => {
         child.attributes[token.value] = true
       }
     } else if (token.type === 'variable') {
-      child.attributes['*'] = token.value
+      child._attributes.push(token.value)
     }
   }
 
@@ -191,6 +191,7 @@ const parse = (tokens, child) => {
       const grand = {
         tag: token.value,
         attributes: {},
+        _attributes: [],
         children: []
       }
 
@@ -241,6 +242,7 @@ const create = (strs, vlength) => {
       const child = {
         tag: token.value,
         attributes: {},
+        _attributes: [],
         children: []
       }
 

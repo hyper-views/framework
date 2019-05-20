@@ -12,6 +12,26 @@ const fromHTML = (raw, document) => {
   return div.childNodes
 }
 
+const morphAttribute = (target, key, value) => {
+  const isBoolean = typeof value === 'boolean'
+
+  const isEvent = key.substring(0, 2) === 'on'
+
+  if (isBoolean || isEvent || key === 'value') {
+    target[key] = value
+  }
+
+  if (!isEvent) {
+    if (value == null || value === false) {
+      target.removeAttribute(key)
+    } else {
+      const namespace = key.substring(0, 6) === 'xlink:' ? xlinkNamespace : null
+
+      target.setAttributeNS(namespace, key, isBoolean ? '' : value)
+    }
+  }
+}
+
 const morphAttributes = (target, attributes, variables) => {
   for (const key in attributes) {
     let value = attributes[key]
@@ -20,28 +40,20 @@ const morphAttributes = (target, attributes, variables) => {
       value = value(variables)
     }
 
-    if (key === '*') {
-      morphAttributes(target, value, variables)
+    morphAttribute(target, key, value)
+  }
+}
 
-      continue
+const morphUnderscoreAttributes = (target, _attributes, variables) => {
+  for (let i = 0; i < _attributes.length; i++) {
+    let attributes = _attributes[i]
+
+    if (typeof attributes === 'function') {
+      attributes = attributes(variables)
     }
 
-    const isBoolean = typeof value === 'boolean'
-
-    const isEvent = key.substring(0, 2) === 'on'
-
-    if (isBoolean || isEvent || key === 'value') {
-      target[key] = value
-    }
-
-    if (!isEvent) {
-      if (value == null || value === false) {
-        target.removeAttribute(key)
-      } else {
-        const namespace = key.substring(0, 6) === 'xlink:' ? xlinkNamespace : null
-
-        target.setAttributeNS(namespace, key, isBoolean ? '' : value)
-      }
+    for (const key in attributes) {
+      morphAttribute(target, key, attributes[key])
     }
   }
 }
@@ -151,6 +163,8 @@ const morph = (target, next) => {
   const {tree, variables} = next
 
   morphAttributes(target, tree.attributes, variables)
+
+  morphUnderscoreAttributes(target, tree._attributes, variables)
 
   const childrenLength = morphChildren(target, tree.children, variables)
 
