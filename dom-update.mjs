@@ -46,11 +46,7 @@ const morphAttributes = (target, attributes, variables) => {
 
 const morphUnderscoreAttributes = (target, _attributes, variables) => {
   for (let i = 0; i < _attributes.length; i++) {
-    let attributes = _attributes[i]
-
-    if (typeof attributes === 'function') {
-      attributes = attributes(variables)
-    }
+    let attributes = _attributes[i](variables)
 
     for (const key in attributes) {
       morphAttribute(target, key, attributes[key])
