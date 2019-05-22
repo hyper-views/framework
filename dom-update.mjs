@@ -160,9 +160,15 @@ const morph = (target, next) => {
 
   morphAttributes(target, tree.attributes, variables)
 
-  morphUnderscoreAttributes(target, tree._attributes, variables)
+  if (tree._attributes.length) {
+    morphUnderscoreAttributes(target, tree._attributes, variables)
+  }
 
-  const childrenLength = morphChildren(target, tree.children, variables)
+  let childrenLength = 0
+
+  if (tree.children.length) {
+    childrenLength = morphChildren(target, tree.children, variables)
+  }
 
   truncateChildren(target, childrenLength)
 }
