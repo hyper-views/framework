@@ -25,7 +25,7 @@
     "esm": "^3.2.25",
     "jsdom": "^15.1.0",
     "stream-to-promise": "^2.2.0",
-    "tape": "^4.10.0"
+    "tape": "^4.10.2"
   },
   "dependencies": {},
   "engines": {
