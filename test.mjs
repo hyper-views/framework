@@ -68,11 +68,11 @@ test('view.mjs - producing virtual dom', (t) => {
 
   const {div} = view
 
-  t.deepEquals(JSON.stringify(div`<div class=${'a'}>${1}</div>`), JSON.stringify({tree: {tag: 'div', attributes: {class: undefined}, _attributes: [], children: [undefined]}, variables: ['a', 1]}))
+  t.deepEquals(div`<div class=${'a'}>${1}</div>`, {tree: {tag: 'div', attributes: [{"key":"class","variable":true,"value":0}], children: [{"variable":true,"value":1}]}, variables: ['a', 1]})
 
-  t.deepEquals(JSON.stringify(div`<div class=${'b'}>${2}</div>`), JSON.stringify({tree: {tag: 'div', attributes: {class: undefined}, _attributes: [], children: [undefined]}, variables: ['b', 2]}))
+  t.deepEquals(div`<div class=${'b'}>${2}</div>`, {tree: {tag: 'div', attributes: [{"key":"class","variable":true,"value":0}], children: [{"variable":true,"value":1}]}, variables: ['b', 2]})
 
-  t.deepEquals(JSON.stringify(div`<div class=${'c'}>${3}</div>`), JSON.stringify({tree: {tag: 'div', attributes: {class: undefined}, _attributes: [], children: [undefined]}, variables: ['c', 3]}))
+  t.deepEquals(div`<div class=${'c'}>${3}</div>`, {tree: {tag: 'div', attributes: [{"key":"class","variable":true,"value":0}], children: [{"variable":true,"value":1}]}, variables: ['c', 3]})
 })
 
 test('update.mjs - patching the dom', async (t) => {

@@ -4,21 +4,15 @@ const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const xlinkNamespace = 'http://www.w3.org/1999/xlink'
 
-const fromHTML = (raw, document) => {
-  const div = document.createElement('div')
-
-  div.innerHTML = raw
-
-  return div.childNodes
-}
-
 const morphAttribute = (target, key, value) => {
-  const isBoolean = typeof value === 'boolean'
+  const isBoolean = value === true || value === false
 
   const isEvent = key.substring(0, 2) === 'on'
 
   if (isBoolean || isEvent || key === 'value') {
-    target[key] = value
+    if (target[key] !== value) {
+      target[key] = value
+    }
   }
 
   if (!isEvent) {
@@ -26,127 +20,134 @@ const morphAttribute = (target, key, value) => {
       target.removeAttribute(key)
     } else {
       const namespace = key.substring(0, 6) === 'xlink:' ? xlinkNamespace : null
+      const stringified = isBoolean ? '' : value
 
-      target.setAttributeNS(namespace, key, isBoolean ? '' : value)
+      if (target.getAttributeNS(namespace, key) !== stringified) {
+        target.setAttributeNS(namespace, key, stringified)
+      }
     }
   }
 }
 
 const morphAttributes = (target, attributes, variables) => {
-  for (const key in attributes) {
-    let value = attributes[key]
+  for (let i = 0, length = attributes.length; i < length; i++) {
+    let attribute = attributes[i]
+    let value = attribute.value
 
-    if (typeof value === 'function') {
-      value = value(variables)
+    if (attribute.variable) {
+      value = variables[value]
     }
 
-    morphAttribute(target, key, value)
+    if (attribute.key) {
+      morphAttribute(target, attribute.key, value)
+    } else {
+      for (const key in value) {
+        morphAttribute(target, key, value[key])
+      }
+    }
   }
 }
 
-const morphUnderscoreAttributes = (target, _attributes, variables) => {
-  for (let i = 0; i < _attributes.length; i++) {
-    let attributes = _attributes[i](variables)
+const morphChild = (target, index, child, variables) => {
+  const document = target.ownerDocument
 
-    for (const key in attributes) {
-      morphAttribute(target, key, attributes[key])
+  if (child == null) return 0
+
+  if (child.html) {
+    const div = document.createElement('div')
+
+    div.innerHTML = child.html
+
+    const length = div.childNodes.length
+
+    for (let offset = 0; offset < length; offset++) {
+      const childNode = target.childNodes[index + offset]
+
+      let node = div.childNodes[0]
+
+      if (childNode == null) {
+        target.appendChild(node)
+      } else if (!childNode.isEqualNode(node)) {
+        target.replaceChild(node, childNode)
+      } else {
+        node.remove()
+      }
     }
+
+    return length
   }
+
+  const childNode = target.childNodes[index]
+
+  let append = childNode == null
+
+  let replace = false
+
+  let newChild
+
+  if (child.text != null) {
+    if (!append && childNode.nodeType !== 3) {
+      replace = true
+    }
+
+    if (append || replace) {
+      newChild = document.createTextNode(child.text)
+    } else if (childNode.data !== child.text) {
+      childNode.data = child.text
+    }
+  } else {
+    const tag = child.tag || child.tree.tag
+
+    if (!append && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== tag)) {
+      replace = true
+    }
+
+    if (append || replace) {
+      const namespace = tag === 'svg' ? svgNamespace : target.namespaceURI
+
+      newChild = document.createElementNS(namespace, tag)
+    }
+
+    morph(newChild || childNode, child.tree || child, child.variables || variables)
+  }
+
+  if (append) {
+    target.appendChild(newChild)
+  } else if (replace) {
+    target.replaceChild(newChild, childNode)
+  }
+
+  return 1
 }
 
 const morphChildren = (target, children, variables) => {
-  const document = target.ownerDocument
+  let result = 0
 
-  let childrenLength = 0
+  for (let childIndex = 0, length = children.length; childIndex < length; childIndex++) {
+    let child = children[childIndex]
 
-  for (let childIndex = 0; childIndex < children.length; childIndex++) {
-    let subChildren = children[childIndex]
+    if (child == null) continue
 
-    if (subChildren == null) continue
+    if (child.variable) {
+      child = variables[child.value]
 
-    if (typeof subChildren === 'function') {
-      subChildren = subChildren(variables)
+      if (child != null && child.tree == null && child.html == null && !Array.isArray(child)) {
+        child = {text: child}
+      }
     }
 
-    if (!Array.isArray(subChildren)) {
-      subChildren = [subChildren]
-    }
+    if (Array.isArray(child)) {
+      for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
+        let grand = child[grandIndex]
 
-    let subIndex = -1
-    let htmlCount = 0
-
-    while (++subIndex < subChildren.length) {
-      htmlCount--
-
-      let child = subChildren[subIndex]
-
-      if (child == null) continue
-
-      const isText = typeof child !== 'object'
-      let isHTML = htmlCount > 0
-
-      if (child.raw != null) {
-        const html = fromHTML(child.raw, document)
-
-        subChildren.splice(subIndex, 1, ...html)
-
-        htmlCount = html.length
-
-        child = subChildren[subIndex]
-
-        isHTML = true
-      } else if (!isHTML && !isText && child.tree == null) {
-        child = {
-          tree: child,
-          variables
-        }
+        result += morphChild(target, result, grand, variables)
       }
-
-      const childNode = target.childNodes[childrenLength]
-
-      childrenLength++
-
-      let append = false
-
-      let replace = false
-
-      if (childNode == null) {
-        append = true
-      } else if ((isHTML && !childNode.isEqualNode(child)) || (isText && childNode.nodeType !== 3) || (!isText && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== child.tree.tag))) {
-        replace = true
-      }
-
-      if (append || replace) {
-        let el
-
-        if (isText) {
-          el = document.createTextNode(child)
-        } else if (isHTML) {
-          el = child
-        } else {
-          const namespace = child.tree.tag === 'svg' ? svgNamespace : target.namespaceURI
-
-          el = document.createElementNS(namespace, child.tree.tag)
-
-          morph(el, child)
-        }
-
-        if (append) {
-          target.appendChild(el)
-        } else {
-          target.replaceChild(el, childNode)
-        }
-      } else if (isText) {
-        if (childNode.data !== child) {
-          childNode.data = child
-        }
-      } else {
-        morph(childNode, child)
-      }
+    } else {
+      result += morphChild(target, result, child, variables)
     }
   }
 
-  return childrenLength
+  return result
 }
 
 const truncateChildren = (target, length) => {
@@ -155,20 +156,10 @@ const truncateChildren = (target, length) => {
   }
 }
 
-const morph = (target, next) => {
-  const {tree, variables} = next
+const morph = (target, next, variables) => {
+  morphAttributes(target, next.attributes, variables)
 
-  morphAttributes(target, tree.attributes, variables)
-
-  if (tree._attributes.length) {
-    morphUnderscoreAttributes(target, tree._attributes, variables)
-  }
-
-  let childrenLength = 0
-
-  if (tree.children.length) {
-    childrenLength = morphChildren(target, tree.children, variables)
-  }
+  let childrenLength = morphChildren(target, next.children, variables)
 
   truncateChildren(target, childrenLength)
 }
@@ -176,7 +167,7 @@ const morph = (target, next) => {
 export default (target) => {
   return (current) => {
     setTimeout(() => {
-      morph(target, current)
+      morph(target, current.tree, current.variables)
     }, 0)
   }
 }

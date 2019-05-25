@@ -2,8 +2,6 @@ const isNameChar = (char) => char && 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
 const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
 
-const getValue = (index) => (variables) => variables[index]
-
 const tokenize = (str, inTag = false) => {
   const acc = []
   let i = 0
@@ -171,14 +169,22 @@ const parse = (tokens, child) => {
       break
     } else if (token.type === 'key') {
       if (tokens[0] && tokens[0].type === 'value') {
-        child.attributes[token.value] = tokens.shift().value
+        child.attributes.push({key: token.value, value: tokens.shift().value})
       } else if (tokens[0] && tokens[0].type === 'variable') {
-        child.attributes[token.value] = tokens.shift().value
+        child.attributes.push({
+          key: token.value,
+          variable: true,
+          value: tokens.shift().value
+        })
       } else {
-        child.attributes[token.value] = true
+        child.attributes.push({key: token.value, value: true})
       }
     } else if (token.type === 'variable') {
-      child._attributes.push(token.value)
+      child.attributes.push({
+        key: false,
+        variable: true,
+        value: token.value
+      })
     }
   }
 
@@ -190,16 +196,20 @@ const parse = (tokens, child) => {
     } else if (token.type === 'tag') {
       const grand = {
         tag: token.value,
-        attributes: {},
-        _attributes: [],
+        attributes: [],
         children: []
       }
 
       child.children.push(parse(tokens, grand))
     } else if (token.type === 'text') {
-      child.children.push(token.value)
+      child.children.push({
+        text: token.value
+      })
     } else if (token.type === 'variable') {
-      child.children.push(token.value)
+      child.children.push({
+        variable: true,
+        value: token.value
+      })
     }
   }
 
@@ -226,7 +236,7 @@ const create = (strs, vlength) => {
     if (index < vlength) {
       acc.push({
         type: 'variable',
-        value: getValue(index)
+        value: index
       })
     }
 
@@ -241,14 +251,13 @@ const create = (strs, vlength) => {
     if (token.type === 'tag') {
       const child = {
         tag: token.value,
-        attributes: {},
-        _attributes: [],
+        attributes: [],
         children: []
       }
 
       children.push(parse(tokens, child))
     } else if (token.type === 'text') {
-      children.push(token.value)
+      children.push({text: token.value})
     }
   }
 
@@ -273,6 +282,6 @@ export default new Proxy({}, {
   }
 })
 
-export const safe = (raw) => {
-  return {raw}
+export const safe = (html) => {
+  return {html}
 }
