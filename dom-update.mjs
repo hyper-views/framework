@@ -157,6 +157,10 @@ const truncateChildren = (target, length) => {
 }
 
 const morph = (target, next, variables) => {
+  if (next.id != null && variables[next.id] === target.id) {
+    return
+  }
+
   if (next.attributes.length) {
     morphAttributes(target, next.attributes, variables)
   }

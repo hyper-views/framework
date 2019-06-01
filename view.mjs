@@ -171,10 +171,16 @@ const parse = (tokens, child) => {
       if (tokens[0] && tokens[0].type === 'value') {
         child.attributes.push({key: token.value, value: tokens.shift().value})
       } else if (tokens[0] && tokens[0].type === 'variable') {
+        const value = tokens.shift().value
+
+        if (token.value === 'id') {
+          child.id = value
+        }
+
         child.attributes.push({
           key: token.value,
           variable: true,
-          value: tokens.shift().value
+          value
         })
       } else {
         child.attributes.push({key: token.value, value: true})
@@ -195,6 +201,7 @@ const parse = (tokens, child) => {
       break
     } else if (token.type === 'tag') {
       const grand = {
+        id: null,
         tag: token.value,
         attributes: [],
         children: []
@@ -250,6 +257,7 @@ const create = (strs, vlength) => {
 
     if (token.type === 'tag') {
       const child = {
+        id: null,
         tag: token.value,
         attributes: [],
         children: []
