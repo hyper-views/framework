@@ -1,5 +1,3 @@
-/* global window */
-
 const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const xlinkNamespace = 'http://www.w3.org/1999/xlink'
@@ -31,18 +29,24 @@ const morphAttribute = (target, key, value) => {
 
 const morphAttributes = (target, attributes, variables) => {
   for (let i = 0, length = attributes.length; i < length; i++) {
-    let attribute = attributes[i]
+    const attribute = attributes[i]
     let value = attribute.value
 
     if (attribute.variable) {
       value = variables[value]
     }
 
+    if (typeof value === 'function') {
+      value = value()
+    }
+
     if (attribute.key) {
       morphAttribute(target, attribute.key, value)
     } else {
       for (const key in value) {
-        morphAttribute(target, key, value[key])
+        if (value.hasOwnProperty(key)) {
+          morphAttribute(target, key, value[key])
+        }
       }
     }
   }
@@ -63,7 +67,7 @@ const morphChild = (target, index, child, variables) => {
     for (let offset = 0; offset < length; offset++) {
       const childNode = target.childNodes[index + offset]
 
-      let node = div.childNodes[0]
+      const node = div.childNodes[0]
 
       if (childNode == null) {
         target.appendChild(node)
@@ -79,7 +83,7 @@ const morphChild = (target, index, child, variables) => {
 
   const childNode = target.childNodes[index]
 
-  let append = childNode == null
+  const append = childNode == null
 
   let replace = false
 
@@ -131,6 +135,10 @@ const morphChildren = (target, children, variables) => {
     if (child.variable) {
       child = variables[child.value]
 
+      if (typeof child === 'function') {
+        child = child()
+      }
+
       if (child != null && child.tree == null && child.html == null && !Array.isArray(child)) {
         child = {text: child}
       }
@@ -138,7 +146,7 @@ const morphChildren = (target, children, variables) => {
 
     if (Array.isArray(child)) {
       for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
-        let grand = child[grandIndex]
+        const grand = child[grandIndex]
 
         result += morphChild(target, result, grand, variables)
       }
@@ -174,10 +182,8 @@ const morph = (target, next, variables) => {
   truncateChildren(target, childrenLength)
 }
 
-export default (target) => {
-  return (current) => {
-    setTimeout(() => {
-      morph(target, current.tree, current.variables)
-    }, 0)
-  }
+export default (target) => (current) => {
+  setTimeout(() => {
+    morph(target, current.tree, current.variables)
+  }, 0)
 }
