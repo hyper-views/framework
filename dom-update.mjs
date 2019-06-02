@@ -39,10 +39,8 @@ const morphAttributes = (target, attributes, variables) => {
     if (attribute.key) {
       morphAttribute(target, attribute.key, value)
     } else {
-      for (const key in value) {
-        if (value.hasOwnProperty(key)) {
-          morphAttribute(target, key, value[key])
-        }
+      for (const key of Object.keys(value)) {
+        morphAttribute(target, key, value[key])
       }
     }
   }
