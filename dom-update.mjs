@@ -39,6 +39,10 @@ const morphAttributes = (target, attributes, variables) => {
     if (attribute.key) {
       morphAttribute(target, attribute.key, value)
     } else {
+      if (typeof value === 'function') {
+        value = value()
+      }
+
       for (const key of Object.keys(value)) {
         morphAttribute(target, key, value[key])
       }
