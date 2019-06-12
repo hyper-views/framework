@@ -158,7 +158,7 @@ const morphChildren = (target, children, variables) => {
 
 const truncateChildren = (target, length) => {
   while (target.childNodes.length > length) {
-    target.removeChild(target.childNodes[length])
+    target.childNodes[length].remove()
   }
 }
 
