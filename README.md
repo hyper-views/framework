@@ -16,7 +16,7 @@ framework({
   update,
   component: (state, commit) => app`<main>
     <output>${state}</output>
-    <br />
+    <br/>
     <button
       onclick=${() => {
         commit((current) => current - 1)
