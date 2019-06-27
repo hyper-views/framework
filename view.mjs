@@ -223,8 +223,6 @@ const parse = (tokens, child) => {
   return child
 }
 
-const cache = {}
-
 const create = (strs, vlength) => {
   const tokens = strs.reduce((acc, str, index) => {
     let inTag = false
@@ -276,19 +274,21 @@ const create = (strs, vlength) => {
   return children[0]
 }
 
-export default new Proxy({}, {
-  get(_, key) {
-    return (strs, ...variables) => {
-      if (!cache[key]) {
-        cache[key] = create(strs, variables.length)
+export const view = (cache = {}) => {
+  return new Proxy({}, {
+    get(_, key) {
+      return (strs, ...variables) => {
+        if (!cache[key]) {
+          cache[key] = create(strs, variables.length)
+        }
+
+        const tree = cache[key]
+
+        return {tree, variables}
       }
-
-      const tree = cache[key]
-
-      return {tree, variables}
     }
-  }
-})
+  })
+}
 
 export const safe = (html) => {
   return {html}
