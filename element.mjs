@@ -51,13 +51,13 @@ export const element = (tag, definition) => {
         return attributes
       }
 
-      disconnectedCallback () {
+      disconnectedCallback() {
         if (definition.disconnected != null) {
           definition.disconnected.call(this)
         }
       }
 
-      connectedCallback () {
+      connectedCallback() {
         if (definition.connected != null) {
           definition.connected.call(this)
         }
@@ -65,4 +65,3 @@ export const element = (tag, definition) => {
     }
   )
 }
-

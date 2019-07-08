@@ -274,21 +274,19 @@ const create = (strs, vlength) => {
   return children[0]
 }
 
-export const view = (cache = {}) => {
-  return new Proxy({}, {
-    get(_, key) {
-      return (strs, ...variables) => {
-        if (!cache[key]) {
-          cache[key] = create(strs, variables.length)
-        }
-
-        const tree = cache[key]
-
-        return {tree, variables}
+export const view = (cache = {}) => new Proxy({}, {
+  get(_, key) {
+    return (strs, ...variables) => {
+      if (!cache[key]) {
+        cache[key] = create(strs, variables.length)
       }
+
+      const tree = cache[key]
+
+      return {tree, variables}
     }
-  })
-}
+  }
+})
 
 export const safe = (html) => {
   return {html}
