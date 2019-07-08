@@ -68,11 +68,9 @@ const morphChild = (target, index, child, variables) => {
       const node = div.childNodes[0]
 
       if (childNode == null) {
-        target.appendChild(node)
+        target.append(node)
       } else if (!childNode.isEqualNode(node)) {
-        target.replaceChild(node, childNode)
-      } else {
-        node.remove()
+        childNode.replaceWith(node)
       }
     }
 
@@ -93,7 +91,7 @@ const morphChild = (target, index, child, variables) => {
     }
 
     if (append || replace) {
-      newChild = document.createTextNode(child.text)
+      newChild = child.text
     } else if (childNode.data !== child.text) {
       childNode.data = child.text
     }
@@ -114,9 +112,9 @@ const morphChild = (target, index, child, variables) => {
   }
 
   if (append) {
-    target.appendChild(newChild)
+    target.append(newChild)
   } else if (replace) {
-    target.replaceChild(newChild, childNode)
+    childNode.replaceWith(newChild)
   }
 
   return 1

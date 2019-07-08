@@ -1,6 +1,6 @@
 {
   "name": "@erickmerchant/framework",
-  "version": "24.4.6",
+  "version": "24.5.0",
   "description": "A simple data down, actions up framework.",
   "main": "main.mjs",
   "module": "main.mjs",
@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/erickmerchant/framework#readme",
   "devDependencies": {
-    "@erickmerchant/lint": "^3.0.1",
+    "@erickmerchant/lint": "^3.0.2",
     "delay": "^4.3.0",
     "eslint": "^6.0.1",
     "esm": "^3.2.25",
