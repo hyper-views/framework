@@ -2,21 +2,34 @@ import {domUpdate} from './dom-update.mjs'
 import {view} from './view.mjs'
 
 export const element = (tag, definition) => {
-  definition.attributes = definition.attributes || []
+  let attributes = []
+  let connected
+  let disconnected
+
+  const render = definition({
+    view: view(),
+    attributes (...attrs) {
+      attributes.push(...attrs)
+    },
+    connected (cb) {
+      connected = cb
+    },
+    disconnected (cb) {
+      disconnected = cb
+    }
+  })
 
   customElements.define(
     tag,
     class extends HTMLElement {
-      static get observedAttributes() { return definition.attributes }
+      static get observedAttributes() { return attributes }
 
       constructor() {
         super()
 
         const root = this.attachShadow({mode: 'open'})
 
-        this.view = view()
-
-        const firstRender = definition.render(this.getObservedAttributes(), this.view)
+        const firstRender = render(this.getObservedAttributes(), this.view)
 
         const firstChild = document.createElement(firstRender.tree.tag)
 
@@ -36,30 +49,30 @@ export const element = (tag, definition) => {
           setTimeout(() => {
             this.willUpdate = false
 
-            this.update(definition.render(this.getObservedAttributes(), this.view))
+            this.update(render(this.getObservedAttributes(), this.view))
           }, 0)
         }
       }
 
       getObservedAttributes() {
-        const attributes = {}
+        const observed = {}
 
-        for (const key of definition.attributes) {
-          attributes[key] = this.getAttribute(key)
+        for (const key of attributes) {
+          observed[key] = this.getAttribute(key)
         }
 
-        return attributes
+        return observed
       }
 
       disconnectedCallback() {
-        if (definition.disconnected != null) {
-          definition.disconnected.call(this)
+        if (disconnected != null) {
+          disconnected.call(this)
         }
       }
 
       connectedCallback() {
-        if (definition.connected != null) {
-          definition.connected.call(this)
+        if (connected != null) {
+          connected.call(this)
         }
       }
     }
