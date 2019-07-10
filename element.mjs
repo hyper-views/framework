@@ -66,13 +66,13 @@ export const element = (tag, definition) => {
 
       disconnectedCallback() {
         if (disconnected != null) {
-          disconnected.call(this)
+          disconnected(this)
         }
       }
 
       connectedCallback() {
         if (connected != null) {
-          connected.call(this)
+          connected(this)
         }
       }
     }
