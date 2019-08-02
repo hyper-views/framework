@@ -276,7 +276,7 @@ const create = (strs, vlength) => {
   return children[0]
 }
 
-export default new Proxy({}, {
+export const view = new Proxy({}, {
   get(_, key) {
     return (strs, ...variables) => {
       if (!cache[key]) {

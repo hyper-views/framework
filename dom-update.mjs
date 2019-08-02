@@ -178,7 +178,7 @@ const morph = (target, next, variables) => {
   truncateChildren(target, childrenLength)
 }
 
-export default (target) => (current) => {
+export const domUpdate = (target) => (current) => {
   setTimeout(() => {
     morph(target, current.tree, current.variables)
   }, 0)
