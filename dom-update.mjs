@@ -71,6 +71,8 @@ const morphChild = (target, index, child, variables) => {
         target.append(node)
       } else if (!childNode.isEqualNode(node)) {
         childNode.replaceWith(node)
+      } else {
+        node.remove()
       }
     }
 
