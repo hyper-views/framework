@@ -180,8 +180,10 @@ const morph = (target, next, variables) => {
   truncateChildren(target, childrenLength)
 }
 
-export const domUpdate = (target) => (current) => {
+export const domUpdate = (target) => (current, cb = () => {}) => {
   setTimeout(() => {
     morph(target, current.tree, current.variables)
+
+    cb()
   }, 0)
 }

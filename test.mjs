@@ -14,7 +14,7 @@ test('main.mjs - init to render', (t) => {
 
   main({
     state: null,
-    component(state, commit) {
+    component({state, commit}) {
       t.equal(typeof commit, 'function')
 
       t.equal(state, null)
@@ -32,7 +32,7 @@ test('main.mjs - using commit', (t) => {
 
   main({
     state: null,
-    component(state, commit) {
+    component({state, commit}) {
       if (state == null) {
         process.nextTick(() => {
           commit((state) => {
@@ -54,7 +54,7 @@ test('main.mjs - commit multiple', (t) => {
 
   main({
     state: null,
-    component(state) {
+    component({state}) {
       t.equal(state, null)
 
       return newElement
