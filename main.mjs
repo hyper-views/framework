@@ -22,4 +22,6 @@ export default ({state, component, update}) => {
   }
 
   commit((state) => state)
+
+  return commit
 }
