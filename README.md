@@ -37,10 +37,6 @@ framework({
 
   A module to do routing inside your components.
 
-- [@erickmerchant/onappend](https://github.com/erickmerchant/onappend)
-
-  Uses a MutationObserver to call onappend and onremove events on elements.
-
 - [A TodoMVC example](https://todo.erickmerchant.com)
 
   The source code can be found [here](https://github.com/erickmerchant/framework-todo)
