@@ -2,8 +2,7 @@ const isNameChar = (char) => char && 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
 const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
 
-const tokenize = (str, inTag = false) => {
-  const acc = []
+const tokenize = (acc, str, inTag = false) => {
   let i = 0
 
   const current = () => str.charAt(i)
@@ -173,10 +172,6 @@ const parse = (tokens, child) => {
       } else if (tokens[0] && tokens[0].type === 'variable') {
         const value = tokens.shift().value
 
-        if (token.value === 'id') {
-          child.id = value
-        }
-
         child.attributes.push({
           key: token.value,
           variable: true,
@@ -201,7 +196,6 @@ const parse = (tokens, child) => {
       break
     } else if (token.type === 'tag') {
       const grand = {
-        id: null,
         tag: token.value,
         attributes: [],
         children: []
@@ -238,7 +232,7 @@ const create = (strs, vlength) => {
       }
     }
 
-    acc.push(...tokenize(str, inTag))
+    tokenize(acc, str, inTag)
 
     if (index < vlength) {
       acc.push({
@@ -257,7 +251,6 @@ const create = (strs, vlength) => {
 
     if (token.type === 'tag') {
       const child = {
-        id: null,
         tag: token.value,
         attributes: [],
         children: []
@@ -289,6 +282,8 @@ export const view = new Proxy({}, {
     }
   }
 })
+
+export const unchanged = Symbol('unchanged')
 
 export const safe = (html) => {
   return {html}

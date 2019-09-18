@@ -1,6 +1,6 @@
 export {domUpdate} from './dom-update.mjs'
 
-export {view, safe} from './view.mjs'
+export {view, unchanged, safe} from './view.mjs'
 
 export default ({state, component, update}) => {
   const nextQueue = []

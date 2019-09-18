@@ -1,3 +1,5 @@
+import {unchanged} from './view.mjs'
+
 const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const xlinkNamespace = 'http://www.w3.org/1999/xlink'
@@ -7,7 +9,7 @@ const morphAttribute = (target, key, value) => {
 
   const isEvent = key.substring(0, 2) === 'on'
 
-  if (isBoolean || isEvent || key === 'value') {
+  if (isEvent || key === 'value') {
     if (target[key] !== value) {
       target[key] = value
     }
@@ -52,6 +54,8 @@ const morphAttributes = (target, attributes, variables) => {
 
 const morphChild = (target, index, child, variables) => {
   const document = target.ownerDocument
+
+  if (child === unchanged) return 1
 
   if (child == null) return 0
 
@@ -163,10 +167,6 @@ const truncateChildren = (target, length) => {
 }
 
 const morph = (target, next, variables) => {
-  if (next.id != null && variables[next.id] === target.id) {
-    return
-  }
-
   if (next.attributes.length) {
     morphAttributes(target, next.attributes, variables)
   }
