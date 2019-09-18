@@ -9,7 +9,7 @@ const morphAttribute = (target, key, value) => {
 
   const isEvent = key.substring(0, 2) === 'on'
 
-  if (isEvent || key === 'value') {
+  if (isBoolean || isEvent || key === 'value') {
     if (target[key] !== value) {
       target[key] = value
     }
