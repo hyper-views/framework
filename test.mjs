@@ -66,7 +66,7 @@ test('main.mjs - commit multiple', (t) => {
 test('view.mjs - producing virtual dom', (t) => {
   t.plan(3)
 
-  const {div} = view
+  const {div} = view()
 
   t.deepEquals(div`<div class=${'a'}>${1}</div>`, {tree: {tag: 'div', attributes: [{key: 'class', variable: true, value: 0}], children: [{variable: true, value: 1}]}, variables: ['a', 1]})
 

@@ -217,8 +217,6 @@ const parse = (tokens, child) => {
   return child
 }
 
-const cache = {}
-
 const create = (strs, vlength) => {
   const tokens = strs.reduce((acc, str, index) => {
     let inTag = false
@@ -269,7 +267,7 @@ const create = (strs, vlength) => {
   return children[0]
 }
 
-export const view = new Proxy({}, {
+export const view = (cache = {}) => new Proxy({}, {
   get(_, key) {
     return (strs, ...variables) => {
       if (!cache[key]) {

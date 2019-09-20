@@ -1,6 +1,6 @@
 import {view, safe} from '..'
 
-const {main, paragraph, svg, step1, step2, option} = view
+const {main, paragraph, svg, step1, step2, option} = view()
 
 export default ({state}) => main`<main>
   <h1>${state.heading}</h1>
