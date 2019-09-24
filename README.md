@@ -8,7 +8,7 @@ Documentation forthcoming...
 import framework, {view, domUpdate} from '@erickmerchant/framework'
 
 const update = domUpdate(document.querySelector('main'))
-const { app } = view()
+const {app} = view()
 const state = 0
 
 framework({
