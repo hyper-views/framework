@@ -4,12 +4,13 @@ const {main, paragraph, svg, step1, step2, option} = view()
 
 export default ({state}) => main`<main>
   <h1>${state.heading}</h1>
+  <img src=${state.src} />
   ${Boolean(state.hasSafe)
     ? safe('<div>some</div><div>raw</div><div>html</div>')
     : null}
   ${Boolean(state.hasP)
     ? paragraph`<p a='b' ${() => { return {class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'} }}>
-        ${state.pText}
+        ${state.pText1}   ${state.pText2}   ${state.pText3}
       </p>`
     : null}
   ${Boolean(state.hasForm) && state.formStep === 1

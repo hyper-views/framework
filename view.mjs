@@ -2,14 +2,14 @@ const isNameChar = (char) => char && 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
 const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
 
-const tokenize = (acc, str, inTag = false) => {
+const tokenize = (acc, str) => {
   let i = 0
 
   const current = () => str.charAt(i)
   const next = () => str.charAt(i + 1)
 
   while (current()) {
-    if (!inTag && current() === '<') {
+    if (!acc.tag && current() === '<') {
       let value = ''
       let end = false
 
@@ -25,57 +25,57 @@ const tokenize = (acc, str, inTag = false) => {
         value += current()
       }
 
-      acc.push({
+      acc.tokens.push({
         type: !end ? 'tag' : 'endtag',
         value
       })
 
-      inTag = value
+      acc.tag = value
 
       i++
 
       continue
     }
 
-    if (inTag && isSpaceChar(current())) {
+    if (acc.tag && isSpaceChar(current())) {
       i++
 
       continue
     }
 
-    if (inTag && current() === '/' && next() === '>') {
-      acc.push({
+    if (acc.tag && current() === '/' && next() === '>') {
+      acc.tokens.push({
         type: 'end',
-        value: inTag
+        value: acc.tag
       }, {
         type: 'endtag',
-        value: inTag
+        value: acc.tag
       }, {
         type: 'end',
-        value: inTag
+        value: acc.tag
       })
 
-      inTag = false
+      acc.tag = false
 
       i += 2
 
       continue
     }
 
-    if (inTag && current() === '>') {
-      acc.push({
+    if (acc.tag && current() === '>') {
+      acc.tokens.push({
         type: 'end',
         value: ''
       })
 
-      inTag = false
+      acc.tag = false
 
       i++
 
       continue
     }
 
-    if (inTag && isNameChar(current())) {
+    if (acc.tag && isNameChar(current())) {
       let value = ''
 
       i--
@@ -86,7 +86,7 @@ const tokenize = (acc, str, inTag = false) => {
         value += current()
       }
 
-      acc.push({
+      acc.tokens.push({
         type: 'key',
         value
       })
@@ -110,7 +110,7 @@ const tokenize = (acc, str, inTag = false) => {
 
           i++
 
-          acc.push({
+          acc.tokens.push({
             type: 'value',
             value
           })
@@ -123,7 +123,7 @@ const tokenize = (acc, str, inTag = false) => {
 
           if (next() !== '>') i++
 
-          acc.push({
+          acc.tokens.push({
             type: 'value',
             value
           })
@@ -135,7 +135,7 @@ const tokenize = (acc, str, inTag = false) => {
       continue
     }
 
-    if (!inTag) {
+    if (!acc.tag) {
       let value = ''
 
       while (current() && current() !== '<') {
@@ -144,8 +144,12 @@ const tokenize = (acc, str, inTag = false) => {
         i++
       }
 
-      if (value.trim()) {
-        acc.push({
+      if ((acc.tokens[acc.tokens.length - 1] && acc.tokens[acc.tokens.length - 1].type !== 'variable') || next()) {
+        value = value.trim()
+      }
+
+      if (value) {
+        acc.tokens.push({
           type: 'text',
           value
         })
@@ -218,29 +222,21 @@ const parse = (tokens, child) => {
 }
 
 const create = (strs, vlength) => {
-  const tokens = strs.reduce((acc, str, index) => {
-    let inTag = false
-
-    if (acc.length - 2 > -1 && acc[acc.length - 1].type !== 'end') {
-      const prev = acc[acc.length - 2]
-
-      if (['tag', 'key', 'value'].includes(prev.type)) {
-        const filtered = acc.filter((val) => val.type === 'tag')
-        inTag = filtered[filtered.length - 1].value
-      }
-    }
-
-    tokenize(acc, str, inTag)
+  const {tokens} = strs.reduce((acc, str, index) => {
+    tokenize(acc, str)
 
     if (index < vlength) {
-      acc.push({
+      acc.tokens.push({
         type: 'variable',
         value: index
       })
     }
 
     return acc
-  }, [])
+  }, {
+    tokens: [],
+    tag: false
+  })
 
   const children = []
 

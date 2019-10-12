@@ -84,21 +84,24 @@ test('update.mjs - patching the dom', async (t) => {
 
   const update = domUpdate(dom.window.document.querySelector('main'))
 
-  update(component({state: {heading: 'Test 1'}}))
+  update(component({state: {heading: 'Test 1', src: 'foo.jpg'}}))
 
   await delay(0)
 
   const result1 = dom.serialize()
 
-  t.equals(result1.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 1</h1></main></body></html>')
+  t.equals(result1.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 1</h1><img src="foo.jpg"></main></body></html>')
 
   update(component({
     state: {
       heading: 'Test 2',
+      src: 'foo.jpg',
       hasSafe: true,
       hasP: true,
       isRed: true,
-      pText: 'lorem ipsum dolor ....'
+      pText1: 'lorem ipsum',
+      pText2: 'dolor',
+      pText3: '?'
     }
   }))
 
@@ -106,14 +109,17 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result2 = dom.serialize()
 
-  t.equals(result2.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><div>some</div><div>raw</div><div>html</div><p a="b" class="red" data-red="yes">lorem ipsum dolor ....</p></main></body></html>')
+  t.equals(result2.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><img src="foo.jpg"><div>some</div><div>raw</div><div>html</div><p a="b" class="red" data-red="yes">lorem ipsum   dolor   ?</p></main></body></html>')
 
   update(component({
     state: {
       heading: 'Test 3',
+      src: 'bar.jpg',
       hasP: true,
       isRed: false,
-      pText: 'lorem ipsum dolor ....'
+      pText1: 'lorem ipsum',
+      pText2: 'dolor',
+      pText3: '?'
     }
   }))
 
@@ -121,11 +127,12 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result3 = dom.serialize()
 
-  t.equals(result3.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 3</h1><p a="b" class="blue" data-blue="yes">lorem ipsum dolor ....</p></main></body></html>')
+  t.equals(result3.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 3</h1><img src="bar.jpg"><p a="b" class="blue" data-blue="yes">lorem ipsum   dolor   ?</p></main></body></html>')
 
   update(component({
     state: {
       heading: 'Test 4',
+      src: 'bar.jpg',
       hasForm: true,
       formStep: 1
     }
@@ -135,11 +142,12 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result4 = dom.serialize()
 
-  t.equals(result4.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 4</h1><form><input value="1"><input type="checkbox"><select><option selected="">1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select><button type="button" disabled="">Next</button></form></main></body></html>')
+  t.equals(result4.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 4</h1><img src="bar.jpg"><form><input value="1"><input type="checkbox"><select><option selected="">1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select><button type="button" disabled="">Next</button></form></main></body></html>')
 
   update(component({
     state: {
       heading: 'Test 5',
+      src: 'bar.jpg',
       hasForm: true,
       formStep: 2
     }
@@ -149,11 +157,12 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result5 = dom.serialize()
 
-  t.equals(result5.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 5</h1><form><input><input type="checkbox"><select><option>1</option><option selected="">2</option><option>3</option></select><button type="submit">Submit</button></form></main></body></html>')
+  t.equals(result5.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 5</h1><img src="bar.jpg"><form><input><input type="checkbox"><select><option>1</option><option selected="">2</option><option>3</option></select><button type="submit">Submit</button></form></main></body></html>')
 
   update(component({
     state: {
       heading: 'Test 6',
+      src: 'bar.jpg',
       hasSvg: true
     }
   }))
@@ -162,5 +171,5 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result6 = dom.serialize()
 
-  t.equals(result6.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 6</h1><svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main></body></html>')
+  t.equals(result6.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 6</h1><img src="bar.jpg"><svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main></body></html>')
 })
