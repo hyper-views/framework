@@ -1,5 +1,3 @@
-import {unchanged} from './view.mjs'
-
 const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const xlinkNamespace = 'http://www.w3.org/1999/xlink'
@@ -41,10 +39,6 @@ const morphAttributes = (target, attributes, variables) => {
     if (attribute.key) {
       morphAttribute(target, attribute.key, value)
     } else {
-      if (typeof value === 'function') {
-        value = value()
-      }
-
       for (const key of Object.keys(value)) {
         morphAttribute(target, key, value[key])
       }
@@ -54,8 +48,6 @@ const morphAttributes = (target, attributes, variables) => {
 
 const morphChild = (target, index, child, variables) => {
   const document = target.ownerDocument
-
-  if (child === unchanged) return 1
 
   if (child == null) return 0
 
@@ -136,10 +128,6 @@ const morphChildren = (target, children, variables) => {
 
     if (child.variable) {
       child = variables[child.value]
-
-      if (typeof child === 'function') {
-        child = child()
-      }
 
       if (child != null && child.tree == null && child.html == null && !Array.isArray(child)) {
         child = {text: child}

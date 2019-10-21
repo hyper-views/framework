@@ -9,8 +9,8 @@ export default ({state}) => main`<main>
     ? safe('<div>some</div><div>raw</div><div>html</div>')
     : null}
   ${Boolean(state.hasP)
-    ? paragraph`<p a='b' ${() => { return {class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'} }}>
-        ${state.pText1}   ${state.pText2}   ${state.pText3}
+    ? paragraph`<p a='b' ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
+        ${state.pText1} ${state.pText2} ${state.pText3}
       </p>`
     : null}
   ${Boolean(state.hasForm) && state.formStep === 1

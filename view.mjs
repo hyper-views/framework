@@ -144,11 +144,15 @@ const tokenize = (acc, str) => {
         i++
       }
 
-      if ((acc.tokens[acc.tokens.length - 1] && acc.tokens[acc.tokens.length - 1].type !== 'variable') || next()) {
-        value = value.trim()
+      const previous = acc.tokens[acc.tokens.length - 1]
+
+      let trim = true
+
+      if (!current() && (previous && previous.type === 'variable')) {
+        trim = false
       }
 
-      if (value) {
+      if ((!trim && value) || (trim && value.trim())) {
         acc.tokens.push({
           type: 'text',
           value
@@ -164,7 +168,13 @@ const tokenize = (acc, str) => {
   return acc
 }
 
-const parse = (tokens, child) => {
+const parse = (tokens, parent, tag) => {
+  const child = {
+    tag,
+    attributes: [],
+    children: []
+  }
+
   while (tokens.length) {
     const token = tokens.shift()
 
@@ -199,13 +209,7 @@ const parse = (tokens, child) => {
     if (token.type === 'endtag' && token.value === child.tag) {
       break
     } else if (token.type === 'tag') {
-      const grand = {
-        tag: token.value,
-        attributes: [],
-        children: []
-      }
-
-      child.children.push(parse(tokens, grand))
+      parse(tokens, child, token.value)
     } else if (token.type === 'text') {
       child.children.push({
         text: token.value
@@ -218,7 +222,7 @@ const parse = (tokens, child) => {
     }
   }
 
-  return child
+  parent.children.push(child)
 }
 
 const create = (strs, vlength) => {
@@ -244,13 +248,7 @@ const create = (strs, vlength) => {
     const token = tokens.shift()
 
     if (token.type === 'tag') {
-      const child = {
-        tag: token.value,
-        attributes: [],
-        children: []
-      }
-
-      children.push(parse(tokens, child))
+      parse(tokens, {children}, token.value)
     } else if (token.type === 'text') {
       children.push({text: token.value})
     }
@@ -264,20 +262,18 @@ const create = (strs, vlength) => {
 }
 
 export const view = (cache = {}) => new Proxy({}, {
-  get(_, key) {
+  get(_, view) {
     return (strs, ...variables) => {
-      if (!cache[key]) {
-        cache[key] = create(strs, variables.length)
+      if (!cache[view]) {
+        cache[view] = create(strs, variables.length)
       }
 
-      const tree = cache[key]
+      const tree = cache[view]
 
-      return {tree, variables}
+      return {view, tree, variables}
     }
   }
 })
-
-export const unchanged = Symbol('unchanged')
 
 export const safe = (html) => {
   return {html}

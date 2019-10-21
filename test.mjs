@@ -68,11 +68,11 @@ test('view.mjs - producing virtual dom', (t) => {
 
   const {div} = view()
 
-  t.deepEquals(div`<div class=${'a'}>${1}</div>`, {tree: {tag: 'div', attributes: [{key: 'class', variable: true, value: 0}], children: [{variable: true, value: 1}]}, variables: ['a', 1]})
+  t.deepEquals(div`<div class=${'a'}>${1}</div>`, {view: 'div', tree: {tag: 'div', attributes: [{key: 'class', variable: true, value: 0}], children: [{variable: true, value: 1}]}, variables: ['a', 1]})
 
-  t.deepEquals(div`<div class=${'b'}>${2}</div>`, {tree: {tag: 'div', attributes: [{key: 'class', variable: true, value: 0}], children: [{variable: true, value: 1}]}, variables: ['b', 2]})
+  t.deepEquals(div`<div class=${'b'}>${2}</div>`, {view: 'div', tree: {tag: 'div', attributes: [{key: 'class', variable: true, value: 0}], children: [{variable: true, value: 1}]}, variables: ['b', 2]})
 
-  t.deepEquals(div`<div class=${'c'}>${3}</div>`, {tree: {tag: 'div', attributes: [{key: 'class', variable: true, value: 0}], children: [{variable: true, value: 1}]}, variables: ['c', 3]})
+  t.deepEquals(div`<div class=${'c'}>${3}</div>`, {view: 'div', tree: {tag: 'div', attributes: [{key: 'class', variable: true, value: 0}], children: [{variable: true, value: 1}]}, variables: ['c', 3]})
 })
 
 test('update.mjs - patching the dom', async (t) => {
@@ -109,7 +109,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result2 = dom.serialize()
 
-  t.equals(result2.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><img src="foo.jpg"><div>some</div><div>raw</div><div>html</div><p a="b" class="red" data-red="yes">lorem ipsum   dolor   ?</p></main></body></html>')
+  t.equals(result2.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 2</h1><img src="foo.jpg"><div>some</div><div>raw</div><div>html</div><p a="b" class="red" data-red="yes">lorem ipsum dolor ?</p></main></body></html>')
 
   update(component({
     state: {
@@ -127,7 +127,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result3 = dom.serialize()
 
-  t.equals(result3.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 3</h1><img src="bar.jpg"><p a="b" class="blue" data-blue="yes">lorem ipsum   dolor   ?</p></main></body></html>')
+  t.equals(result3.replace(/>\s+</g, '><'), '<!DOCTYPE html><html><head><title>Test Document</title></head><body><main><h1>Test 3</h1><img src="bar.jpg"><p a="b" class="blue" data-blue="yes">lorem ipsum dolor ?</p></main></body></html>')
 
   update(component({
     state: {
