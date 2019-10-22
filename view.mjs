@@ -171,6 +171,7 @@ const tokenize = (acc, str) => {
 const parse = (tokens, parent, tag) => {
   const child = {
     tag,
+    dynamic: false,
     attributes: [],
     children: []
   }
@@ -186,6 +187,8 @@ const parse = (tokens, parent, tag) => {
       } else if (tokens[0] && tokens[0].type === 'variable') {
         const value = tokens.shift().value
 
+        child.dynamic = true
+
         child.attributes.push({
           key: token.value,
           variable: true,
@@ -195,6 +198,8 @@ const parse = (tokens, parent, tag) => {
         child.attributes.push({key: token.value, value: true})
       }
     } else if (token.type === 'variable') {
+      child.dynamic = true
+
       child.attributes.push({
         key: false,
         variable: true,
@@ -209,12 +214,16 @@ const parse = (tokens, parent, tag) => {
     if (token.type === 'endtag' && token.value === child.tag) {
       break
     } else if (token.type === 'tag') {
-      parse(tokens, child, token.value)
+      const d = parse(tokens, child, token.value)
+
+      child.dynamic = child.dynamic || d
     } else if (token.type === 'text') {
       child.children.push({
         text: token.value
       })
     } else if (token.type === 'variable') {
+      child.dynamic = true
+
       child.children.push({
         variable: true,
         value: token.value
@@ -223,6 +232,8 @@ const parse = (tokens, parent, tag) => {
   }
 
   parent.children.push(child)
+
+  return child.dynamic
 }
 
 const create = (strs, vlength) => {
