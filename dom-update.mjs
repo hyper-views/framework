@@ -113,22 +113,21 @@ const morphChild = (target, index, child, meta) => {
 
     const next = child.tree || child
 
-    const m = {
-      variables: meta.variables,
-      view: meta.view,
-      same: meta.same
-    }
+    let m = meta
 
     const t = newChild || childNode
 
     if (child.view != null) {
       const dataView = t.getAttribute('data-view')
+      const same = child.view === dataView
 
-      m.variables = child.variables
-      m.view = child.view
-      m.same = child.view === dataView
+      m = {
+        variables: child.variables,
+        view: child.view,
+        same
+      }
 
-      if (dataView == null) {
+      if (!same) {
         t.setAttribute('data-view', child.view)
       }
     }
@@ -161,8 +160,6 @@ const morphChildren = (target, children, meta) => {
       continue
     }
 
-    started = true
-
     if (child.variable) {
       child = meta.variables[child.value]
 
@@ -172,6 +169,8 @@ const morphChildren = (target, children, meta) => {
     }
 
     if (Array.isArray(child)) {
+      started = true
+
       for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
         const grand = child[grandIndex]
 
@@ -215,9 +214,7 @@ export const domUpdate = (target) => (current, cb = () => {}) => {
   setTimeout(() => {
     const same = current.view === lastView
 
-    if (lastView == null) {
-      lastView = current.view
-    }
+    lastView = current.view
 
     morph(target, current.tree, {
       variables: current.variables,
