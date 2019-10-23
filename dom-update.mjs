@@ -30,6 +30,11 @@ const morphAttribute = (target, key, value) => {
 const morphAttributes = (target, attributes, meta) => {
   for (let i = 0, length = attributes.length; i < length; i++) {
     const attribute = attributes[i]
+
+    if (meta.same && !attribute.variable) {
+      continue
+    }
+
     let value = attribute.value
 
     if (attribute.variable) {
@@ -109,11 +114,26 @@ const morphChild = (target, index, child, meta) => {
     const next = child.tree || child
 
     const m = {
-      variables: child.variables || meta.variables,
-      view: child.view || meta.view
+      variables: meta.variables,
+      view: meta.view,
+      same: meta.same
     }
 
-    morph(newChild || childNode, next, m)
+    const t = newChild || childNode
+
+    if (child.view != null) {
+      const dataView = t.getAttribute('data-view')
+
+      m.variables = child.variables
+      m.view = child.view
+      m.same = child.view === dataView
+
+      if (dataView == null) {
+        t.setAttribute('data-view', child.view)
+      }
+    }
+
+    morph(t, next, m)
   }
 
   if (append) {
@@ -125,13 +145,23 @@ const morphChild = (target, index, child, meta) => {
   return 1
 }
 
-const morphChildren = (target, children, childIndex, meta) => {
-  let result = childIndex
+const morphChildren = (target, children, meta) => {
+  let result = 0
+  const length = children.length
+  let started = !meta.same
 
-  for (let length = children.length; childIndex < length; childIndex++) {
+  for (let childIndex = 0; childIndex < length; childIndex++) {
     let child = children[childIndex]
 
     if (child == null) continue
+
+    if (!started && (!child.dynamic && !child.variable)) {
+      result += 1
+
+      continue
+    }
+
+    started = true
 
     if (child.variable) {
       child = meta.variables[child.value]
@@ -162,40 +192,37 @@ const truncateChildren = (target, length) => {
 }
 
 const morph = (target, next, meta) => {
-  const sameView = meta.view === target._view
-
-  if (sameView && !next.dynamic) {
+  if (meta.same && !next.dynamic) {
     return
   }
 
   if (next.attributes.length) {
-    morphAttributes(target, sameView ? next.attributes.filter((attribute) => attribute.variable) : next.attributes, meta)
+    morphAttributes(target, next.attributes, meta)
   }
 
   let childrenLength = 0
 
   if (next.children.length) {
-    let childIndex = 0
-
-    if (sameView) {
-      childIndex = next.children.findIndex((child) => child.dynamic || child.variable)
-    }
-
-    childrenLength = morphChildren(target, next.children, childIndex > -1 ? childIndex : 0, meta)
+    childrenLength = morphChildren(target, next.children, meta)
   }
 
   truncateChildren(target, childrenLength)
-
-  if (target._view == null) {
-    target._view = meta.view
-  }
 }
 
 export const domUpdate = (target) => (current, cb = () => {}) => {
+  let lastView
+
   setTimeout(() => {
+    const same = current.view === lastView
+
+    if (lastView == null) {
+      lastView = current.view
+    }
+
     morph(target, current.tree, {
       variables: current.variables,
-      view: current.view
+      view: current.view,
+      same
     })
 
     cb()
