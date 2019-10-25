@@ -147,14 +147,14 @@ const morphChild = (target, index, child, meta) => {
 const morphChildren = (target, children, meta) => {
   let result = 0
   const length = children.length
-  let started = !meta.same
+  let deopt = !meta.same
 
   for (let childIndex = 0; childIndex < length; childIndex++) {
     let child = children[childIndex]
 
     if (child == null) continue
 
-    if (!started && (!child.dynamic && !child.variable)) {
+    if (!deopt && (!child.dynamic && !child.variable)) {
       result += 1
 
       continue
@@ -169,7 +169,7 @@ const morphChildren = (target, children, meta) => {
     }
 
     if (Array.isArray(child)) {
-      started = true
+      deopt = true
 
       for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
         const grand = child[grandIndex]
