@@ -21,8 +21,8 @@ const morphAttribute = (target, key, value) => {
       listeners[key].handler = value
     } else {
       listeners[key] = {
-        proxy() {
-          return eventMap.get(target)[key].handler.call(this, ...arguments)
+        proxy(...args) {
+          return eventMap.get(target)[key].handler.call(this, ...args)
         },
         handler: value
       }
@@ -38,7 +38,7 @@ const morphAttribute = (target, key, value) => {
 
     const namespace = key.substring(0, 6) === 'xlink:' ? xlinkNamespace : null
 
-    if (!namespace && target.namespaceURI !== svgNamespace) {
+    if (!namespace && target.namespaceURI !== svgNamespace && key.substr(0, 5) !== 'data-') {
       if (key === 'class') key = 'className'
 
       if (key === 'for') key = 'htmlFor'
@@ -46,7 +46,7 @@ const morphAttribute = (target, key, value) => {
       if (target[key] !== value) {
         target[key] = value
       }
-    } else if(!remove) {
+    } else if (!remove) {
       const stringified = value === true || value === false ? '' : value
 
       if (target.getAttributeNS(namespace, key) !== stringified) {

@@ -68,15 +68,15 @@ test('view.mjs - producing virtual dom', (t) => {
 
   const {div} = view()
 
-  t.deepEquals(div`<div class=${'a'}>${1}</div>`, {view: 'div', tree: {tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{variable: true, value: 1}]}, variables: ['a', 1]})
+  t.deepEquals(div`<div class=${'a'}>${1}</div>`, {view: 'div', tree: {type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}]}, variables: ['a', 1]})
 
-  t.deepEquals(div`<div class=${'b'}>${2}</div>`, {view: 'div', tree: {tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{variable: true, value: 1}]}, variables: ['b', 2]})
+  t.deepEquals(div`<div class=${'b'}>${2}</div>`, {view: 'div', tree: {type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}]}, variables: ['b', 2]})
 
-  t.deepEquals(div`<div class=${'c'}>${3}</div>`, {view: 'div', tree: {tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{variable: true, value: 1}]}, variables: ['c', 3]})
+  t.deepEquals(div`<div class=${'c'}>${3}</div>`, {view: 'div', tree: {type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}]}, variables: ['c', 3]})
 })
 
 test('update.mjs - patching the dom', async (t) => {
-  t.plan(6)
+  t.plan(4)
 
   const html = await streamPromise(createReadStream('./fixtures/document.html', 'utf8'))
 
@@ -91,7 +91,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result1 = main.outerHTML
 
-  t.equals(result1, '<main><h1>Test 1</h1><img src="foo.jpg">    </main>')
+  t.equals(result1, '<main><h1>Test 1</h1><img src="foo.jpg">  </main>')
 
   update(component({
     state: {
@@ -110,7 +110,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result2 = main.outerHTML
 
-  t.equals(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><div>some</div><div>raw</div><div>html</div> <p data-view="paragraph" a="b" class="red" data-red="yes">lorem ipsum dolor ?</p>   </main>')
+  t.equals(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><div>some</div><div>raw</div><div>html</div> <p class="red" data-red="yes">lorem ipsum dolor ?</p> </main>')
 
   update(component({
     state: {
@@ -128,37 +128,7 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result3 = main.outerHTML
 
-  t.equals(result3, '<main><h1>Test 3</h1><img src="bar.jpg"> <p data-view="paragraph" a="b" class="blue" data-blue="yes">lorem ipsum dolor ?</p>   </main>')
-
-  update(component({
-    state: {
-      heading: 'Test 4',
-      src: 'bar.jpg',
-      hasForm: true,
-      formStep: 1
-    }
-  }))
-
-  await delay(0)
-
-  const result4 = main.outerHTML
-
-  t.equals(result4, '<main><h1>Test 4</h1><img src="bar.jpg">  <form data-view="step1"><input value="1"><input type="checkbox"><select><option data-view="option" selected="">1</option><option data-view="option">2</option><option data-view="option">3</option><option data-view="option">4</option><option data-view="option">5</option><option data-view="option">6</option></select><button type="button" disabled="">Next</button></form>  </main>')
-
-  update(component({
-    state: {
-      heading: 'Test 5',
-      src: 'bar.jpg',
-      hasForm: true,
-      formStep: 2
-    }
-  }))
-
-  await delay(0)
-
-  const result5 = main.outerHTML
-
-  t.equals(result5, '<main><h1>Test 5</h1><img src="bar.jpg">   <form data-view="step2"><input><input type="checkbox"><select><option data-view="option">1</option><option data-view="option" selected="">2</option><option data-view="option">3</option></select><button type="submit">Submit</button></form> </main>')
+  t.equals(result3, '<main><h1>Test 3</h1><img src="bar.jpg"> <p class="blue" data-blue="yes">lorem ipsum dolor ?</p> </main>')
 
   update(component({
     state: {
@@ -172,5 +142,5 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result6 = main.outerHTML
 
-  t.equals(result6, '<main><h1>Test 6</h1><img src="bar.jpg">    <svg data-view="svg"><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>')
+  t.equals(result6, '<main><h1>Test 6</h1><img src="bar.jpg">  <svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>')
 })
