@@ -2,23 +2,52 @@ const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const xlinkNamespace = 'http://www.w3.org/1999/xlink'
 
+const viewMap = new WeakMap()
+const eventMap = new WeakMap()
+
 const morphAttribute = (target, key, value) => {
-  const isBoolean = value === true || value === false
+  const remove = value == null || value === false
 
-  const isEvent = key.substring(0, 2) === 'on'
+  if (key.substring(0, 2) === 'on') {
+    const listeners = eventMap.get(target) || {}
 
-  if (isBoolean || isEvent || key === 'value') {
-    if (target[key] !== value) {
-      target[key] = value
-    }
-  }
+    key = key.substring(2)
 
-  if (!isEvent) {
-    if (value == null || value === false) {
-      target.removeAttribute(key)
+    if (remove) {
+      if (listeners[key]) {
+        target.removeEventListener(key, listeners[key].proxy)
+      }
+    } else if (listeners[key]) {
+      listeners[key].handler = value
     } else {
-      const namespace = key.substring(0, 6) === 'xlink:' ? xlinkNamespace : null
-      const stringified = isBoolean ? '' : value
+      listeners[key] = {
+        proxy() {
+          return eventMap.get(target)[key].handler.call(this, ...arguments)
+        },
+        handler: value
+      }
+
+      target.addEventListener(key, listeners[key].proxy)
+
+      eventMap.set(target, listeners)
+    }
+  } else {
+    if (remove) {
+      target.removeAttribute(key)
+    }
+
+    const namespace = key.substring(0, 6) === 'xlink:' ? xlinkNamespace : null
+
+    if (!namespace && target.namespaceURI !== svgNamespace) {
+      if (key === 'class') key = 'className'
+
+      if (key === 'for') key = 'htmlFor'
+
+      if (target[key] !== value) {
+        target[key] = value
+      }
+    } else if(!remove) {
+      const stringified = value === true || value === false ? '' : value
 
       if (target.getAttributeNS(namespace, key) !== stringified) {
         target.setAttributeNS(namespace, key, stringified)
@@ -56,7 +85,7 @@ const morphChild = (target, index, child, meta) => {
 
   if (child == null) return 0
 
-  if (child.html) {
+  if (child.type === 'html') {
     const div = document.createElement('div')
 
     div.innerHTML = child.html
@@ -88,7 +117,7 @@ const morphChild = (target, index, child, meta) => {
 
   let newChild
 
-  if (child.text != null) {
+  if (child.type === 'text') {
     if (!append && childNode.nodeType !== 3) {
       replace = true
     }
@@ -108,31 +137,16 @@ const morphChild = (target, index, child, meta) => {
     if (append || replace) {
       const namespace = tag === 'svg' ? svgNamespace : target.namespaceURI
 
-      newChild = document.createElementNS(namespace, tag)
+      newChild = namespace !== 'http://www.w3.org/1999/xhtml' ? document.createElementNS(namespace, tag) : document.createElement(tag)
     }
-
-    const next = child.tree || child
-
-    let m = meta
 
     const t = newChild || childNode
 
     if (child.view != null) {
-      const dataView = t.getAttribute('data-view')
-      const same = child.view === dataView
-
-      m = {
-        variables: child.variables,
-        view: child.view,
-        same
-      }
-
-      if (!same) {
-        t.setAttribute('data-view', child.view)
-      }
+      morphRoot(t, child)
+    } else {
+      morph(t, child, meta)
     }
-
-    morph(t, next, m)
   }
 
   if (append) {
@@ -154,23 +168,23 @@ const morphChildren = (target, children, meta) => {
 
     if (child == null) continue
 
-    if (!deopt && (!child.dynamic && !child.variable)) {
+    if (!deopt && !child.dynamic && !child.variable) {
       result += 1
 
       continue
     }
 
+    deopt = true
+
     if (child.variable) {
       child = meta.variables[child.value]
 
-      if (child != null && child.tree == null && child.html == null && !Array.isArray(child)) {
-        child = {text: child}
+      if (child != null && child.view == null && child.type == null && !Array.isArray(child)) {
+        child = {type: 'text', text: child}
       }
     }
 
     if (Array.isArray(child)) {
-      deopt = true
-
       for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
         const grand = child[grandIndex]
 
@@ -208,19 +222,25 @@ const morph = (target, next, meta) => {
   truncateChildren(target, childrenLength)
 }
 
+const morphRoot = (target, next) => {
+  const dataView = viewMap.get(target)
+  const same = next.view === dataView
+  const meta = {
+    variables: next.variables,
+    view: next.view,
+    same
+  }
+
+  if (!same) {
+    viewMap.set(target, next.view)
+  }
+
+  morph(target, next.tree, meta)
+}
+
 export const domUpdate = (target) => (current, cb = () => {}) => {
-  let lastView
-
   setTimeout(() => {
-    const same = current.view === lastView
-
-    lastView = current.view
-
-    morph(target, current.tree, {
-      variables: current.variables,
-      view: current.view,
-      same
-    })
+    morphRoot(target, current)
 
     cb()
   }, 0)

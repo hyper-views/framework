@@ -170,6 +170,7 @@ const tokenize = (acc, str) => {
 
 const parse = (tokens, parent, tag) => {
   const child = {
+    type: 'node',
     tag,
     dynamic: false,
     attributes: [],
@@ -219,12 +220,14 @@ const parse = (tokens, parent, tag) => {
       child.dynamic = child.dynamic || d
     } else if (token.type === 'text') {
       child.children.push({
+        type: 'text',
         text: token.value
       })
     } else if (token.type === 'variable') {
       child.dynamic = true
 
       child.children.push({
+        type: 'variable',
         variable: true,
         value: token.value
       })
@@ -287,5 +290,5 @@ export const view = (cache = {}) => new Proxy({}, {
 })
 
 export const safe = (html) => {
-  return {html}
+  return {type: 'html', html}
 }
