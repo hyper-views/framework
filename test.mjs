@@ -76,7 +76,7 @@ test('view.mjs - producing virtual dom', (t) => {
 })
 
 test('update.mjs - patching the dom', async (t) => {
-  t.plan(4)
+  t.plan(6)
 
   const html = await streamPromise(createReadStream('./fixtures/document.html', 'utf8'))
 
@@ -85,18 +85,29 @@ test('update.mjs - patching the dom', async (t) => {
 
   const update = domUpdate(main)
 
-  update(component({state: {heading: 'Test 1', src: 'foo.jpg'}}))
+  update(component({
+    state: {
+      heading: 'Test 1',
+      src: 'foo.jpg',
+      onclick() {
+        t.ok(true)
+      }
+    }
+  }))
 
   await delay(0)
 
+  main.querySelector('button').dispatchEvent(new dom.window.Event('click'))
+
   const result1 = main.outerHTML
 
-  t.equals(result1, '<main><h1>Test 1</h1><img src="foo.jpg">  </main>')
+  t.equals(result1, '<main><h1>Test 1</h1><img src="foo.jpg"><button type="button">Approve</button>  </main>')
 
   update(component({
     state: {
       heading: 'Test 2',
       src: 'foo.jpg',
+      onclick: noop,
       hasSafe: true,
       hasP: true,
       isRed: true,
@@ -108,14 +119,17 @@ test('update.mjs - patching the dom', async (t) => {
 
   await delay(0)
 
+  main.querySelector('button').dispatchEvent(new dom.window.Event('click'))
+
   const result2 = main.outerHTML
 
-  t.equals(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><div>some</div><div>raw</div><div>html</div> <p class="red" data-red="yes">lorem ipsum dolor ?</p> </main>')
+  t.equals(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><button type="button">Approve</button><div>some</div><div>raw</div><div>html</div> <p class="red" data-red="yes">lorem ipsum dolor ?</p> </main>')
 
   update(component({
     state: {
       heading: 'Test 3',
       src: 'bar.jpg',
+      onclick: null,
       hasP: true,
       isRed: false,
       pText1: 'lorem ipsum',
@@ -126,15 +140,19 @@ test('update.mjs - patching the dom', async (t) => {
 
   await delay(0)
 
+  main.querySelector('button').dispatchEvent(new dom.window.Event('click'))
+
   const result3 = main.outerHTML
 
-  t.equals(result3, '<main><h1>Test 3</h1><img src="bar.jpg"> <p class="blue" data-blue="yes">lorem ipsum dolor ?</p> </main>')
+  t.equals(result3, '<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button> <p class="blue" data-blue="yes">lorem ipsum dolor ?</p> </main>')
 
   update(component({
     state: {
       heading: 'Test 6',
       src: 'bar.jpg',
-      hasSvg: true
+      onclick: null,
+      hasSvg: true,
+      svgPath: 'M2 2 2 34 34 34 34 2 z'
     }
   }))
 
@@ -142,5 +160,21 @@ test('update.mjs - patching the dom', async (t) => {
 
   const result6 = main.outerHTML
 
-  t.equals(result6, '<main><h1>Test 6</h1><img src="bar.jpg">  <svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>')
+  t.equals(result6, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button>  <svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>')
+
+  update(component({
+    state: {
+      heading: 'Test 6',
+      src: 'bar.jpg',
+      onclick: null,
+      hasSvg: true,
+      svgPath: 'M2 0 0 30 32 32 30 2 z'
+    }
+  }))
+
+  await delay(0)
+
+  const result7 = main.outerHTML
+
+  t.equals(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button>  <svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
 })
