@@ -5,6 +5,11 @@ const xlinkNamespace = 'http://www.w3.org/1999/xlink'
 const viewMap = new WeakMap()
 const eventMap = new WeakMap()
 
+const attrToProp = {
+  class: 'className',
+  for: 'htmlFor'
+}
+
 const morphAttribute = (target, key, value) => {
   const remove = value == null || value === false
 
@@ -16,21 +21,27 @@ const morphAttribute = (target, key, value) => {
     if (remove) {
       if (listeners[key]) {
         target.removeEventListener(key, listeners[key].proxy)
+
+        listeners[key] = null
       }
     } else if (listeners[key]) {
       listeners[key].handler = value
     } else {
       listeners[key] = {
         proxy(...args) {
-          return eventMap.get(target)[key].handler.call(this, ...args)
+          const event = (eventMap.get(target) || {})[key]
+
+          if (event) {
+            event.handler.apply(this, args)
+          }
         },
         handler: value
       }
 
       target.addEventListener(key, listeners[key].proxy)
-
-      eventMap.set(target, listeners)
     }
+
+    eventMap.set(target, listeners)
   } else {
     if (remove) {
       target.removeAttribute(key)
@@ -39,15 +50,15 @@ const morphAttribute = (target, key, value) => {
     const namespace = key.substring(0, 6) === 'xlink:' ? xlinkNamespace : null
 
     if (!namespace && target.namespaceURI !== svgNamespace && key.substr(0, 5) !== 'data-') {
-      if (key === 'class') key = 'className'
-
-      if (key === 'for') key = 'htmlFor'
+      if (attrToProp[key]) {
+        key = attrToProp[key]
+      }
 
       if (target[key] !== value) {
         target[key] = value
       }
     } else if (!remove) {
-      const stringified = value === true || value === false ? '' : value
+      const stringified = value === true ? '' : value
 
       if (target.getAttributeNS(namespace, key) !== stringified) {
         target.setAttributeNS(namespace, key, stringified)
@@ -56,39 +67,17 @@ const morphAttribute = (target, key, value) => {
   }
 }
 
-const morphAttributes = (target, attributes, meta) => {
-  for (let i = 0, length = attributes.length; i < length; i++) {
-    const attribute = attributes[i]
-
-    if (meta.same && !attribute.variable) {
-      continue
-    }
-
-    let value = attribute.value
-
-    if (attribute.variable) {
-      value = meta.variables[value]
-    }
-
-    if (attribute.key) {
-      morphAttribute(target, attribute.key, value)
-    } else {
-      for (const key of Object.keys(value)) {
-        morphAttribute(target, key, value[key])
-      }
-    }
-  }
-}
-
-const morphChild = (target, index, child, meta) => {
+const morphChild = (target, index, next, variables, same) => {
   const document = target.ownerDocument
 
-  if (child == null) return 0
+  if (next == null) {
+    return 0
+  }
 
-  if (child.type === 'html') {
+  if (next.type === 'html') {
     const div = document.createElement('div')
 
-    div.innerHTML = child.html
+    div.innerHTML = next.html
 
     const length = div.childNodes.length
 
@@ -117,18 +106,18 @@ const morphChild = (target, index, child, meta) => {
 
   let newChild
 
-  if (child.type === 'text') {
+  if (next.type === 'text') {
     if (!append && childNode.nodeType !== 3) {
       replace = true
     }
 
     if (append || replace) {
-      newChild = child.text
-    } else if (childNode.data !== child.text) {
-      childNode.data = child.text
+      newChild = next.text
+    } else if (childNode.data !== next.text) {
+      childNode.data = next.text
     }
   } else {
-    const tag = child.tag || child.tree.tag
+    const tag = next.tag || next.tree.tag
 
     if (!append && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== tag)) {
       replace = true
@@ -142,10 +131,10 @@ const morphChild = (target, index, child, meta) => {
 
     const t = newChild || childNode
 
-    if (child.view != null) {
-      morphRoot(t, child)
+    if (next.view != null) {
+      morphRoot(t, next)
     } else {
-      morph(t, child, meta)
+      morph(t, next, variables, same)
     }
   }
 
@@ -158,84 +147,93 @@ const morphChild = (target, index, child, meta) => {
   return 1
 }
 
-const morphChildren = (target, children, meta) => {
-  let result = 0
-  const length = children.length
-  let deopt = !meta.same
-
-  for (let childIndex = 0; childIndex < length; childIndex++) {
-    let child = children[childIndex]
-
-    if (child == null) continue
-
-    if (!deopt && !child.dynamic && !child.variable) {
-      result += 1
-
-      continue
-    }
-
-    deopt = true
-
-    if (child.variable) {
-      child = meta.variables[child.value]
-
-      if (child != null && child.view == null && child.type == null && !Array.isArray(child)) {
-        child = {type: 'text', text: child}
-      }
-    }
-
-    if (Array.isArray(child)) {
-      for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
-        const grand = child[grandIndex]
-
-        result += morphChild(target, result, grand, meta)
-      }
-    } else {
-      result += morphChild(target, result, child, meta)
-    }
-  }
-
-  return result
-}
-
-const truncateChildren = (target, length) => {
-  while (target.childNodes.length > length) {
-    target.childNodes[length].remove()
-  }
-}
-
-const morph = (target, next, meta) => {
-  if (meta.same && !next.dynamic) {
+const morph = (target, next, variables, same) => {
+  if (same && !next.dynamic) {
     return
   }
 
   if (next.attributes.length) {
-    morphAttributes(target, next.attributes, meta)
+    for (let i = 0, length = next.attributes.length; i < length; i++) {
+      const attribute = next.attributes[i]
+
+      if (same && !attribute.variable) {
+        continue
+      }
+
+      let value = attribute.value
+
+      if (attribute.variable) {
+        value = variables[value]
+      }
+
+      if (attribute.key) {
+        morphAttribute(target, attribute.key, value)
+      } else {
+        for (const key of Object.keys(value)) {
+          morphAttribute(target, key, value[key])
+        }
+      }
+    }
   }
 
   let childrenLength = 0
 
   if (next.children.length) {
-    childrenLength = morphChildren(target, next.children, meta)
+    let result = 0
+    const length = next.children.length
+    let deopt = !same
+
+    for (let childIndex = 0; childIndex < length; childIndex++) {
+      let child = next.children[childIndex]
+
+      if (child == null) {
+        continue
+      }
+
+      if (!deopt && !child.dynamic && !child.variable) {
+        result += 1
+
+        continue
+      }
+
+      deopt = true
+
+      if (child.variable) {
+        child = variables[child.value]
+
+        if (child != null && child.view == null && child.type == null && !Array.isArray(child)) {
+          child = {type: 'text', text: child}
+        }
+      }
+
+      if (Array.isArray(child)) {
+        for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
+          const grand = child[grandIndex]
+
+          result += morphChild(target, result, grand, variables, same)
+        }
+      } else {
+        result += morphChild(target, result, child, variables, same)
+      }
+    }
+
+    childrenLength = result
   }
 
-  truncateChildren(target, childrenLength)
+  while (target.childNodes.length > childrenLength) {
+    target.childNodes[length].remove()
+  }
 }
 
 const morphRoot = (target, next) => {
   const dataView = viewMap.get(target)
   const same = next.view === dataView
-  const meta = {
-    variables: next.variables,
-    view: next.view,
-    same
-  }
 
   if (!same) {
     viewMap.set(target, next.view)
   }
 
-  morph(target, next.tree, meta)
+  morph(target, next.tree, next.variables, same)
 }
 
 export const domUpdate = (target) => (current, cb = () => {}) => {
