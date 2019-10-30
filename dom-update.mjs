@@ -221,7 +221,7 @@ const morph = (target, next, variables, same) => {
   }
 
   while (target.childNodes.length > childrenLength) {
-    target.childNodes[length].remove()
+    target.childNodes[childrenLength].remove()
   }
 }
 
