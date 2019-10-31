@@ -282,9 +282,7 @@ export const view = (cache = {}) => new Proxy({}, {
         cache[view] = create(strs, variables.length)
       }
 
-      const tree = cache[view]
-
-      return {view, tree, variables}
+      return {...cache[view], view, variables}
     }
   }
 })

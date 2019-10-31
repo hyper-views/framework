@@ -68,11 +68,11 @@ test('view.mjs - producing virtual dom', (t) => {
 
   const {div} = view()
 
-  t.deepEquals(div`<div class=${'a'}>${1}</div>`, {view: 'div', tree: {type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}]}, variables: ['a', 1]})
+  t.deepEquals(div`<div class=${'a'}>${1}</div>`, {view: 'div', type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['a', 1]})
 
-  t.deepEquals(div`<div class=${'b'}>${2}</div>`, {view: 'div', tree: {type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}]}, variables: ['b', 2]})
+  t.deepEquals(div`<div class=${'b'}>${2}</div>`, {view: 'div', type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['b', 2]})
 
-  t.deepEquals(div`<div class=${'c'}>${3}</div>`, {view: 'div', tree: {type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}]}, variables: ['c', 3]})
+  t.deepEquals(div`<div class=${'c'}>${3}</div>`, {view: 'div', type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['c', 3]})
 })
 
 test('update.mjs - patching the dom', async (t) => {

@@ -13,7 +13,7 @@ const attrToProp = {
 const morphAttribute = (target, key, value) => {
   const remove = value == null || value === false
 
-  if (key.substring(0, 2) === 'on') {
+  if (key.indexOf('on') === 0) {
     const listeners = eventMap.get(target) || {}
 
     key = key.substring(2)
@@ -47,9 +47,9 @@ const morphAttribute = (target, key, value) => {
       target.removeAttribute(key)
     }
 
-    const namespace = key.substring(0, 6) === 'xlink:' ? xlinkNamespace : null
+    const namespace = key.indexOf('xlink:') === 0 ? xlinkNamespace : null
 
-    if (!namespace && target.namespaceURI !== svgNamespace && key.substr(0, 5) !== 'data-') {
+    if (!namespace && target.namespaceURI !== svgNamespace && key.indexOf('data-') !== 0) {
       if (attrToProp[key]) {
         key = attrToProp[key]
       }
@@ -68,11 +68,15 @@ const morphAttribute = (target, key, value) => {
 }
 
 const morphChild = (target, index, next, variables, same) => {
-  const document = target.ownerDocument
-
   if (next == null) {
     return 0
   }
+
+  if (same && next.view != null && !next.dynamic) {
+    return 1
+  }
+
+  const document = target.ownerDocument
 
   if (next.type === 'html') {
     const div = document.createElement('div')
@@ -117,7 +121,7 @@ const morphChild = (target, index, next, variables, same) => {
       childNode.data = next.text
     }
   } else {
-    const tag = next.tag || next.tree.tag
+    const tag = next.tag
 
     if (!append && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== tag)) {
       replace = true
@@ -233,7 +237,7 @@ const morphRoot = (target, next) => {
     viewMap.set(target, next.view)
   }
 
-  morph(target, next.tree, next.variables, same)
+  morph(target, next, next.variables, same)
 }
 
 export const domUpdate = (target) => (current, cb = () => {}) => {
