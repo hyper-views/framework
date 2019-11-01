@@ -205,7 +205,7 @@ const morph = (target, next, variables, same) => {
       if (child.variable) {
         child = variables[child.value]
 
-        if (child != null && child.view == null && child.type == null && !Array.isArray(child)) {
+        if (child != null && child.type == null && !Array.isArray(child)) {
           child = {type: 'text', text: child}
         }
       }
