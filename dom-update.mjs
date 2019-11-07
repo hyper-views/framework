@@ -233,6 +233,10 @@ const morphRoot = (target, next) => {
   const dataView = viewMap.get(target)
   const same = next.view === dataView
 
+  if (same && next.view != null && !next.dynamic) {
+    return
+  }
+
   if (!same) {
     viewMap.set(target, next.view)
   }
