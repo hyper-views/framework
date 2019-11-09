@@ -1,7 +1,6 @@
 import test from 'tape'
 import jsdom from 'jsdom'
 import delay from 'delay'
-import streamPromise from 'stream-to-promise'
 import {createReadStream} from 'fs'
 import main, {view, domUpdate} from '.'
 import component from './fixtures/component.mjs'
@@ -78,7 +77,15 @@ test('view.mjs - producing virtual dom', (t) => {
 test('update.mjs - patching the dom', async (t) => {
   t.plan(6)
 
-  const html = await streamPromise(createReadStream('./fixtures/document.html', 'utf8'))
+  const htmlStream = createReadStream('./fixtures/document.html')
+
+  let html = []
+
+  for await (const chunk of htmlStream) {
+    html.push(chunk)
+  }
+
+  html = Buffer.concat(html)
 
   const dom = new jsdom.JSDOM(html)
   const main = dom.window.document.querySelector('main')

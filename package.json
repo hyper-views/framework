@@ -25,7 +25,6 @@
     "eslint": "^6.6.0",
     "esm": "^3.2.25",
     "jsdom": "^15.2.1",
-    "stream-to-promise": "^2.2.0",
     "tape": "^4.11.0"
   },
   "dependencies": {},
