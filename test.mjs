@@ -115,7 +115,7 @@ test('update.mjs - patching the dom', async (t) => {
       heading: 'Test 2',
       src: 'foo.jpg',
       onclick: noop,
-      hasSafe: true,
+      hasRaw: true,
       hasP: true,
       isRed: true,
       pText1: 'lorem ipsum',

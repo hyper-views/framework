@@ -1,4 +1,4 @@
-import {view, safe} from '..'
+import {view, raw} from '..'
 
 const {main, paragraph, svg} = view()
 
@@ -7,8 +7,8 @@ export default ({state}) => main`<main>
   <img src=${state.src} />
   <button onclick=${state.onclick} type="button">Approve</button>
   ${
-    Boolean(state.hasSafe)
-    ? safe('<div>some</div><div>raw</div><div>html</div>')
+    Boolean(state.hasRaw)
+    ? raw('<div>some</div><div>raw</div><div>html</div>')
     : null
   } ${
     Boolean(state.hasP)

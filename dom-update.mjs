@@ -251,3 +251,7 @@ export const domUpdate = (target) => (current, cb = () => {}) => {
     cb()
   }, 0)
 }
+
+export const raw = (html) => {
+  return {type: 'html', html}
+}
