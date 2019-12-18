@@ -8,6 +8,11 @@
     "pretest": "lint '**/*.{js,mjs}' '!fixtures'",
     "test": "node -r esm test.mjs"
   },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "main.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/erickmerchant/framework.git"
