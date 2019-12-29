@@ -1,10 +1,27 @@
 {
   "name": "@erickmerchant/framework",
-  "description": "A simple data down, actions up framework.",
   "version": "29.1.1",
-  "author": "Erick Merchant <erickmerchant@gmail.com>",
+  "description": "A simple data down, actions up framework.",
+  "homepage": "https://github.com/erickmerchant/framework#readme",
   "bugs": {
     "url": "https://github.com/erickmerchant/framework/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erickmerchant/framework.git"
+  },
+  "license": "ISC",
+  "author": "Erick Merchant <erickmerchant@gmail.com>",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "main.js"
+  ],
+  "main": "main.mjs",
+  "module": "main.mjs",
+  "scripts": {
+    "pretest": "lint '**/*.{js,mjs}' '!fixtures'",
+    "test": "node -r esm test.mjs"
   },
   "dependencies": {},
   "devDependencies": {
@@ -18,22 +35,5 @@
   },
   "engines": {
     "node": ">=12"
-  },
-  "files": [
-    "LICENSE",
-    "README.md",
-    "main.js"
-  ],
-  "homepage": "https://github.com/erickmerchant/framework#readme",
-  "license": "ISC",
-  "main": "main.mjs",
-  "module": "main.mjs",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/erickmerchant/framework.git"
-  },
-  "scripts": {
-    "pretest": "lint '**/*.{js,mjs}' '!fixtures'",
-    "test": "node -r esm test.mjs"
   }
 }
