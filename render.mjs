@@ -66,6 +66,7 @@ const stringify = ({tag, attributes, children, variables}) => {
 
       i++
     }
+
     result += `</${tag}>`
   }
 
