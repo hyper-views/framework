@@ -15,7 +15,8 @@
   "files": [
     "LICENSE",
     "README.md",
-    "main.js"
+    "main.mjs",
+    "render.mjs"
   ],
   "main": "main.mjs",
   "module": "main.mjs",
