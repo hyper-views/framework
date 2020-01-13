@@ -2,13 +2,14 @@ import test from 'tape'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createReadStream} from 'fs'
-import main, {view, domUpdate} from '.'
+import main, {view, domUpdate, raw} from '.'
+import render from './render.mjs'
 import component from './fixtures/component.mjs'
 
 const noop = () => {}
 const newElement = Symbol('new target')
 
-test('main.mjs - init to render', (t) => {
+test('main.mjs default - init to render', (t) => {
   t.plan(3)
 
   main({
@@ -26,7 +27,7 @@ test('main.mjs - init to render', (t) => {
   })
 })
 
-test('main.mjs - using commit', (t) => {
+test('main.mjs default - using commit', (t) => {
   t.plan(1)
 
   main({
@@ -48,7 +49,7 @@ test('main.mjs - using commit', (t) => {
   })
 })
 
-test('main.mjs - commit multiple', (t) => {
+test('main.mjs default - commit multiple', (t) => {
   t.plan(1)
 
   main({
@@ -62,7 +63,7 @@ test('main.mjs - commit multiple', (t) => {
   })
 })
 
-test('view.mjs - producing virtual dom', (t) => {
+test('main.mjs view - producing virtual dom', (t) => {
   t.plan(3)
 
   const {div} = view()
@@ -74,7 +75,7 @@ test('view.mjs - producing virtual dom', (t) => {
   t.deepEquals(div`<div class=${'c'}>${3}</div>`, {view: 'div', type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['c', 3]})
 })
 
-test('update.mjs - patching the dom', async (t) => {
+test('main.mjs domUpdate - patching the dom', async (t) => {
   t.plan(6)
 
   const htmlStream = createReadStream('./fixtures/document.html')
@@ -184,4 +185,26 @@ test('update.mjs - patching the dom', async (t) => {
   const result7 = main.outerHTML
 
   t.equals(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button>  <svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
+})
+
+test('render.mjs default', (t) => {
+  t.plan(1)
+
+  const {div, span} = view()
+
+  const component = ({state}) => div`<div class=${state.classes}>
+      ${span`<span>${state.one}</span>`}
+      ${span`<span>${raw(state.one)}</span>`}
+      <div>
+        <span></span>
+      </div>
+    </div>`
+
+  const state = {
+    classes: 'a b c',
+    one: '1',
+    two: '2'
+  }
+
+  t.equals(render(component({state})), '<div class="a b c"><span></span>\n      <span>1</span><div><span></span></div></div>')
 })
