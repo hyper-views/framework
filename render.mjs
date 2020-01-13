@@ -38,7 +38,7 @@ const stringify = ({tag, attributes, children, variables}) => {
     }
   }
 
-  result += '>'
+  result += selfClosing.includes(tag) ? ' />' : '>'
 
   if (!selfClosing.includes(tag)) {
     let i = 0
@@ -66,9 +66,8 @@ const stringify = ({tag, attributes, children, variables}) => {
 
       i++
     }
+    result += `</${tag}>`
   }
-
-  result += selfClosing.includes(tag) ? ' />' : `</${tag}>`
 
   return result
 }
