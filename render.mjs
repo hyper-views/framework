@@ -23,6 +23,7 @@ const selfClosing = [
 
 const stringify = ({tag, attributes, children, variables}) => {
   let result = `<${tag}`
+  const isSelfClosing = selfClosing.includes(tag)
 
   for (const attr of attributes.filter(({key}) => !key.startsWith('on'))) {
     let value = attr.value
@@ -38,9 +39,9 @@ const stringify = ({tag, attributes, children, variables}) => {
     }
   }
 
-  result += selfClosing.includes(tag) ? ' />' : '>'
+  result += isSelfClosing ? ' />' : '>'
 
-  if (!selfClosing.includes(tag)) {
+  if (!isSelfClosing) {
     let i = 0
 
     while (i < children.length) {
@@ -50,18 +51,28 @@ const stringify = ({tag, attributes, children, variables}) => {
         child = variables[child.value]
       }
 
-      switch (child.type) {
-        case 'html':
-          result += child.html
-          break
+      if (Array.isArray(child)) {
+        children.splice(i, 1, ...child)
 
-        case 'text':
-          result += escape(child.text)
-          break
+        child = child[0]
+      }
 
-        case 'node':
-          result += stringify({...child, variables: child.view ? child.variables : variables})
-          break
+      if (child.type != null) {
+        switch (child.type) {
+          case 'html':
+            result += child.html
+            break
+
+          case 'text':
+            result += escape(child.text)
+            break
+
+          case 'node':
+            result += stringify({...child, variables: child.view ? child.variables : variables})
+            break
+        }
+      } else {
+        result += escape(child)
       }
 
       i++

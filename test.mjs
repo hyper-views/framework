@@ -194,7 +194,7 @@ test('render.mjs default', (t) => {
 
   const component = ({state}) => div`<div class=${state.classes}>
       ${span`<span>${state.one}</span>`}
-      ${span`<span>${raw(state.one)}</span>`}
+      ${span`<span>${[raw(state.two), state.three]}</span>`}
       <div>
         <span></span>
       </div>
@@ -203,8 +203,9 @@ test('render.mjs default', (t) => {
   const state = {
     classes: 'a b c',
     one: '1',
-    two: '2'
+    two: '2',
+    three: '3'
   }
 
-  t.equals(render(component({state})), '<div class="a b c"><span></span>\n      <span>1</span><div><span></span></div></div>')
+  t.equals(render(component({state})), '<div class="a b c"><span>1</span>\n      <span>23</span><div><span></span></div></div>')
 })
