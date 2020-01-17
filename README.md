@@ -14,20 +14,22 @@ const state = 0
 framework({
   state,
   update,
-  component: (state, commit) => app`<main>
-    <output>${state}</output>
-    <br/>
-    <button
-      onclick=${() => {
-        commit((current) => current - 1)
-      }}
-    >--</button>
-    <button
-      onclick=${() => {
-        commit((current) => current + 1)
-      }}
-    >++</button>
-  </main>`
+  component(state, commit) {
+    return app`<main>
+      <output>${state}</output>
+      <br/>
+      <button
+        onclick=${() => {
+          commit((current) => current - 1)
+        }}
+      >--</button>
+      <button
+        onclick=${() => {
+          commit((current) => current + 1)
+        }}
+      >++</button>
+    </main>`
+  }
 })
 ```
 
