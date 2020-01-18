@@ -16,7 +16,7 @@
     "LICENSE",
     "README.md",
     "main.mjs",
-    "render.mjs"
+    "stringify.mjs"
   ],
   "main": "main.mjs",
   "module": "main.mjs",
