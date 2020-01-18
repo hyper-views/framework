@@ -2,17 +2,17 @@ import test from 'tape'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createReadStream} from 'fs'
-import main, {view, domUpdate, raw} from '.'
-import render from './render.mjs'
-import component from './fixtures/component.mjs'
+import {render, view, domUpdate, raw} from '.'
+import {stringify} from './stringify.mjs'
+import {component} from './fixtures/component.mjs'
 
 const noop = () => {}
 const newElement = Symbol('new target')
 
-test('main.mjs default - init to render', (t) => {
+test('main.mjs render - init to render', (t) => {
   t.plan(3)
 
-  main({
+  render({
     state: null,
     component({state, commit}) {
       t.equal(typeof commit, 'function')
@@ -27,10 +27,10 @@ test('main.mjs default - init to render', (t) => {
   })
 })
 
-test('main.mjs default - using commit', (t) => {
+test('main.mjs render - using commit', (t) => {
   t.plan(1)
 
-  main({
+  render({
     state: null,
     component({state, commit}) {
       if (state == null) {
@@ -49,10 +49,10 @@ test('main.mjs default - using commit', (t) => {
   })
 })
 
-test('main.mjs default - commit multiple', (t) => {
+test('main.mjs render - commit multiple', (t) => {
   t.plan(1)
 
-  main({
+  render({
     state: null,
     component({state}) {
       t.equal(state, null)
@@ -187,7 +187,7 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
   t.equals(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button>  <svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
 })
 
-test('render.mjs default', (t) => {
+test('stringify.mjs stringify', (t) => {
   t.plan(1)
 
   const {div, span} = view()
@@ -207,5 +207,5 @@ test('render.mjs default', (t) => {
     three: '3'
   }
 
-  t.equals(render(component({state})), '<div class="a b c"><span>1</span>\n      <span>23</span><div><span></span></div></div>')
+  t.equals(stringify(component({state})), '<div class="a b c"><span>1</span>\n      <span>23</span><div><span></span></div></div>')
 })

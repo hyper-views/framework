@@ -5,13 +5,13 @@ Documentation forthcoming...
 ## An Example
 
 ``` javascript
-import framework, {view, domUpdate} from '@erickmerchant/framework'
+import {render, view, domUpdate} from '@erickmerchant/framework'
 
 const update = domUpdate(document.querySelector('main'))
 const {app} = view()
 const state = 0
 
-framework({
+render({
   state,
   update,
   component(state, commit) {

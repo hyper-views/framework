@@ -21,7 +21,7 @@ const selfClosing = [
   'wbr'
 ]
 
-const stringify = ({tag, attributes, children, variables}) => {
+export const stringify = ({tag, attributes, children, variables}) => {
   let result = `<${tag}`
   const isSelfClosing = selfClosing.includes(tag)
 
@@ -83,5 +83,3 @@ const stringify = ({tag, attributes, children, variables}) => {
 
   return result
 }
-
-export default stringify

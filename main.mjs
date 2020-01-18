@@ -545,7 +545,7 @@ export const view = (cache = {}) => new Proxy({}, {
   }
 })
 
-export default ({state, component, update}) => {
+export const render = ({state, component, update}) => {
   const nextQueue = []
 
   const next = (cb) => {

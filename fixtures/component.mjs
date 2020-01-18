@@ -2,7 +2,7 @@ import {view, raw} from '..'
 
 const {main, paragraph, svg} = view()
 
-export default ({state}) => main`<main>
+export const component = ({state}) => main`<main>
   <h1>${state.heading}</h1>
   <img src=${state.src} />
   <button onclick=${state.onclick} type="button">Approve</button>
