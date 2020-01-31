@@ -68,7 +68,7 @@ export const stringify = ({tag, attributes, children, variables}) => {
             break
 
           case 'node':
-            result += stringify({...child, variables: child.view ? child.variables : variables})
+            result += stringify({...child, variables: child.view != null ? child.variables : variables})
             break
         }
       } else {
