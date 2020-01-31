@@ -5,17 +5,16 @@ Documentation forthcoming...
 ## An Example
 
 ``` javascript
-import {render, view, domUpdate} from '@erickmerchant/framework'
+import {render, html, domUpdate} from '@erickmerchant/framework'
 
 const update = domUpdate(document.querySelector('main'))
-const {app} = view()
 const state = 0
 
 render({
   state,
   update,
   component(state, commit) {
-    return app`<main>
+    return html`<main>
       <output>${state}</output>
       <br/>
       <button

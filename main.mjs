@@ -497,6 +497,8 @@ const parse = (tokens, parent, tag) => {
   return child.dynamic
 }
 
+let view = 0
+
 const create = (strs, vlength) => {
   const {tokens} = strs.reduce((acc, str, index) => {
     tokenize(acc, str)
@@ -530,20 +532,24 @@ const create = (strs, vlength) => {
     throw Error('one root element expected')
   }
 
-  return children[0]
+  return {view: view++, root: children[0]}
 }
 
-export const view = (cache = {}) => new Proxy({}, {
-  get(_, view) {
-    return (strs, ...variables) => {
-      if (!cache[view]) {
-        cache[view] = create(strs, variables.length)
-      }
+const cache = new Map()
 
-      return {...cache[view], view, variables}
-    }
+export const html = (strs, ...variables) => {
+  let result
+
+  if (!cache.has(strs)) {
+    result = create(strs, variables.length)
+
+    cache.set(strs, result)
+  } else {
+    result = cache.get(strs)
   }
-})
+
+  return {...result.root, view: result.view, variables}
+}
 
 export const render = ({state, component, update}) => {
   const nextQueue = []

@@ -1,8 +1,6 @@
-import {view, raw} from '..'
+import {html, raw} from '../main.mjs'
 
-const {main, paragraph, svg} = view()
-
-export const component = ({state}) => main`<main>
+export const component = ({state}) => html`<main>
   <h1>${state.heading}</h1>
   <img src=${state.src} />
   <button onclick=${state.onclick} type="button">Approve</button>
@@ -12,13 +10,13 @@ export const component = ({state}) => main`<main>
     : null
   } ${
     Boolean(state.hasP)
-    ? paragraph`<p ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
+    ? html`<p ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
         ${state.pText1} ${state.pText2} ${state.pText3}
       </p>`
     : null
   } ${
     Boolean(state.hasSvg)
-    ? svg`<svg>
+    ? html`<svg>
         <path d=${state.svgPath} />
       </svg>`
     : null

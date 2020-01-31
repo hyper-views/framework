@@ -2,7 +2,7 @@ import test from 'tape'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createReadStream} from 'fs'
-import {render, view, domUpdate, raw} from '.'
+import {render, html, domUpdate, raw} from './main.mjs'
 import {stringify} from './stringify.mjs'
 import {component} from './fixtures/component.mjs'
 
@@ -66,13 +66,11 @@ test('main.mjs render - commit multiple', (t) => {
 test('main.mjs view - producing virtual dom', (t) => {
   t.plan(3)
 
-  const {div} = view()
+  t.deepEquals(html`<div class=${'a'}>${1}</div>`, {view: 0, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['a', 1]})
 
-  t.deepEquals(div`<div class=${'a'}>${1}</div>`, {view: 'div', type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['a', 1]})
+  t.deepEquals(html`<div class=${'b'}>${2}</div>`, {view: 1, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['b', 2]})
 
-  t.deepEquals(div`<div class=${'b'}>${2}</div>`, {view: 'div', type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['b', 2]})
-
-  t.deepEquals(div`<div class=${'c'}>${3}</div>`, {view: 'div', type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['c', 3]})
+  t.deepEquals(html`<div class=${'c'}>${3}</div>`, {view: 2, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['c', 3]})
 })
 
 test('main.mjs domUpdate - patching the dom', async (t) => {
@@ -190,11 +188,9 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
 test('stringify.mjs stringify', (t) => {
   t.plan(1)
 
-  const {div, span} = view()
-
-  const component = ({state}) => div`<div class=${state.classes}>
-      ${span`<span>${state.one}</span>`}
-      ${span`<span>${[raw(state.two), state.three]}</span>`}
+  const component = ({state}) => html`<div class=${state.classes}>
+      ${html`<span>${state.one}</span>`}
+      ${html`<span>${[raw(state.two), state.three]}</span>`}
       <div>
         <span></span>
       </div>
