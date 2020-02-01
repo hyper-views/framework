@@ -535,7 +535,7 @@ const create = (strs, vlength) => {
   return {view: view++, root: children[0]}
 }
 
-const cache = new Map()
+const cache = new WeakMap()
 
 export const html = (strs, ...variables) => {
   let result
