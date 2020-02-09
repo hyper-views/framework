@@ -2,25 +2,47 @@ const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const xlinkNamespace = 'http://www.w3.org/1999/xlink'
 
-const viewMap = new WeakMap()
-const eventMap = new WeakMap()
+const metaMap = new WeakMap()
 
 const attrToProp = {
   class: 'className',
   for: 'htmlFor'
 }
 
+const resolve = (obj) => {
+  let afterUpdate
+
+  if (typeof obj === 'function') {
+    obj = obj((cb) => {
+      afterUpdate = cb
+    })
+
+    if (afterUpdate != null) {
+      obj.afterUpdate = afterUpdate
+    }
+  }
+
+  return obj
+}
+
+export const skipUpdate = () => {
+  return {
+    view: 0,
+    dynamic: false
+  }
+}
+
 const morphAttribute = (target, key, value) => {
   const remove = value == null || value === false
 
   if (key.indexOf('on') === 0) {
-    const listeners = eventMap.get(target) || {}
+    const listeners = metaMap.get(target) || {}
 
-    key = key.substring(2)
+    const type = key.substring(2)
 
     if (remove) {
       if (listeners[key]) {
-        target.removeEventListener(key, listeners[key].proxy)
+        target.removeEventListener(type, listeners[key].proxy)
 
         listeners[key] = null
       }
@@ -29,7 +51,7 @@ const morphAttribute = (target, key, value) => {
     } else {
       listeners[key] = {
         proxy(...args) {
-          const event = (eventMap.get(target) || {})[key]
+          const event = (metaMap.get(target) || {})[key]
 
           if (event) {
             event.handler.apply(this, args)
@@ -38,10 +60,10 @@ const morphAttribute = (target, key, value) => {
         handler: value
       }
 
-      target.addEventListener(key, listeners[key].proxy)
+      target.addEventListener(type, listeners[key].proxy)
     }
 
-    eventMap.set(target, listeners)
+    metaMap.set(target, listeners)
   } else {
     if (remove) {
       target.removeAttribute(key)
@@ -109,6 +131,7 @@ const morphChild = (target, index, next, variables, same) => {
   let replace = false
 
   let newChild
+  let t
 
   if (next.type === 'text') {
     if (!append && childNode.nodeType !== 3) {
@@ -133,7 +156,7 @@ const morphChild = (target, index, next, variables, same) => {
       newChild = namespace !== 'http://www.w3.org/1999/xhtml' ? document.createElementNS(namespace, tag) : document.createElement(tag)
     }
 
-    const t = newChild || childNode
+    t = newChild || childNode
 
     if (next.view != null) {
       morphRoot(t, next)
@@ -146,6 +169,10 @@ const morphChild = (target, index, next, variables, same) => {
     target.append(newChild)
   } else if (replace) {
     childNode.replaceWith(newChild)
+  }
+
+  if (t != null && next.afterUpdate) {
+    next.afterUpdate(t)
   }
 
   return 1
@@ -203,7 +230,7 @@ const morph = (target, next, variables, same) => {
       deopt = true
 
       if (child.variable) {
-        child = variables[child.value]
+        child = resolve(variables[child.value])
 
         if (child != null && child.type == null && !Array.isArray(child)) {
           child = {type: 'text', text: child}
@@ -212,7 +239,7 @@ const morph = (target, next, variables, same) => {
 
       if (Array.isArray(child)) {
         for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
-          const grand = child[grandIndex]
+          const grand = resolve(child[grandIndex])
 
           result += morphChild(target, result, grand, variables, same)
         }
@@ -230,25 +257,31 @@ const morph = (target, next, variables, same) => {
 }
 
 const morphRoot = (target, next) => {
-  const dataView = viewMap.get(target)
-  const same = next.view === dataView
+  const meta = metaMap.get(target) || {}
+  const same = next.view === 0 || next.view === meta.view
 
   if (same && next.view != null && !next.dynamic) {
     return
   }
 
   if (!same) {
-    viewMap.set(target, next.view)
+    meta.view = next.view
+
+    metaMap.set(target, meta)
   }
 
   morph(target, next, next.variables, same)
 }
 
-export const domUpdate = (target) => (current, cb = () => {}) => {
+export const domUpdate = (target) => (current) => {
   setTimeout(() => {
+    current = resolve(current)
+
     morphRoot(target, current)
 
-    cb()
+    if (current.afterUpdate) {
+      current.afterUpdate(target)
+    }
   }, 0)
 }
 
@@ -497,7 +530,7 @@ const parse = (tokens, parent, tag) => {
   return child.dynamic
 }
 
-let view = 0
+let view = 1
 
 const create = (strs, vlength) => {
   const {tokens} = strs.reduce((acc, str, index) => {
@@ -535,39 +568,27 @@ const create = (strs, vlength) => {
   return {view: view++, root: children[0]}
 }
 
-const cache = new WeakMap()
+const templateCache = new WeakMap()
 
 export const html = (strs, ...variables) => {
   let result
 
-  if (!cache.has(strs)) {
+  if (!templateCache.has(strs)) {
     result = create(strs, variables.length)
 
-    cache.set(strs, result)
+    templateCache.set(strs, result)
   } else {
-    result = cache.get(strs)
+    result = templateCache.get(strs)
   }
 
   return {...result.root, view: result.view, variables}
 }
 
 export const render = ({state, component, update}) => {
-  const nextQueue = []
-
-  const next = (cb) => {
-    nextQueue.push(cb)
-  }
-
   const commit = (produce) => {
     state = produce(state)
 
-    update(component({state, commit, next}), () => {
-      while (nextQueue.length) {
-        const cb = nextQueue.shift()
-
-        setTimeout(cb, 0)
-      }
-    })
+    update(component({state, commit}))
   }
 
   commit((state) => state)

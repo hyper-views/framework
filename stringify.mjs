@@ -21,6 +21,8 @@ const selfClosing = [
   'wbr'
 ]
 
+const noop = () => {}
+
 export const stringify = ({tag, attributes, children, variables}) => {
   let result = `<${tag}`
   const isSelfClosing = selfClosing.includes(tag)
@@ -39,7 +41,7 @@ export const stringify = ({tag, attributes, children, variables}) => {
     }
   }
 
-  result += isSelfClosing ? ' />' : '>'
+  result += isSelfClosing ? '>' : '>'
 
   if (!isSelfClosing) {
     let i = 0
@@ -49,10 +51,20 @@ export const stringify = ({tag, attributes, children, variables}) => {
 
       if (child.type === 'variable') {
         child = variables[child.value]
+
+        if (typeof child === 'function') {
+          child = child(noop)
+        }
       }
 
       if (Array.isArray(child)) {
-        children.splice(i, 1, ...child)
+        children.splice(i, 1, ...child.map((child) => {
+          if (typeof child === 'function') {
+            child = child(noop)
+          }
+
+          return child
+        }))
 
         child = child[0]
       }

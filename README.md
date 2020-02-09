@@ -13,7 +13,7 @@ const state = 0
 render({
   state,
   update,
-  component(state, commit) {
+  component({state, commit}) {
     return html`<main>
       <output>${state}</output>
       <br/>
