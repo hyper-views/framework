@@ -23,7 +23,17 @@ const selfClosing = [
 
 const noop = () => {}
 
-export const stringify = ({tag, attributes, children, variables}) => {
+const resolve = (obj) => {
+  if (typeof obj === 'function') {
+    obj = obj(noop)
+  }
+
+  return obj
+}
+
+export const stringify = (obj) => {
+  const {tag, attributes, children, variables} = resolve(obj)
+
   let result = `<${tag}`
   const isSelfClosing = selfClosing.includes(tag)
 
@@ -50,18 +60,12 @@ export const stringify = ({tag, attributes, children, variables}) => {
       let child = children[i]
 
       if (child.type === 'variable') {
-        child = variables[child.value]
-
-        if (typeof child === 'function') {
-          child = child(noop)
-        }
+        child = resolve(variables[child.value])
       }
 
       if (Array.isArray(child)) {
         children.splice(i, 1, ...child.map((child) => {
-          if (typeof child === 'function') {
-            child = child(noop)
-          }
+          child = resolve(child)
 
           return child
         }))
