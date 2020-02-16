@@ -245,6 +245,8 @@ const morph = (target, next, variables, same, meta) => {
 
       if (Array.isArray(child)) {
         for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
+          if (child[grandIndex] == null) continue
+
           const grand = resolve(child[grandIndex])
 
           result += morphChild(target, result, grand, variables, same)
@@ -285,6 +287,16 @@ const morphRoot = (target, next) => {
 export const domUpdate = (target) => (current) => {
   setTimeout(() => {
     current = resolve(current)
+
+    if (Array.isArray(current)) {
+      current = {
+        type: 'node',
+        tag: target.nodeName.toLowerCase(),
+        dynamic: true,
+        attributes: [],
+        children: current
+      }
+    }
 
     morphRoot(target, current)
 
@@ -608,11 +620,7 @@ const create = (strs, vlength) => {
     }
   }
 
-  if (children.length !== 1) {
-    throw Error('one root element expected')
-  }
-
-  return {view: view++, root: children[0]}
+  return {view: view++, children}
 }
 
 export const html = (strs, ...variables) => {
@@ -624,7 +632,11 @@ export const html = (strs, ...variables) => {
     weakMap.set(strs, result)
   }
 
-  return {...result.root, view: result.view, variables}
+  if (result.children.length > 1) {
+    return {...result, variables}
+  }
+
+  return {...result.children[0], view: result.view, variables}
 }
 
 export const render = ({state, component, update}) => {

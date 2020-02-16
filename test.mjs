@@ -185,6 +185,123 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
   t.equals(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button>  <svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
 })
 
+test('main.mjs domUpdate - patching with array', async (t) => {
+  t.plan(6)
+
+  const htmlStream = createReadStream('./fixtures/document.html')
+
+  let html = []
+
+  for await (const chunk of htmlStream) {
+    html.push(chunk)
+  }
+
+  html = Buffer.concat(html)
+
+  const dom = new jsdom.JSDOM(html)
+  const main = dom.window.document.querySelector('main')
+
+  const update = domUpdate(main)
+
+  update(component({
+    state: {
+      noRoot: true,
+      heading: 'Test 1',
+      src: 'foo.jpg',
+      onclick() {
+        t.ok(true)
+      }
+    }
+  }))
+
+  await delay(0)
+
+  main.querySelector('button').dispatchEvent(new dom.window.Event('click'))
+
+  const result1 = main.outerHTML
+
+  t.equals(result1, '<main><h1>Test 1</h1><img src="foo.jpg"><button type="button">Approve</button></main>')
+
+  update(component({
+    state: {
+      noRoot: true,
+      heading: 'Test 2',
+      src: 'foo.jpg',
+      onclick: noop,
+      hasRaw: true,
+      hasP: true,
+      isRed: true,
+      pText1: 'lorem ipsum',
+      pText2: 'dolor',
+      pText3: '?'
+    }
+  }))
+
+  await delay(0)
+
+  main.querySelector('button').dispatchEvent(new dom.window.Event('click'))
+
+  const result2 = main.outerHTML
+
+  t.equals(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><button type="button">Approve</button><div>some</div><div>raw</div><div>html</div><p class="red" data-red="yes">lorem ipsum dolor ?</p></main>')
+
+  update(component({
+    state: {
+      noRoot: true,
+      heading: 'Test 3',
+      src: 'bar.jpg',
+      onclick: null,
+      hasP: true,
+      isRed: false,
+      pText1: 'lorem ipsum',
+      pText2: 'dolor',
+      pText3: '?'
+    }
+  }))
+
+  await delay(0)
+
+  main.querySelector('button').dispatchEvent(new dom.window.Event('click'))
+
+  const result3 = main.outerHTML
+
+  t.equals(result3, '<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button><p class="blue" data-blue="yes">lorem ipsum dolor ?</p></main>')
+
+  update(component({
+    state: {
+      noRoot: true,
+      heading: 'Test 6',
+      src: 'bar.jpg',
+      onclick: null,
+      hasSvg: true,
+      svgPath: 'M2 2 2 34 34 34 34 2 z'
+    }
+  }))
+
+  await delay(0)
+
+  const result6 = main.outerHTML
+
+  t.equals(result6, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button><svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>')
+
+  update(component({
+    state: {
+      noRoot: true,
+      heading: 'Test 6',
+      src: 'bar.jpg',
+      onclick: null,
+      hasSvg: true,
+      svgPath: 'M2 0 0 30 32 32 30 2 z'
+    }
+  }))
+
+  await delay(0)
+
+  const result7 = main.outerHTML
+
+  t.equals(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button><svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
+})
+
 test('stringify.mjs stringify', (t) => {
   t.plan(1)
 
