@@ -2,7 +2,7 @@ const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const xlinkNamespace = 'http://www.w3.org/1999/xlink'
 
-const metaMap = new WeakMap()
+const weakMap = new WeakMap()
 
 const attrToProp = {
   class: 'className',
@@ -38,6 +38,12 @@ const morphAttribute = (target, key, value, meta) => {
   if (key.indexOf('on') === 0) {
     const type = key.substring(2)
 
+    if (!meta.read) {
+      Object.assign(meta, weakMap.get(target) || {})
+
+      meta.read = true
+    }
+
     if (remove) {
       if (meta[key]) {
         target.removeEventListener(type, meta[key].proxy)
@@ -49,7 +55,7 @@ const morphAttribute = (target, key, value, meta) => {
     } else {
       meta[key] = {
         proxy(...args) {
-          const event = (metaMap.get(target) || {})[key]
+          const event = (weakMap.get(target) || {})[key]
 
           if (event) {
             event.handler.apply(this, args)
@@ -157,11 +163,11 @@ const morphChild = (target, index, next, variables, same) => {
     if (next.view != null) {
       morphRoot(t, next)
     } else {
-      const meta = metaMap.get(t) || {}
+      const meta = {read: false}
 
       morph(t, next, variables, same, meta)
 
-      metaMap.set(t, meta)
+      weakMap.set(t, meta)
     }
   }
 
@@ -257,7 +263,10 @@ const morph = (target, next, variables, same, meta) => {
 }
 
 const morphRoot = (target, next) => {
-  const meta = metaMap.get(target) || {}
+  const meta = weakMap.get(target) || {}
+
+  meta.read = true
+
   const same = next.view === 0 || next.view === meta.view
 
   if (same && next.view != null && !next.dynamic) {
@@ -270,7 +279,7 @@ const morphRoot = (target, next) => {
 
   morph(target, next, next.variables, same, meta)
 
-  metaMap.set(target, meta)
+  weakMap.set(target, meta)
 }
 
 export const domUpdate = (target) => (current) => {
@@ -293,175 +302,196 @@ const isNameChar = (char) => char && 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
 const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
 
-const tokenize = (acc, str) => {
-  let i = 0
+const tokenizer = {
+  * get(acc, strs, vlength) {
+    for (let index = 0; index < strs.length; index++) {
+      const str = strs[index]
 
-  const current = () => str.charAt(i)
-  const next = () => str.charAt(i + 1)
+      yield * this.tokenize(acc, str)
 
-  while (current()) {
-    if (!acc.tag && current() === '<') {
-      let value = ''
-      let end = false
+      if (index < vlength) {
+        yield {
+          type: 'variable',
+          value: index
+        }
+      }
+    }
+  },
+  * tokenize(acc, str) {
+    let tag = acc.tag
+    let i = 0
 
-      if (next() === '/') {
-        end = true
+    const current = () => str.charAt(i)
+    const next = () => str.charAt(i + 1)
+
+    while (current()) {
+      if (!tag && current() === '<') {
+        let value = ''
+        let end = false
+
+        if (next() === '/') {
+          end = true
+
+          i++
+        }
+
+        while (next() && isNameChar(next())) {
+          i++
+
+          value += current()
+        }
+
+        yield {
+          type: !end ? 'tag' : 'endtag',
+          value
+        }
+
+        tag = value
 
         i++
+
+        continue
       }
 
-      while (next() && isNameChar(next())) {
+      if (tag && isSpaceChar(current())) {
         i++
 
-        value += current()
+        continue
       }
 
-      acc.tokens.push({
-        type: !end ? 'tag' : 'endtag',
-        value
-      })
+      if (tag && current() === '/' && next() === '>') {
+        yield * [
+          {
+            type: 'end',
+            value: tag
+          },
+          {
+            type: 'endtag',
+            value: tag
+          },
+          {
+            type: 'end',
+            value: tag
+          }
+        ]
 
-      acc.tag = value
+        tag = false
 
-      i++
+        i += 2
 
-      continue
-    }
-
-    if (acc.tag && isSpaceChar(current())) {
-      i++
-
-      continue
-    }
-
-    if (acc.tag && current() === '/' && next() === '>') {
-      acc.tokens.push({
-        type: 'end',
-        value: acc.tag
-      }, {
-        type: 'endtag',
-        value: acc.tag
-      }, {
-        type: 'end',
-        value: acc.tag
-      })
-
-      acc.tag = false
-
-      i += 2
-
-      continue
-    }
-
-    if (acc.tag && current() === '>') {
-      acc.tokens.push({
-        type: 'end',
-        value: ''
-      })
-
-      acc.tag = false
-
-      i++
-
-      continue
-    }
-
-    if (acc.tag && isNameChar(current())) {
-      let value = ''
-
-      i--
-
-      while (next() && isNameChar(next())) {
-        i++
-
-        value += current()
+        continue
       }
 
-      acc.tokens.push({
-        type: 'key',
-        value
-      })
+      if (tag && current() === '>') {
+        yield {
+          type: 'end',
+          value: ''
+        }
 
-      if (next() === '=') {
+        tag = false
+
         i++
 
-        let quote = ''
+        continue
+      }
+
+      if (tag && isNameChar(current())) {
         let value = ''
 
-        if (isQuoteChar(next())) {
+        i--
+
+        while (next() && isNameChar(next())) {
           i++
 
-          quote = current()
-
-          while (next() && next() !== quote) {
-            i++
-
-            value += current()
-          }
-
-          i++
-
-          acc.tokens.push({
-            type: 'value',
-            value
-          })
-        } else if (next()) {
-          while (next() && !isSpaceChar(next()) && next() !== '>') {
-            i++
-
-            value += current()
-          }
-
-          if (next() !== '>') i++
-
-          acc.tokens.push({
-            type: 'value',
-            value
-          })
+          value += current()
         }
-      } else {
-        acc.tokens.push({
-          type: 'value',
-          value: true
-        })
+
+        yield {
+          type: 'key',
+          value
+        }
+
+        if (next() === '=') {
+          i++
+
+          let quote = ''
+          let value = ''
+
+          if (isQuoteChar(next())) {
+            i++
+
+            quote = current()
+
+            while (next() && next() !== quote) {
+              i++
+
+              value += current()
+            }
+
+            i++
+
+            yield {
+              type: 'value',
+              value
+            }
+          } else if (next()) {
+            while (next() && !isSpaceChar(next()) && next() !== '>') {
+              i++
+
+              value += current()
+            }
+
+            if (next() !== '>') i++
+
+            yield {
+              type: 'value',
+              value
+            }
+          }
+        } else {
+          yield {
+            type: 'value',
+            value: true
+          }
+        }
+
+        i++
+
+        continue
+      }
+
+      if (!tag) {
+        let value = ''
+
+        while (current() && current() !== '<') {
+          value += current()
+
+          i++
+        }
+
+        // const previous = acc.tokens[acc.tokens.length - 1]
+
+        // let trim = true
+
+        // if (!current() && (previous && previous.type === 'variable')) {
+        //   trim = false
+        // }
+
+        // if ((!trim && value) || (trim && value.trim())) {
+        yield {
+          type: 'text',
+          value
+        }
+        // }
+
+        continue
       }
 
       i++
-
-      continue
     }
 
-    if (!acc.tag) {
-      let value = ''
-
-      while (current() && current() !== '<') {
-        value += current()
-
-        i++
-      }
-
-      const previous = acc.tokens[acc.tokens.length - 1]
-
-      let trim = true
-
-      if (!current() && (previous && previous.type === 'variable')) {
-        trim = false
-      }
-
-      if ((!trim && value) || (trim && value.trim())) {
-        acc.tokens.push({
-          type: 'text',
-          value
-        })
-      }
-
-      continue
-    }
-
-    i++
+    acc.tag = tag
   }
-
-  return acc
 }
 
 const parse = (tokens, parent, tag) => {
@@ -473,16 +503,20 @@ const parse = (tokens, parent, tag) => {
     children: []
   }
 
-  while (tokens.length) {
-    const token = tokens.shift()
+  let current = tokens.next()
+
+  while (!current.done) {
+    const token = current.value
 
     if (token.type === 'end') {
       break
     } else if (token.type === 'key') {
-      if (tokens[0].type === 'value') {
-        child.attributes.push({key: token.value, value: tokens.shift().value})
+      const next = (tokens.next() || {value: true}).value
+
+      if (next.type === 'value') {
+        child.attributes.push({key: token.value, value: next.value})
       } else {
-        const value = tokens.shift().value
+        const value = next.value
 
         child.dynamic = true
 
@@ -501,10 +535,14 @@ const parse = (tokens, parent, tag) => {
         value: token.value
       })
     }
+
+    current = tokens.next()
   }
 
-  while (tokens.length) {
-    const token = tokens.shift()
+  current = tokens.next()
+
+  while (!current.done) {
+    const token = current.value
 
     if (token.type === 'endtag' && token.value === child.tag) {
       break
@@ -526,6 +564,8 @@ const parse = (tokens, parent, tag) => {
         value: token.value
       })
     }
+
+    current = tokens.next()
   }
 
   parent.children.push(child)
@@ -536,32 +576,26 @@ const parse = (tokens, parent, tag) => {
 let view = 1
 
 const create = (strs, vlength) => {
-  const {tokens} = strs.reduce((acc, str, index) => {
-    tokenize(acc, str)
-
-    if (index < vlength) {
-      acc.tokens.push({
-        type: 'variable',
-        value: index
-      })
-    }
-
-    return acc
-  }, {
-    tokens: [],
+  const acc = {
     tag: false
-  })
+  }
+
+  const tokens = tokenizer.get(acc, strs, vlength)
 
   const children = []
 
-  while (tokens.length) {
-    const token = tokens.shift()
+  let current = tokens.next()
+
+  while (!current.done) {
+    const token = current.value
 
     if (token.type === 'tag') {
       parse(tokens, {children}, token.value)
     } else if (token.type === 'text') {
       children.push({text: token.value})
     }
+
+    current = tokens.next()
   }
 
   if (children.length !== 1) {
@@ -571,17 +605,13 @@ const create = (strs, vlength) => {
   return {view: view++, root: children[0]}
 }
 
-const templateCache = new WeakMap()
-
 export const html = (strs, ...variables) => {
-  let result
+  let result = weakMap.get(strs)
 
-  if (!templateCache.has(strs)) {
+  if (!result) {
     result = create(strs, variables.length)
 
-    templateCache.set(strs, result)
-  } else {
-    result = templateCache.get(strs)
+    weakMap.set(strs, result)
   }
 
   return {...result.root, view: result.view, variables}
