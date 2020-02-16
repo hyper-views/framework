@@ -317,7 +317,7 @@ const tokenizer = {
       }
     }
   },
-  * tokenize(acc, str, variable) {
+  * tokenize(acc, str, first) {
     let tag = acc.tag
     let i = 0
 
@@ -346,7 +346,7 @@ const tokenizer = {
           value
         }
 
-        variable = false
+        first = false
 
         tag = value
 
@@ -377,7 +377,7 @@ const tokenizer = {
           }
         ]
 
-        variable = false
+        first = false
 
         tag = false
 
@@ -392,7 +392,7 @@ const tokenizer = {
           value: ''
         }
 
-        variable = false
+        first = false
 
         tag = false
 
@@ -417,7 +417,7 @@ const tokenizer = {
           value
         }
 
-        variable = false
+        first = false
 
         if (next() === '=') {
           i++
@@ -443,7 +443,7 @@ const tokenizer = {
               value
             }
 
-            variable = false
+            first = false
           } else if (next()) {
             while (next() && !isSpaceChar(next()) && next() !== '>') {
               i++
@@ -458,7 +458,7 @@ const tokenizer = {
               value
             }
 
-            variable = false
+            first = false
           }
         } else {
           yield {
@@ -466,7 +466,7 @@ const tokenizer = {
             value: true
           }
 
-          variable = false
+          first = false
         }
 
         i++
@@ -485,7 +485,7 @@ const tokenizer = {
 
         let trim = true
 
-        if (!current() && variable) {
+        if (!current() && first) {
           trim = false
         }
 
