@@ -32,24 +32,22 @@ export const skipUpdate = () => {
   }
 }
 
-const morphAttribute = (target, key, value) => {
+const morphAttribute = (target, key, value, meta) => {
   const remove = value == null || value === false
 
   if (key.indexOf('on') === 0) {
-    const listeners = metaMap.get(target) || {}
-
     const type = key.substring(2)
 
     if (remove) {
-      if (listeners[key]) {
-        target.removeEventListener(type, listeners[key].proxy)
+      if (meta[key]) {
+        target.removeEventListener(type, meta[key].proxy)
 
-        listeners[key] = null
+        meta[key] = null
       }
-    } else if (listeners[key]) {
-      listeners[key].handler = value
+    } else if (meta[key]) {
+      meta[key].handler = value
     } else {
-      listeners[key] = {
+      meta[key] = {
         proxy(...args) {
           const event = (metaMap.get(target) || {})[key]
 
@@ -60,10 +58,8 @@ const morphAttribute = (target, key, value) => {
         handler: value
       }
 
-      target.addEventListener(type, listeners[key].proxy)
+      target.addEventListener(type, meta[key].proxy)
     }
-
-    metaMap.set(target, listeners)
   } else {
     if (remove) {
       target.removeAttribute(key)
@@ -161,7 +157,11 @@ const morphChild = (target, index, next, variables, same) => {
     if (next.view != null) {
       morphRoot(t, next)
     } else {
-      morph(t, next, variables, same)
+      const meta = metaMap.get(t) || {}
+
+      morph(t, next, variables, same, meta)
+
+      metaMap.set(t, meta)
     }
   }
 
@@ -178,7 +178,7 @@ const morphChild = (target, index, next, variables, same) => {
   return 1
 }
 
-const morph = (target, next, variables, same) => {
+const morph = (target, next, variables, same, meta) => {
   if (same && !next.dynamic) {
     return
   }
@@ -198,10 +198,10 @@ const morph = (target, next, variables, same) => {
       }
 
       if (attribute.key) {
-        morphAttribute(target, attribute.key, value)
+        morphAttribute(target, attribute.key, value, meta)
       } else {
         for (const key of Object.keys(value)) {
-          morphAttribute(target, key, value[key])
+          morphAttribute(target, key, value[key], meta)
         }
       }
     }
@@ -266,11 +266,11 @@ const morphRoot = (target, next) => {
 
   if (!same) {
     meta.view = next.view
-
-    metaMap.set(target, meta)
   }
 
-  morph(target, next, next.variables, same)
+  morph(target, next, next.variables, same, meta)
+
+  metaMap.set(target, meta)
 }
 
 export const domUpdate = (target) => (current) => {
@@ -419,6 +419,11 @@ const tokenize = (acc, str) => {
             value
           })
         }
+      } else {
+        acc.tokens.push({
+          type: 'value',
+          value: true
+        })
       }
 
       i++
@@ -474,9 +479,9 @@ const parse = (tokens, parent, tag) => {
     if (token.type === 'end') {
       break
     } else if (token.type === 'key') {
-      if (tokens[0] && tokens[0].type === 'value') {
+      if (tokens[0].type === 'value') {
         child.attributes.push({key: token.value, value: tokens.shift().value})
-      } else if (tokens[0] && tokens[0].type === 'variable') {
+      } else {
         const value = tokens.shift().value
 
         child.dynamic = true
@@ -486,8 +491,6 @@ const parse = (tokens, parent, tag) => {
           variable: true,
           value
         })
-      } else {
-        child.attributes.push({key: token.value, value: true})
       }
     } else if (token.type === 'variable') {
       child.dynamic = true
