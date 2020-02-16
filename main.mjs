@@ -442,8 +442,6 @@ const tokenizer = {
               type: 'value',
               value
             }
-
-            first = false
           } else if (next()) {
             while (next() && !isSpaceChar(next()) && next() !== '>') {
               i++
@@ -457,16 +455,12 @@ const tokenizer = {
               type: 'value',
               value
             }
-
-            first = false
           }
         } else {
           yield {
             type: 'value',
             value: true
           }
-
-          first = false
         }
 
         i++
