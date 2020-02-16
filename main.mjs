@@ -307,7 +307,7 @@ const tokenizer = {
     for (let index = 0; index < strs.length; index++) {
       const str = strs[index]
 
-      yield * this.tokenize(acc, str)
+      yield * this.tokenize(acc, str, index > 0)
 
       if (index < vlength) {
         yield {
@@ -317,7 +317,7 @@ const tokenizer = {
       }
     }
   },
-  * tokenize(acc, str) {
+  * tokenize(acc, str, variable) {
     let tag = acc.tag
     let i = 0
 
@@ -345,6 +345,8 @@ const tokenizer = {
           type: !end ? 'tag' : 'endtag',
           value
         }
+
+        variable = false
 
         tag = value
 
@@ -375,6 +377,8 @@ const tokenizer = {
           }
         ]
 
+        variable = false
+
         tag = false
 
         i += 2
@@ -387,6 +391,8 @@ const tokenizer = {
           type: 'end',
           value: ''
         }
+
+        variable = false
 
         tag = false
 
@@ -411,6 +417,8 @@ const tokenizer = {
           value
         }
 
+        variable = false
+
         if (next() === '=') {
           i++
 
@@ -434,6 +442,8 @@ const tokenizer = {
               type: 'value',
               value
             }
+
+            variable = false
           } else if (next()) {
             while (next() && !isSpaceChar(next()) && next() !== '>') {
               i++
@@ -447,12 +457,16 @@ const tokenizer = {
               type: 'value',
               value
             }
+
+            variable = false
           }
         } else {
           yield {
             type: 'value',
             value: true
           }
+
+          variable = false
         }
 
         i++
@@ -469,20 +483,18 @@ const tokenizer = {
           i++
         }
 
-        // const previous = acc.tokens[acc.tokens.length - 1]
+        let trim = true
 
-        // let trim = true
-
-        // if (!current() && (previous && previous.type === 'variable')) {
-        //   trim = false
-        // }
-
-        // if ((!trim && value) || (trim && value.trim())) {
-        yield {
-          type: 'text',
-          value
+        if (!current() && variable) {
+          trim = false
         }
-        // }
+
+        if ((!trim && value) || (trim && value.trim())) {
+          yield {
+            type: 'text',
+            value
+          }
+        }
 
         continue
       }
