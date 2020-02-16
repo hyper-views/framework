@@ -509,9 +509,13 @@ const parse = (tokens, parent, tag) => {
     children: []
   }
 
-  let current = tokens.next()
+  let current
 
-  while (!current.done) {
+  for (;;) {
+    current = tokens.next()
+
+    if (current.done) break
+
     const token = current.value
 
     if (token.type === 'end') {
@@ -541,13 +545,13 @@ const parse = (tokens, parent, tag) => {
         value: token.value
       })
     }
-
-    current = tokens.next()
   }
 
-  current = tokens.next()
+  for (;;) {
+    current = tokens.next()
 
-  while (!current.done) {
+    if (current.done) break
+
     const token = current.value
 
     if (token.type === 'endtag' && token.value === child.tag) {
@@ -570,8 +574,6 @@ const parse = (tokens, parent, tag) => {
         value: token.value
       })
     }
-
-    current = tokens.next()
   }
 
   parent.children.push(child)
@@ -590,9 +592,13 @@ const create = (strs, vlength) => {
 
   const children = []
 
-  let current = tokens.next()
+  let current
 
-  while (!current.done) {
+  for (;;) {
+    current = tokens.next()
+
+    if (current.done) break
+
     const token = current.value
 
     if (token.type === 'tag') {
@@ -600,8 +606,6 @@ const create = (strs, vlength) => {
     } else if (token.type === 'text') {
       children.push({text: token.value})
     }
-
-    current = tokens.next()
   }
 
   if (children.length !== 1) {
