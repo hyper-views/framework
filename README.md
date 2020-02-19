@@ -1,8 +1,6 @@
 # @erickmerchant/framework
 
-Documentation forthcoming...
-
-## An Example
+## Example
 
 ``` javascript
 import {render, html, domUpdate} from '@erickmerchant/framework'
@@ -41,7 +39,3 @@ render({
 - [A TodoMVC example](https://todo.erickmerchant.com)
 
   The source code can be found [here](https://github.com/erickmerchant/framework-todo)
-
-- [DBMon](https://erickmerchant.github.io/js-repaint-perfs/framework/)
-
-  It's pretty fast.
