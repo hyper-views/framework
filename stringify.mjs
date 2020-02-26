@@ -37,7 +37,21 @@ export const stringify = (obj) => {
   let result = `<${tag}`
   const isSelfClosing = selfClosing.includes(tag)
 
-  for (const attr of attributes.filter(({key}) => !key.startsWith('on'))) {
+  const reducedAttributes = attributes.reduce((acc, curr) => {
+    if (curr.key) {
+      if (curr.key.startsWith('on')) return acc
+
+      acc.push(curr)
+    } else {
+      for (const [key, value] of Object.entries(variables[curr.value])) {
+        acc.push({key, value})
+      }
+    }
+
+    return acc
+  }, [])
+
+  for (const attr of reducedAttributes) {
     let value = attr.value
 
     if (attr.variable) {
