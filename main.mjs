@@ -2,6 +2,8 @@ const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const xlinkNamespace = 'http://www.w3.org/1999/xlink'
 
+const xhtmlNamespace = 'http://www.w3.org/1999/xhtml'
+
 const weakMap = new WeakMap()
 
 const getMeta = (target, fallback = {}) => weakMap.get(target) || fallback
@@ -159,7 +161,7 @@ const morphChild = (target, index, next, variables, same) => {
     if (append || replace) {
       const namespace = tag === 'svg' ? svgNamespace : target.namespaceURI
 
-      newChild = namespace !== 'http://www.w3.org/1999/xhtml' ? document.createElementNS(namespace, tag) : document.createElement(tag)
+      newChild = namespace !== xhtmlNamespace ? document.createElementNS(namespace, tag) : document.createElement(tag)
     }
 
     t = newChild || childNode
