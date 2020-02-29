@@ -310,9 +310,10 @@ export const raw = (html) => {
   return {type: 'html', html}
 }
 
-const isNameChar = (char) => char && 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-:'.indexOf(char) > -1
-const isSpaceChar = (char) => char && ' \t\n\r'.indexOf(char) > -1
-const isQuoteChar = (char) => char && '\'"'.indexOf(char) > -1
+const isInCharSet = (char, chars) => char && chars.indexOf(char) !== -1
+const isNameChar = (char) => !isInCharSet(char, ' \t\n\r\'"=</>')
+const isSpaceChar = (char) => isInCharSet(char, ' \t\n\r')
+const isQuoteChar = (char) => isInCharSet(char, '\'"')
 
 const tokenizer = {
   * get(acc, strs, vlength) {
