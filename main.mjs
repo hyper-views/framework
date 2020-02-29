@@ -4,6 +4,10 @@ const xlinkNamespace = 'http://www.w3.org/1999/xlink'
 
 const weakMap = new WeakMap()
 
+const getMeta = (target, fallback = {}) => weakMap.get(target) || fallback
+
+const setMeta = (target, meta) => weakMap.set(target, meta)
+
 const attrToProp = {
   class: 'className',
   for: 'htmlFor'
@@ -39,7 +43,7 @@ const morphAttribute = (target, key, value, meta) => {
     const type = key.substring(2)
 
     if (!meta.read) {
-      Object.assign(meta, weakMap.get(target) || {})
+      Object.assign(meta, getMeta(target))
 
       meta.read = true
     }
@@ -55,7 +59,7 @@ const morphAttribute = (target, key, value, meta) => {
     } else {
       meta[key] = {
         proxy(...args) {
-          const event = (weakMap.get(target) || {})[key]
+          const event = getMeta(target)[key]
 
           if (event) {
             event.handler.apply(this, args)
@@ -166,8 +170,6 @@ const morphChild = (target, index, next, variables, same) => {
       const meta = {read: false}
 
       morph(t, next, variables, same, meta)
-
-      weakMap.set(t, meta)
     }
   }
 
@@ -262,10 +264,12 @@ const morph = (target, next, variables, same, meta) => {
   while (target.childNodes.length > childrenLength) {
     target.childNodes[childrenLength].remove()
   }
+
+  setMeta(target, meta)
 }
 
 const morphRoot = (target, next) => {
-  const meta = weakMap.get(target) || {}
+  const meta = getMeta(target)
 
   meta.read = true
 
@@ -280,8 +284,6 @@ const morphRoot = (target, next) => {
   }
 
   morph(target, next, next.variables, same, meta)
-
-  weakMap.set(target, meta)
 }
 
 export const domUpdate = (target) => (current) => {
@@ -625,12 +627,12 @@ const create = (strs, vlength) => {
 }
 
 export const html = (strs, ...variables) => {
-  let result = weakMap.get(strs)
+  let result = getMeta(strs, false)
 
   if (!result) {
     result = create(strs, variables.length)
 
-    weakMap.set(strs, result)
+    setMeta(strs, result)
   }
 
   if (result.children.length > 1) {
