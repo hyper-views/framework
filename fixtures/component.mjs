@@ -6,15 +6,15 @@ export const component = ({state}) => (
       html`<h1>${state.heading}</h1>`,
       html`<img src=${state.src} />`,
       html`<button onclick=${state.onclick} type="button">Approve</button>`,
-      Boolean(state.hasRaw)
+      state.hasRaw
         ? raw('<div>some</div><div>raw</div><div>html</div>')
         : null,
-      Boolean(state.hasP)
+      state.hasP
         ? html`<p ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
           ${state.pText1} ${state.pText2} ${state.pText3}
         </p>`
         : null,
-      Boolean(state.hasSvg)
+      state.hasSvg
         ? html`<svg>
           <path d=${state.svgPath} />
         </svg>`
@@ -25,17 +25,17 @@ export const component = ({state}) => (
     <img src=${state.src} />
     <button onclick=${state.onclick} type="button">Approve</button>
     ${
-      Boolean(state.hasRaw)
+      state.hasRaw
       ? raw('<div>some</div><div>raw</div><div>html</div>')
       : null
     } ${
-      Boolean(state.hasP)
+      state.hasP
       ? html`<p ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
           ${state.pText1} ${state.pText2} ${state.pText3}
         </p>`
       : null
     } ${
-      Boolean(state.hasSvg)
+      state.hasSvg
       ? html`<svg>
           <path d=${state.svgPath} />
         </svg>`
