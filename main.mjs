@@ -98,6 +98,8 @@ const morphAttribute = (target, key, value, meta) => {
 }
 
 const morphChild = (target, index, next, variables, same) => {
+  let childNode = target.childNodes[index]
+
   if (next == null) {
     return 0
   }
@@ -116,23 +118,25 @@ const morphChild = (target, index, next, variables, same) => {
     const length = div.childNodes.length
 
     for (let offset = 0; offset < length; offset++) {
-      const childNode = target.childNodes[index + offset]
-
-      const node = div.childNodes[0]
+      const node = div.firstChild
 
       if (childNode == null) {
         target.append(node)
-      } else if (!childNode.isEqualNode(node)) {
-        childNode.replaceWith(node)
       } else {
-        node.remove()
+        if (!childNode.isEqualNode(node)) {
+          childNode.replaceWith(node)
+
+          childNode = node
+        } else {
+          node.remove()
+        }
+
+        childNode = childNode.nextSibling
       }
     }
 
     return length
   }
-
-  const childNode = target.childNodes[index]
 
   const append = childNode == null
 
@@ -264,7 +268,7 @@ const morph = (target, next, variables, same, meta) => {
   }
 
   while (target.childNodes.length > childrenLength) {
-    target.childNodes[childrenLength].remove()
+    target.lastChild.remove()
   }
 
   setMeta(target, meta)
