@@ -244,18 +244,22 @@ const morph = (target, next, variables, same, meta) => {
       deopt = true
 
       if (child.variable) {
-        child = resolve(variables[child.value])
+        child = variables[child.value]
 
-        if (child != null && child.type == null && !Array.isArray(child)) {
-          child = {type: 'text', text: child}
+        if (!Array.isArray(child)) {
+          child = [child]
         }
-      }
 
-      if (Array.isArray(child)) {
         for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
+          let grand = child[grandIndex]
+
           if (child[grandIndex] == null) continue
 
-          const grand = resolve(child[grandIndex])
+          grand = resolve(grand)
+
+          if (grand != null && grand.type == null) {
+            grand = {type: 'text', text: grand}
+          }
 
           result += morphChild(target, result, grand, variables, same)
         }
