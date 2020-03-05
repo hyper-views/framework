@@ -33,6 +33,7 @@ const resolve = (obj) => {
 
 export const skipUpdate = () => {
   return {
+    type: 'view',
     view: 0,
     dynamic: false
   }
@@ -253,11 +254,11 @@ const morph = (target, next, variables, same, meta) => {
         for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
           let grand = child[grandIndex]
 
-          if (child[grandIndex] == null) continue
+          if (grand == null) continue
 
           grand = resolve(grand)
 
-          if (grand != null && grand.type == null) {
+          if (grand.type == null) {
             grand = {type: 'text', text: grand}
           }
 
