@@ -31,6 +31,8 @@ const resolve = (obj) => {
   return obj
 }
 
+const getNextSibling = (child) => (child ? child.nextSibling : null)
+
 export const skipUpdate = () => {
   return {
     type: 'view',
@@ -98,17 +100,7 @@ const morphAttribute = (target, key, value, meta) => {
   }
 }
 
-const morphChild = (target, index, next, variables, same) => {
-  let childNode = target.childNodes[index]
-
-  if (next == null) {
-    return 0
-  }
-
-  if (same && next.view != null && !next.dynamic) {
-    return 1
-  }
-
+const morphChild = (target, childNode, next, variables, same) => {
   const document = target.ownerDocument
 
   if (next.type === 'html') {
@@ -132,11 +124,11 @@ const morphChild = (target, index, next, variables, same) => {
           node.remove()
         }
 
-        childNode = childNode.nextSibling
+        childNode = getNextSibling(childNode)
       }
     }
 
-    return length
+    return childNode
   }
 
   const append = childNode == null
@@ -152,10 +144,12 @@ const morphChild = (target, index, next, variables, same) => {
     }
 
     if (append || replace) {
-      newChild = next.text
+      newChild = document.createTextNode(next.text)
     } else if (childNode.data !== next.text) {
       childNode.data = next.text
     }
+
+    t = newChild || childNode
   } else {
     const tag = next.tag
 
@@ -190,7 +184,7 @@ const morphChild = (target, index, next, variables, same) => {
     next.afterUpdate(t)
   }
 
-  return 1
+  return getNextSibling(t)
 }
 
 const morph = (target, next, variables, same, meta) => {
@@ -222,10 +216,9 @@ const morph = (target, next, variables, same, meta) => {
     }
   }
 
-  let childrenLength = 0
+  let childNode = target.firstChild
 
   if (next.children.length) {
-    let result = 0
     const length = next.children.length
     let deopt = !same
 
@@ -237,7 +230,7 @@ const morph = (target, next, variables, same, meta) => {
       }
 
       if (!deopt && !child.dynamic && !child.variable) {
-        result += 1
+        childNode = getNextSibling(childNode)
 
         continue
       }
@@ -254,26 +247,32 @@ const morph = (target, next, variables, same, meta) => {
         for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
           let grand = child[grandIndex]
 
-          if (grand == null) continue
-
           grand = resolve(grand)
+
+          if (grand == null) continue
 
           if (grand.type == null) {
             grand = {type: 'text', text: grand}
           }
 
-          result += morphChild(target, result, grand, variables, same)
+          if (same && grand.view != null && !grand.dynamic) {
+            childNode = getNextSibling(childNode)
+          } else {
+            childNode = morphChild(target, childNode, grand, variables, same)
+          }
         }
       } else {
-        result += morphChild(target, result, child, variables, same)
+        childNode = morphChild(target, childNode, child, variables, same)
       }
     }
-
-    childrenLength = result
   }
 
-  while (target.childNodes.length > childrenLength) {
-    target.lastChild.remove()
+  if (childNode) {
+    while (childNode.nextSibling) {
+      childNode.nextSibling.remove()
+    }
+
+    childNode.remove()
   }
 
   setMeta(target, meta)
