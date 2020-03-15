@@ -70,7 +70,9 @@ export const stringify = (obj) => {
   if (!isSelfClosing) {
     let i = 0
 
-    while (i < children.length) {
+    const descendants = []
+
+    for (let i = 0; i < children.length; i++) {
       let child = children[i]
 
       if (child.type === 'variable') {
@@ -78,14 +80,18 @@ export const stringify = (obj) => {
       }
 
       if (Array.isArray(child)) {
-        children.splice(i, 1, ...child.map((child) => {
-          child = resolve(child)
+        for (let i = 0; i < child.length; i++) {
+          const c = child[i]
 
-          return child
-        }))
-
-        child = child[0]
+          descendants.push(c)
+        }
+      } else {
+        descendants.push(child)
       }
+    }
+
+    while (i < descendants.length) {
+      const child = descendants[i]
 
       if (child.type != null) {
         switch (child.type) {
