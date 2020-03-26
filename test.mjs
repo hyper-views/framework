@@ -9,9 +9,7 @@ import {component} from './fixtures/component.mjs'
 const noop = () => {}
 const newElement = Symbol('new target')
 
-test('main.mjs render - init to render', (t) => {
-  t.plan(3)
-
+test('main.mjs render - init to render', async (t) => {
   render({
     state: null,
     component({state, commit}) {
@@ -25,11 +23,13 @@ test('main.mjs render - init to render', (t) => {
       t.deepEqual(element, newElement)
     }
   })
+
+  await delay(0)
+
+  t.end()
 })
 
-test('main.mjs render - using commit', (t) => {
-  t.plan(1)
-
+test('main.mjs render - using commit', async (t) => {
   render({
     state: null,
     component({state, commit}) {
@@ -47,11 +47,13 @@ test('main.mjs render - using commit', (t) => {
     },
     update: noop
   })
+
+  await delay(0)
+
+  t.end()
 })
 
-test('main.mjs render - commit multiple', (t) => {
-  t.plan(1)
-
+test('main.mjs render - commit multiple', async (t) => {
   render({
     state: null,
     component({state}) {
@@ -61,21 +63,23 @@ test('main.mjs render - commit multiple', (t) => {
     },
     update: noop
   })
+
+  await delay(0)
+
+  t.end()
 })
 
-test('main.mjs view - producing virtual dom', (t) => {
-  t.plan(3)
-
+test('main.mjs view - producing virtual dom', async (t) => {
   t.deepEquals(html`<div class=${'a'}>${1}</div>`, {view: 1, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['a', 1]})
 
   t.deepEquals(html`<div class=${'b'}>${2}</div>`, {view: 2, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['b', 2]})
 
   t.deepEquals(html`<div class=${'c'}>${3}</div>`, {view: 3, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['c', 3]})
+
+  t.end()
 })
 
 test('main.mjs domUpdate - patching the dom', async (t) => {
-  t.plan(6)
-
   const htmlStream = createReadStream('./fixtures/document.html')
 
   let html = []
@@ -183,11 +187,13 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
   const result7 = main.outerHTML
 
   t.equals(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button>  <svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
+
+  await delay(0)
+
+  t.end()
 })
 
 test('main.mjs domUpdate - patching with array', async (t) => {
-  t.plan(6)
-
   const htmlStream = createReadStream('./fixtures/document.html')
 
   let html = []
@@ -300,11 +306,13 @@ test('main.mjs domUpdate - patching with array', async (t) => {
   const result7 = main.outerHTML
 
   t.equals(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button><svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
+
+  await delay(0)
+
+  t.end()
 })
 
-test('stringify.mjs stringify', (t) => {
-  t.plan(1)
-
+test('stringify.mjs stringify', async (t) => {
   const component = ({state}) => html`<div class=${state.classes}>
       ${html`<span>${state.one}</span>`}
       ${html`<span>${[raw(state.two), state.three]}</span>`}
@@ -321,4 +329,8 @@ test('stringify.mjs stringify', (t) => {
   }
 
   t.equals(stringify(component({state})), '<div class="a b c"><span>1</span>\n      <span>23</span><div><span></span></div></div>')
+
+  await delay(0)
+
+  t.end()
 })
