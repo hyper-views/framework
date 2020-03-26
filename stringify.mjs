@@ -65,7 +65,7 @@ export const stringify = (obj) => {
     }
   }
 
-  result += isSelfClosing ? '>' : '>'
+  result += '>'
 
   if (!isSelfClosing) {
     let i = 0
