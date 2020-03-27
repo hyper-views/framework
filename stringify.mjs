@@ -104,7 +104,7 @@ export const stringify = (obj) => {
             break
 
           case 'node':
-            result += stringify({...child, variables: child.view != null ? child.variables : variables})
+            result += stringify(Object.assign({}, child, {variables: child.view != null ? child.variables : variables}))
             break
         }
       } else {

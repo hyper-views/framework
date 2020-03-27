@@ -646,10 +646,10 @@ export const html = (strs, ...variables) => {
   }
 
   if (result.children.length > 1) {
-    return {...result, variables}
+    return Object.assign({}, result, {variables})
   }
 
-  return {...result.children[0], view: result.view, variables}
+  return Object.assign({}, result.children[0], {view: result.view, variables})
 }
 
 export const render = ({state, component, update}) => {
