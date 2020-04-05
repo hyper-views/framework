@@ -5,8 +5,9 @@
 ``` javascript
 import {render, html, domUpdate} from '@erickmerchant/framework'
 
-const update = domUpdate(document.querySelector('main'))
 const state = 0
+
+const update = domUpdate(document.querySelector('main'))
 
 render({
   state,
