@@ -27,7 +27,6 @@
   "dependencies": {},
   "devDependencies": {
     "@erickmerchant/lint": "^4.1.2",
-    "babel-eslint": "^10.1.0",
     "delay": "^4.3.0",
     "esm": "^3.2.25",
     "jsdom": "^16.2.2",
