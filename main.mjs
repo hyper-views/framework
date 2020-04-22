@@ -1,19 +1,6 @@
 const svgNamespace = 'http://www.w3.org/2000/svg'
 
-const xlinkNamespace = 'http://www.w3.org/1999/xlink'
-
-const xhtmlNamespace = 'http://www.w3.org/1999/xhtml'
-
 const weakMap = new WeakMap()
-
-const getMeta = (target, fallback = {}) => weakMap.get(target) || fallback
-
-const setMeta = (target, meta) => weakMap.set(target, meta)
-
-const attrToProp = {
-  class: 'className',
-  for: 'htmlFor'
-}
 
 const resolve = (obj) => {
   let afterUpdate
@@ -33,13 +20,13 @@ const resolve = (obj) => {
 
 const getNextSibling = (child) => (child ? child.nextSibling : null)
 
-export const skipUpdate = () => {
-  return {
-    type: 'view',
-    view: 0,
-    dynamic: false
-  }
+const viewZero = {
+  type: 'node',
+  view: 0,
+  dynamic: false
 }
+
+export const skipUpdate = () => viewZero
 
 const morphAttribute = (target, key, value, meta) => {
   const remove = value == null || value === false
@@ -48,7 +35,7 @@ const morphAttribute = (target, key, value, meta) => {
     const type = key.substring(2)
 
     if (!meta.read) {
-      Object.assign(meta, getMeta(target))
+      Object.assign(meta, weakMap.get(target) || {})
 
       meta.read = true
     }
@@ -64,7 +51,7 @@ const morphAttribute = (target, key, value, meta) => {
     } else {
       meta[key] = {
         proxy(...args) {
-          const event = getMeta(target)[key]
+          const event = (weakMap.get(target) || {})[key]
 
           if (event) {
             event.handler.apply(this, args)
@@ -78,23 +65,17 @@ const morphAttribute = (target, key, value, meta) => {
   } else {
     if (remove) {
       target.removeAttribute(key)
-    }
-
-    const namespace = key.indexOf('xlink:') === 0 ? xlinkNamespace : null
-
-    if (!namespace && target.namespaceURI !== svgNamespace && key.indexOf('data-') !== 0) {
-      if (attrToProp[key]) {
-        key = attrToProp[key]
-      }
-
-      if (target[key] !== value) {
-        target[key] = value
-      }
-    } else if (!remove) {
+    } else {
       const stringified = value === true ? '' : value
 
-      if (target.getAttributeNS(namespace, key) !== stringified) {
-        target.setAttributeNS(namespace, key, stringified)
+      if (target.getAttribute(key) !== stringified) {
+        target.setAttribute(key, stringified)
+      }
+    }
+
+    if (key === 'value' || value === true || value === false) {
+      if (target[key] !== value) {
+        target[key] = value
       }
     }
   }
@@ -103,10 +84,10 @@ const morphAttribute = (target, key, value, meta) => {
 const morphChild = (target, childNode, next, variables, same) => {
   const document = target.ownerDocument
 
-  if (next.type === 'html') {
+  if (next.type === 'raw') {
     const div = document.createElement('div')
 
-    div.innerHTML = next.html
+    div.innerHTML = next.value
 
     const length = div.childNodes.length
 
@@ -144,9 +125,9 @@ const morphChild = (target, childNode, next, variables, same) => {
     }
 
     if (append || replace) {
-      newChild = document.createTextNode(next.text)
-    } else if (childNode.data !== next.text) {
-      childNode.data = next.text
+      newChild = document.createTextNode(next.value)
+    } else if (childNode.data !== next.value) {
+      childNode.data = next.value
     }
 
     t = newChild || childNode
@@ -158,9 +139,9 @@ const morphChild = (target, childNode, next, variables, same) => {
     }
 
     if (append || replace) {
-      const namespace = tag === 'svg' ? svgNamespace : target.namespaceURI
+      const isSvg = tag === 'svg' || target.namespaceURI === svgNamespace
 
-      newChild = namespace !== xhtmlNamespace ? document.createElementNS(namespace, tag) : document.createElement(tag)
+      newChild = isSvg ? document.createElementNS(svgNamespace, tag) : document.createElement(tag)
     }
 
     t = newChild || childNode
@@ -252,7 +233,7 @@ const morph = (target, next, variables, same, meta) => {
           if (grand == null) continue
 
           if (grand.type == null) {
-            grand = {type: 'text', text: grand}
+            grand = {type: 'text', value: grand}
           }
 
           if (same && grand.view != null && !grand.dynamic) {
@@ -275,11 +256,11 @@ const morph = (target, next, variables, same, meta) => {
     childNode.remove()
   }
 
-  setMeta(target, meta)
+  weakMap.set(target, meta)
 }
 
 const morphRoot = (target, next) => {
-  const meta = getMeta(target)
+  const meta = weakMap.get(target) || {}
 
   meta.read = true
 
@@ -318,14 +299,19 @@ export const domUpdate = (target) => (current) => {
   }, 0)
 }
 
-export const raw = (html) => {
-  return {type: 'html', html}
+export const raw = (value) => {
+  return {type: 'raw', value}
 }
 
-const isInCharSet = (char, chars) => char && chars.indexOf(char) !== -1
-const isNameChar = (char) => !isInCharSet(char, ' \t\n\r\'"=</>')
-const isSpaceChar = (char) => isInCharSet(char, ' \t\n\r')
-const isQuoteChar = (char) => isInCharSet(char, '\'"')
+const isSpaceChar = (char) => /\s/.test(char)
+const isOfClose = (char) => char === '/' || char === '>' || isSpaceChar(char)
+const isOfTag = (char) => !isOfClose(char)
+const isOfKey = (char) => char !== '=' && !isOfClose(char)
+const isQuoteChar = (char) => char === '"' || char === '\''
+
+const endToken = {
+  type: 'end'
+}
 
 const tokenizer = {
   * get(acc, strs, vlength) {
@@ -360,7 +346,7 @@ const tokenizer = {
           i++
         }
 
-        while (next() && isNameChar(next())) {
+        while (next() && isOfTag(next())) {
           i++
 
           value += current()
@@ -388,18 +374,12 @@ const tokenizer = {
 
       if (tag && current() === '/' && next() === '>') {
         yield * [
-          {
-            type: 'end',
-            value: tag
-          },
+          endToken,
           {
             type: 'endtag',
             value: tag
           },
-          {
-            type: 'end',
-            value: tag
-          }
+          endToken
         ]
 
         first = false
@@ -412,10 +392,7 @@ const tokenizer = {
       }
 
       if (tag && current() === '>') {
-        yield {
-          type: 'end',
-          value: ''
-        }
+        yield endToken
 
         first = false
 
@@ -426,12 +403,12 @@ const tokenizer = {
         continue
       }
 
-      if (tag && isNameChar(current())) {
+      if (tag && isOfKey(current())) {
         let value = ''
 
         i--
 
-        while (next() && isNameChar(next())) {
+        while (next() && isOfKey(next())) {
           i++
 
           value += current()
@@ -450,7 +427,7 @@ const tokenizer = {
           let quote = ''
           let value = ''
 
-          if (isQuoteChar(next())) {
+          if (next() && isQuoteChar(next())) {
             i++
 
             quote = current()
@@ -588,7 +565,7 @@ const parse = (tokens, parent, tag) => {
     } else if (token.type === 'text') {
       child.children.push({
         type: 'text',
-        text: token.value
+        value: token.value
       })
     } else if (token.type === 'variable') {
       child.dynamic = true
@@ -629,7 +606,7 @@ const create = (strs, vlength) => {
     if (token.type === 'tag') {
       parse(tokens, {children}, token.value)
     } else if (token.type === 'text') {
-      children.push({text: token.value})
+      children.push({value: token.value})
     }
   }
 
@@ -637,12 +614,12 @@ const create = (strs, vlength) => {
 }
 
 export const html = (strs, ...variables) => {
-  let result = getMeta(strs, false)
+  let result = weakMap.get(strs)
 
   if (!result) {
     result = create(strs, variables.length)
 
-    setMeta(strs, result)
+    weakMap.set(strs, result)
   }
 
   if (result.children.length > 1) {

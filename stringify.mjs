@@ -95,12 +95,12 @@ export const stringify = (obj) => {
 
       if (child.type != null) {
         switch (child.type) {
-          case 'html':
-            result += child.html
+          case 'raw':
+            result += child.value
             break
 
           case 'text':
-            result += escape(child.text)
+            result += escape(child.value)
             break
 
           case 'node':
