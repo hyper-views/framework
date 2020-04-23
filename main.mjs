@@ -84,34 +84,6 @@ const morphAttribute = (target, key, value, meta) => {
 const morphChild = (target, childNode, next, variables, same) => {
   const document = target.ownerDocument
 
-  if (next.type === 'raw') {
-    const div = document.createElement('div')
-
-    div.innerHTML = next.value
-
-    const length = div.childNodes.length
-
-    for (let offset = 0; offset < length; offset++) {
-      const node = div.firstChild
-
-      if (childNode == null) {
-        target.append(node)
-      } else {
-        if (!childNode.isEqualNode(node)) {
-          childNode.replaceWith(node)
-
-          childNode = node
-        } else {
-          node.remove()
-        }
-
-        childNode = getNextSibling(childNode)
-      }
-    }
-
-    return childNode
-  }
-
   const append = childNode == null
 
   let replace = false
@@ -297,10 +269,6 @@ export const domUpdate = (target) => (current) => {
       current.afterUpdate(target)
     }
   }, 0)
-}
-
-export const raw = (value) => {
-  return {type: 'raw', value}
 }
 
 const isSpaceChar = (char) => /\s/.test(char)
@@ -623,7 +591,7 @@ export const html = (strs, ...variables) => {
   }
 
   if (result.children.length > 1) {
-    return Object.assign({}, result, {variables})
+    return result.children.map((child) => Object.assign({}, child, {view: result.view, variables}))
   }
 
   return Object.assign({}, result.children[0], {view: result.view, variables})

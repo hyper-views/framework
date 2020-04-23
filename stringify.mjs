@@ -95,10 +95,6 @@ export const stringify = (obj) => {
 
       if (child.type != null) {
         switch (child.type) {
-          case 'raw':
-            result += child.value
-            break
-
           case 'text':
             result += escape(child.value)
             break

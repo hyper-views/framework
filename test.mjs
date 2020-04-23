@@ -2,7 +2,7 @@ import test from 'tape'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createReadStream} from 'fs'
-import {render, html, domUpdate, raw} from './main.mjs'
+import {render, html, domUpdate} from './main.mjs'
 import {stringify} from './stringify.mjs'
 import {component} from './fixtures/component.mjs'
 
@@ -111,14 +111,13 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
 
   const result1 = main.outerHTML
 
-  t.equals(result1, '<main><h1>Test 1</h1><img src="foo.jpg"><button type="button">Approve</button>  </main>')
+  t.equals(result1, '<main><h1>Test 1</h1><img src="foo.jpg"><button type="button">Approve</button> </main>')
 
   update(component({
     state: {
       heading: 'Test 2',
       src: 'foo.jpg',
       onclick: noop,
-      hasRaw: true,
       hasP: true,
       isRed: true,
       pText1: 'lorem ipsum',
@@ -133,7 +132,7 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
 
   const result2 = main.outerHTML
 
-  t.equals(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><button type="button">Approve</button><div>some</div><div>raw</div><div>html</div> <p class="red" data-red="yes">lorem ipsum dolor ?</p> </main>')
+  t.equals(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><button type="button">Approve</button><p class="red">lorem ipsum dolor ?</p> </main>')
 
   update(component({
     state: {
@@ -154,7 +153,7 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
 
   const result3 = main.outerHTML
 
-  t.equals(result3, '<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button> <p class="blue" data-blue="yes">lorem ipsum dolor ?</p> </main>')
+  t.equals(result3, '<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button><p class="blue">lorem ipsum dolor ?</p> </main>')
 
   update(component({
     state: {
@@ -170,7 +169,7 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
 
   const result6 = main.outerHTML
 
-  t.equals(result6, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button>  <svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>')
+  t.equals(result6, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button> <svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>')
 
   update(component({
     state: {
@@ -186,7 +185,7 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
 
   const result7 = main.outerHTML
 
-  t.equals(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button>  <svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
+  t.equals(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button> <svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
 
   await delay(0)
 
@@ -234,7 +233,6 @@ test('main.mjs domUpdate - patching with array', async (t) => {
       heading: 'Test 2',
       src: 'foo.jpg',
       onclick: noop,
-      hasRaw: true,
       hasP: true,
       isRed: true,
       pText1: 'lorem ipsum',
@@ -249,7 +247,7 @@ test('main.mjs domUpdate - patching with array', async (t) => {
 
   const result2 = main.outerHTML
 
-  t.equals(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><button type="button">Approve</button><div>some</div><div>raw</div><div>html</div><p class="red" data-red="yes">lorem ipsum dolor ?</p></main>')
+  t.equals(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><button type="button">Approve</button><p class="red">lorem ipsum dolor ?</p></main>')
 
   update(component({
     state: {
@@ -271,7 +269,7 @@ test('main.mjs domUpdate - patching with array', async (t) => {
 
   const result3 = main.outerHTML
 
-  t.equals(result3, '<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button><p class="blue" data-blue="yes">lorem ipsum dolor ?</p></main>')
+  t.equals(result3, '<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button><p class="blue">lorem ipsum dolor ?</p></main>')
 
   update(component({
     state: {
@@ -315,7 +313,7 @@ test('main.mjs domUpdate - patching with array', async (t) => {
 test('stringify.mjs stringify', async (t) => {
   const component = ({state}) => html`<div class=${state.classes}>
       ${html`<span>${state.one}</span>`}
-      ${html`<span>${[raw(state.two), state.three]}</span>`}
+      ${html`<span>${[state.two, state.three]}</span>`}
       <div>
         <span></span>
       </div>

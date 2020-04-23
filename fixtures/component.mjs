@@ -1,4 +1,4 @@
-import {html, raw} from '../main.mjs'
+import {html} from '../main.mjs'
 
 export const component = ({state}) => (
   state.noRoot
@@ -6,11 +6,8 @@ export const component = ({state}) => (
       html`<h1>${state.heading}</h1>`,
       html`<img src=${state.src} />`,
       html`<button onclick=${state.onclick} type="button">Approve</button>`,
-      state.hasRaw
-        ? raw('<div>some</div><div>raw</div><div>html</div>')
-        : null,
       state.hasP
-        ? html`<p ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
+        ? html`<p ${{class: state.isRed ? 'red' : 'blue'}}>
           ${state.pText1} ${state.pText2} ${state.pText3}
         </p>`
         : null,
@@ -25,12 +22,8 @@ export const component = ({state}) => (
     <img src=${state.src} />
     <button onclick=${state.onclick} type="button">Approve</button>
     ${
-      state.hasRaw
-      ? raw('<div>some</div><div>raw</div><div>html</div>')
-      : null
-    } ${
       state.hasP
-      ? html`<p ${{class: state.isRed ? 'red' : 'blue', [state.isRed ? 'data-red' : 'data-blue']: 'yes'}}>
+      ? html`<p ${{class: state.isRed ? 'red' : 'blue'}}>
           ${state.pText1} ${state.pText2} ${state.pText3}
         </p>`
       : null
