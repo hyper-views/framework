@@ -22,17 +22,16 @@
   "module": "main.mjs",
   "scripts": {
     "pretest": "lint '**/*.{js,mjs}' '!fixtures'",
-    "test": "node -r esm test.mjs"
+    "test": "node test.mjs"
   },
   "dependencies": {},
   "devDependencies": {
-    "@erickmerchant/lint": "^4.1.2",
+    "@erickmerchant/lint": "^5.0.0",
     "delay": "^4.3.0",
-    "esm": "^3.2.25",
     "jsdom": "^16.2.2",
     "tape": "^5.0.0"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=14"
   }
 }
