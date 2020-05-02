@@ -51,7 +51,7 @@ const morphAttribute = (target, key, value, meta) => {
     } else {
       meta[key] = {
         proxy(...args) {
-          const event = (weakMap.get(target) || {})[key]
+          const event = (weakMap.get(target) ?? {})[key]
 
           if (event) {
             event.handler.apply(this, args)
@@ -102,7 +102,7 @@ const morphChild = (target, childNode, next, variables, same) => {
       childNode.data = next.value
     }
 
-    t = newChild || childNode
+    t = newChild ?? childNode
   } else {
     const tag = next.tag
 
@@ -116,7 +116,7 @@ const morphChild = (target, childNode, next, variables, same) => {
       newChild = isSvg ? document.createElementNS(svgNamespace, tag) : document.createElement(tag)
     }
 
-    t = newChild || childNode
+    t = newChild ?? childNode
 
     if (next.view != null) {
       morphRoot(t, next)
@@ -232,7 +232,7 @@ const morph = (target, next, variables, same, meta) => {
 }
 
 const morphRoot = (target, next) => {
-  const meta = weakMap.get(target) || {}
+  const meta = weakMap.get(target) ?? {}
 
   meta.read = true
 
@@ -491,7 +491,7 @@ const parse = (tokens, parent, tag) => {
     if (token.type === 'end') {
       break
     } else if (token.type === 'key') {
-      const next = (tokens.next() || {value: true}).value
+      const next = (tokens.next() ?? {value: true}).value
 
       if (next.type === 'value') {
         child.attributes.push({key: token.value, value: next.value})
