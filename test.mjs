@@ -1,10 +1,21 @@
 import test from 'tape'
 import jsdom from 'jsdom'
 import delay from 'delay'
-import {createReadStream} from 'fs'
 import {render, html, domUpdate} from './main.mjs'
 import {stringify} from './stringify.mjs'
 import {component} from './fixtures/component.mjs'
+const document = `
+<!doctype html>
+<html>
+  <head>
+    <title>Test Document</title>
+  </head>
+  <body>
+    <main>
+    </main>
+  </body>
+</html>
+`
 
 const noop = () => {}
 const newElement = Symbol('new target')
@@ -80,17 +91,7 @@ test('main.mjs view - producing virtual dom', async (t) => {
 })
 
 test('main.mjs domUpdate - patching the dom', async (t) => {
-  const htmlStream = createReadStream('./fixtures/document.html')
-
-  let html = []
-
-  for await (const chunk of htmlStream) {
-    html.push(chunk)
-  }
-
-  html = Buffer.concat(html)
-
-  const dom = new jsdom.JSDOM(html)
+  const dom = new jsdom.JSDOM(document)
   const main = dom.window.document.querySelector('main')
 
   const update = domUpdate(main)
@@ -193,17 +194,7 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
 })
 
 test('main.mjs domUpdate - patching with array', async (t) => {
-  const htmlStream = createReadStream('./fixtures/document.html')
-
-  let html = []
-
-  for await (const chunk of htmlStream) {
-    html.push(chunk)
-  }
-
-  html = Buffer.concat(html)
-
-  const dom = new jsdom.JSDOM(html)
+  const dom = new jsdom.JSDOM(document)
   const main = dom.window.document.querySelector('main')
 
   const update = domUpdate(main)
