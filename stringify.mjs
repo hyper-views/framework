@@ -75,7 +75,7 @@ export const stringify = (obj) => {
     for (let i = 0; i < children.length; i++) {
       let child = children[i]
 
-      if (child.type === 'variable') {
+      if (child?.type === 'variable') {
         child = resolve(variables[child.value])
       }
 
@@ -93,7 +93,7 @@ export const stringify = (obj) => {
     while (i < descendants.length) {
       const child = descendants[i]
 
-      if (child.type != null) {
+      if (child?.type != null) {
         switch (child.type) {
           case 'text':
             result += escape(child.value)
