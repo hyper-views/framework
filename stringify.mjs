@@ -95,18 +95,20 @@ export const stringify = (obj) => {
     while (i < descendants.length) {
       const child = descendants[i]
 
-      if (child?.type != null) {
-        switch (child.type) {
-          case 'text':
-            result += escape(child.value)
-            break
+      if (child != null) {
+        if (child.type != null) {
+          switch (child.type) {
+            case 'text':
+              result += escape(child.value)
+              break
 
-          case 'node':
-            result += stringify(Object.assign({}, child, {variables: child.view != null ? child.variables : variables}))
-            break
+            case 'node':
+              result += stringify(Object.assign({}, child, {variables: child.view != null ? child.variables : variables}))
+              break
+          }
+        } else {
+          result += escape(child)
         }
-      } else {
-        result += escape(child)
       }
 
       i++
