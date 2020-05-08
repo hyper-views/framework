@@ -44,6 +44,8 @@ export const stringify = (obj) => {
       acc.push(curr)
     } else {
       for (const [key, value] of Object.entries(variables[curr.value])) {
+        if (key.startsWith('on')) continue
+
         acc.push({key, value})
       }
     }
