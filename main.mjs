@@ -42,7 +42,7 @@ const morphAttribute = (target, key, value, meta) => {
 
     if (remove) {
       if (meta[key]) {
-        target.removeEventListener(type, meta[key].proxy)
+        target.removeEventListener(type, meta[key].delegate)
 
         meta[key] = null
       }
@@ -50,7 +50,7 @@ const morphAttribute = (target, key, value, meta) => {
       meta[key].handler = value
     } else {
       meta[key] = {
-        proxy(...args) {
+        delegate(...args) {
           const event = (weakMap.get(target) ?? {})[key]
 
           if (event) {
@@ -60,7 +60,7 @@ const morphAttribute = (target, key, value, meta) => {
         handler: value
       }
 
-      target.addEventListener(type, meta[key].proxy)
+      target.addEventListener(type, meta[key].delegate)
     }
   } else {
     if (remove) {
@@ -250,25 +250,23 @@ const morphRoot = (target, next) => {
 }
 
 export const domUpdate = (target) => (current) => {
-  setTimeout(() => {
-    current = resolve(current)
+  current = resolve(current)
 
-    if (Array.isArray(current)) {
-      current = {
-        type: 'node',
-        tag: target.nodeName.toLowerCase(),
-        dynamic: true,
-        attributes: [],
-        children: current
-      }
+  if (Array.isArray(current)) {
+    current = {
+      type: 'node',
+      tag: target.nodeName.toLowerCase(),
+      dynamic: true,
+      attributes: [],
+      children: current
     }
+  }
 
-    morphRoot(target, current)
+  morphRoot(target, current)
 
-    if (current.afterUpdate) {
-      current.afterUpdate(target)
-    }
-  }, 0)
+  if (current.afterUpdate) {
+    current.afterUpdate(target)
+  }
 }
 
 const isSpaceChar = (char) => /\s/.test(char)
@@ -598,13 +596,17 @@ export const html = (strs, ...variables) => {
 }
 
 export const render = ({state, component, update}) => {
-  const commit = (produce) => {
-    state = produce(state)
+  const commit = (arg) => {
+    if (typeof arg === 'function') {
+      state = arg(state) ?? state
+    } else {
+      state = arg
+    }
 
     update(component({state, commit}))
   }
 
-  commit((state) => state)
+  commit(state)
 
   return commit
 }
