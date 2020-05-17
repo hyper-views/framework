@@ -3,30 +3,26 @@
 ## Example
 
 ``` javascript
-import {render, html, domUpdate} from '@erickmerchant/framework'
+import {createApp, createDomView, html} from '@erickmerchant/framework'
 
-const state = 0
+const app = createApp(0)
 
-const update = domUpdate(document.querySelector('main'))
-
-render({
-  state,
-  update,
-  component({state, commit}) {
-    return html`<main>
-      <output>${state}</output>
-      <br/>
-      <button
-        onclick=${() => {
-          commit((current) => current - 1)
-        }}
-      >--</button>
-      <button
-        onclick=${() => {
-          commit((current) => current + 1)
-        }}
-      >++</button>
-    </main>`
-  }
+const view = createDomView(document.querySelector('main'), (state) => {
+  return html`<main>
+    <output>${state}</output>
+    <br/>
+    <button
+      onclick=${() => {
+        app.commit((current) => current - 1)
+      }}
+    >--</button>
+    <button
+      onclick=${() => {
+        app.commit((current) => current + 1)
+      }}
+    >++</button>
+  </main>`
 })
+
+app.render(view)
 ```
