@@ -618,7 +618,9 @@ export const createApp = (state) => {
         state = arg
       }
 
-      this.view(state)
+      if (this.view != null) {
+        this.view(state)
+      }
     }
   }
 }
