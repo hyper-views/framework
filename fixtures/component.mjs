@@ -1,6 +1,6 @@
 import {html} from '../main.mjs'
 
-export const component = ({state}) => (
+export const component = (state) => (
   state.noRoot
     ? [
       html`<h1>${state.heading}</h1>`,

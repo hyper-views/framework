@@ -1,7 +1,7 @@
 import test from 'tape'
 import jsdom from 'jsdom'
 import delay from 'delay'
-import {render, html, domUpdate} from './main.mjs'
+import {createApp, createDomView, html} from './main.mjs'
 import {stringify} from './stringify.mjs'
 import {component} from './fixtures/component.mjs'
 const document = `
@@ -20,19 +20,15 @@ const document = `
 const noop = () => {}
 const newElement = Symbol('new target')
 
-test('main.mjs render - init to render', async (t) => {
-  render({
-    state: null,
-    component({state, commit}) {
-      t.equal(typeof commit, 'function')
+test('main.mjs render', async (t) => {
+  const app = createApp(null)
 
-      t.equal(state, null)
+  t.equal(typeof app.commit, 'function')
 
-      return newElement
-    },
-    update(element) {
-      t.deepEqual(element, newElement)
-    }
+  app.render((state) => {
+    t.equal(state, null)
+
+    return newElement
   })
 
   await delay(0)
@@ -40,23 +36,15 @@ test('main.mjs render - init to render', async (t) => {
   t.end()
 })
 
-test('main.mjs render - using commit', async (t) => {
-  render({
-    state: null,
-    component({state, commit}) {
-      if (state == null) {
-        process.nextTick(() => {
-          commit((state) => {
-            t.equal(state, null)
+test('main.mjs commit', async (t) => {
+  const app = createApp(null)
 
-            return 1
-          })
-        })
-      }
+  app.render(noop)
 
-      return newElement
-    },
-    update: noop
+  app.commit((state) => {
+    t.equal(state, null)
+
+    return 1
   })
 
   await delay(0)
@@ -64,23 +52,7 @@ test('main.mjs render - using commit', async (t) => {
   t.end()
 })
 
-test('main.mjs render - commit multiple', async (t) => {
-  render({
-    state: null,
-    component({state}) {
-      t.equal(state, null)
-
-      return newElement
-    },
-    update: noop
-  })
-
-  await delay(0)
-
-  t.end()
-})
-
-test('main.mjs view - producing virtual dom', async (t) => {
+test('main.mjs html', async (t) => {
   t.deepEquals(html`<div class=${'a'}>${1}</div>`, {view: 1, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['a', 1]})
 
   t.deepEquals(html`<div class=${'b'}>${2}</div>`, {view: 2, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['b', 2]})
@@ -90,21 +62,19 @@ test('main.mjs view - producing virtual dom', async (t) => {
   t.end()
 })
 
-test('main.mjs domUpdate - patching the dom', async (t) => {
+test('main.mjs createDomView', async (t) => {
   const dom = new jsdom.JSDOM(document)
   const main = dom.window.document.querySelector('main')
 
-  const update = domUpdate(main)
+  const view = createDomView(main, component)
 
-  update(component({
-    state: {
-      heading: 'Test 1',
-      src: 'foo.jpg',
-      onclick() {
-        t.ok(true)
-      }
+  view({
+    heading: 'Test 1',
+    src: 'foo.jpg',
+    onclick() {
+      t.ok(true)
     }
-  }))
+  })
 
   await delay(0)
 
@@ -114,18 +84,16 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
 
   t.equals(result1, '<main><h1>Test 1</h1><img src="foo.jpg"><button type="button">Approve</button> </main>')
 
-  update(component({
-    state: {
-      heading: 'Test 2',
-      src: 'foo.jpg',
-      onclick: noop,
-      hasP: true,
-      isRed: true,
-      pText1: 'lorem ipsum',
-      pText2: 'dolor',
-      pText3: '?'
-    }
-  }))
+  view({
+    heading: 'Test 2',
+    src: 'foo.jpg',
+    onclick: noop,
+    hasP: true,
+    isRed: true,
+    pText1: 'lorem ipsum',
+    pText2: 'dolor',
+    pText3: '?'
+  })
 
   await delay(0)
 
@@ -135,18 +103,16 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
 
   t.equals(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><button type="button">Approve</button><p class="red">lorem ipsum dolor ?</p> </main>')
 
-  update(component({
-    state: {
-      heading: 'Test 3',
-      src: 'bar.jpg',
-      onclick: null,
-      hasP: true,
-      isRed: false,
-      pText1: 'lorem ipsum',
-      pText2: 'dolor',
-      pText3: '?'
-    }
-  }))
+  view({
+    heading: 'Test 3',
+    src: 'bar.jpg',
+    onclick: null,
+    hasP: true,
+    isRed: false,
+    pText1: 'lorem ipsum',
+    pText2: 'dolor',
+    pText3: '?'
+  })
 
   await delay(0)
 
@@ -156,15 +122,13 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
 
   t.equals(result3, '<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button><p class="blue">lorem ipsum dolor ?</p> </main>')
 
-  update(component({
-    state: {
-      heading: 'Test 6',
-      src: 'bar.jpg',
-      onclick: null,
-      hasSvg: true,
-      svgPath: 'M2 2 2 34 34 34 34 2 z'
-    }
-  }))
+  view({
+    heading: 'Test 6',
+    src: 'bar.jpg',
+    onclick: null,
+    hasSvg: true,
+    svgPath: 'M2 2 2 34 34 34 34 2 z'
+  })
 
   await delay(0)
 
@@ -172,15 +136,13 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
 
   t.equals(result6, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button> <svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>')
 
-  update(component({
-    state: {
-      heading: 'Test 6',
-      src: 'bar.jpg',
-      onclick: null,
-      hasSvg: true,
-      svgPath: 'M2 0 0 30 32 32 30 2 z'
-    }
-  }))
+  view({
+    heading: 'Test 6',
+    src: 'bar.jpg',
+    onclick: null,
+    hasSvg: true,
+    svgPath: 'M2 0 0 30 32 32 30 2 z'
+  })
 
   await delay(0)
 
@@ -193,22 +155,20 @@ test('main.mjs domUpdate - patching the dom', async (t) => {
   t.end()
 })
 
-test('main.mjs domUpdate - patching with array', async (t) => {
+test('main.mjs createDomView', async (t) => {
   const dom = new jsdom.JSDOM(document)
   const main = dom.window.document.querySelector('main')
 
-  const update = domUpdate(main)
+  const view = createDomView(main, component)
 
-  update(component({
-    state: {
-      noRoot: true,
-      heading: 'Test 1',
-      src: 'foo.jpg',
-      onclick() {
-        t.ok(true)
-      }
+  view({
+    noRoot: true,
+    heading: 'Test 1',
+    src: 'foo.jpg',
+    onclick() {
+      t.ok(true)
     }
-  }))
+  })
 
   await delay(0)
 
@@ -218,19 +178,17 @@ test('main.mjs domUpdate - patching with array', async (t) => {
 
   t.equals(result1, '<main><h1>Test 1</h1><img src="foo.jpg"><button type="button">Approve</button></main>')
 
-  update(component({
-    state: {
-      noRoot: true,
-      heading: 'Test 2',
-      src: 'foo.jpg',
-      onclick: noop,
-      hasP: true,
-      isRed: true,
-      pText1: 'lorem ipsum',
-      pText2: 'dolor',
-      pText3: '?'
-    }
-  }))
+  view({
+    noRoot: true,
+    heading: 'Test 2',
+    src: 'foo.jpg',
+    onclick: noop,
+    hasP: true,
+    isRed: true,
+    pText1: 'lorem ipsum',
+    pText2: 'dolor',
+    pText3: '?'
+  })
 
   await delay(0)
 
@@ -240,19 +198,17 @@ test('main.mjs domUpdate - patching with array', async (t) => {
 
   t.equals(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><button type="button">Approve</button><p class="red">lorem ipsum dolor ?</p></main>')
 
-  update(component({
-    state: {
-      noRoot: true,
-      heading: 'Test 3',
-      src: 'bar.jpg',
-      onclick: null,
-      hasP: true,
-      isRed: false,
-      pText1: 'lorem ipsum',
-      pText2: 'dolor',
-      pText3: '?'
-    }
-  }))
+  view({
+    noRoot: true,
+    heading: 'Test 3',
+    src: 'bar.jpg',
+    onclick: null,
+    hasP: true,
+    isRed: false,
+    pText1: 'lorem ipsum',
+    pText2: 'dolor',
+    pText3: '?'
+  })
 
   await delay(0)
 
@@ -262,16 +218,14 @@ test('main.mjs domUpdate - patching with array', async (t) => {
 
   t.equals(result3, '<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button><p class="blue">lorem ipsum dolor ?</p></main>')
 
-  update(component({
-    state: {
-      noRoot: true,
-      heading: 'Test 6',
-      src: 'bar.jpg',
-      onclick: null,
-      hasSvg: true,
-      svgPath: 'M2 2 2 34 34 34 34 2 z'
-    }
-  }))
+  view({
+    noRoot: true,
+    heading: 'Test 6',
+    src: 'bar.jpg',
+    onclick: null,
+    hasSvg: true,
+    svgPath: 'M2 2 2 34 34 34 34 2 z'
+  })
 
   await delay(0)
 
@@ -279,16 +233,14 @@ test('main.mjs domUpdate - patching with array', async (t) => {
 
   t.equals(result6, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button><svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>')
 
-  update(component({
-    state: {
-      noRoot: true,
-      heading: 'Test 6',
-      src: 'bar.jpg',
-      onclick: null,
-      hasSvg: true,
-      svgPath: 'M2 0 0 30 32 32 30 2 z'
-    }
-  }))
+  view({
+    noRoot: true,
+    heading: 'Test 6',
+    src: 'bar.jpg',
+    onclick: null,
+    hasSvg: true,
+    svgPath: 'M2 0 0 30 32 32 30 2 z'
+  })
 
   await delay(0)
 

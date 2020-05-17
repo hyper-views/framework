@@ -249,8 +249,8 @@ const morphRoot = (target, next) => {
   morph(target, next, next.variables, same, meta)
 }
 
-export const domUpdate = (target) => (current) => {
-  current = resolve(current)
+export const createDomView = (target, view) => (state) => {
+  let current = resolve(view(state))
 
   if (Array.isArray(current)) {
     current = {
@@ -551,7 +551,7 @@ const parse = (tokens, parent, tag) => {
 
 let view = 1
 
-const create = (strs, vlength) => {
+const toTemplate = (strs, vlength) => {
   const acc = {
     tag: false
   }
@@ -583,7 +583,7 @@ export const html = (strs, ...variables) => {
   let result = weakMap.get(strs)
 
   if (!result) {
-    result = create(strs, variables.length)
+    result = toTemplate(strs, variables.length)
 
     weakMap.set(strs, result)
   }
@@ -595,18 +595,30 @@ export const html = (strs, ...variables) => {
   return Object.assign({}, result.children[0], {view: result.view, variables})
 }
 
-export const render = ({state, component, update}) => {
-  const commit = (arg) => {
-    if (typeof arg === 'function') {
-      state = arg(state) ?? state
-    } else {
-      state = arg
+export const createApp = (state) => {
+  return {
+    isInited: false,
+    render(view) {
+      this.view = view
+
+      Promise.resolve().then(() => {
+        if (!this.isInited) {
+          this.isInited = true
+
+          this.view(state)
+        }
+      })
+    },
+    commit(arg) {
+      this.isInited = true
+
+      if (typeof arg === 'function') {
+        state = arg(state) ?? state
+      } else {
+        state = arg
+      }
+
+      this.view(state)
     }
-
-    update(component({state, commit}))
   }
-
-  commit(state)
-
-  return commit
 }
