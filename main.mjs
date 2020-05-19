@@ -18,8 +18,6 @@ const resolve = (obj) => {
   return obj
 }
 
-const getNextSibling = (child) => (child ? child.nextSibling : null)
-
 const viewZero = {
   type: 'node',
   view: 0,
@@ -137,7 +135,7 @@ const morphChild = (target, childNode, next, variables, same) => {
     next.afterUpdate(t)
   }
 
-  return getNextSibling(t)
+  return t?.nextSibling
 }
 
 const morph = (target, next, variables, same, meta) => {
@@ -183,7 +181,7 @@ const morph = (target, next, variables, same, meta) => {
       }
 
       if (!deopt && !child.dynamic && !child.variable) {
-        childNode = getNextSibling(childNode)
+        childNode = childNode?.nextSibling
 
         continue
       }
@@ -209,7 +207,7 @@ const morph = (target, next, variables, same, meta) => {
           }
 
           if (same && grand.view != null && !grand.dynamic) {
-            childNode = getNextSibling(childNode)
+            childNode = childNode?.nextSibling
           } else {
             childNode = morphChild(target, childNode, grand, variables, same)
           }
@@ -576,7 +574,13 @@ const toTemplate = (strs, vlength) => {
     }
   }
 
-  return {view: view++, children}
+  if (children.length !== 1) {
+    throw Error(`Found ${children.length} root nodes. Expected 1.`)
+  }
+
+  children[0].view = view++
+
+  return children[0]
 }
 
 export const html = (strs, ...variables) => {
@@ -588,11 +592,7 @@ export const html = (strs, ...variables) => {
     weakMap.set(strs, result)
   }
 
-  if (result.children.length > 1) {
-    return result.children.map((child) => Object.assign({}, child, {view: result.view, variables}))
-  }
-
-  return Object.assign({}, result.children[0], {view: result.view, variables})
+  return Object.assign({variables}, result)
 }
 
 export const createApp = (state) => {
@@ -601,7 +601,7 @@ export const createApp = (state) => {
     render(view) {
       this.view = view
 
-      Promise.resolve().then(() => {
+      return Promise.resolve().then(() => {
         if (!this.isInited) {
           this.isInited = true
 
