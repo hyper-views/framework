@@ -21,12 +21,10 @@
   "main": "main.mjs",
   "module": "main.mjs",
   "scripts": {
-    "pretest": "lint '**/*.{js,mjs}' '!fixtures'",
     "test": "ava test.mjs"
   },
   "dependencies": {},
   "devDependencies": {
-    "@erickmerchant/lint": "^5.1.0",
     "ava": "^3.8.2",
     "delay": "^4.3.0",
     "jsdom": "^16.2.2"
