@@ -10,7 +10,7 @@ const app = createApp(0)
 const view = createDomView(document.querySelector('main'), (state) => {
   return html`<main>
     <output>${state}</output>
-    <br/>
+    <br />
     <button
       onclick=${() => {
         app.commit((current) => current - 1)

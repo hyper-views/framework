@@ -1,8 +1,10 @@
-const escape = (str) => String(str).replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;')
-  .replace(/'/g, '&#039;')
+const escape = (str) =>
+  String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
 
 const selfClosing = [
   'area',
@@ -103,7 +105,11 @@ export const stringify = (obj) => {
               break
 
             case 'node':
-              result += stringify(Object.assign({}, child, {variables: child.view != null ? child.variables : variables}))
+              result += stringify(
+                Object.assign({}, child, {
+                  variables: child.view != null ? child.variables : variables
+                })
+              )
               break
           }
         } else {

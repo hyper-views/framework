@@ -104,14 +104,19 @@ const morphChild = (target, childNode, next, variables, same) => {
   } else {
     const tag = next.tag
 
-    if (!append && (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== tag)) {
+    if (
+      !append &&
+      (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== tag)
+    ) {
       replace = true
     }
 
     if (append || replace) {
       const isSvg = tag === 'svg' || target.namespaceURI === svgNamespace
 
-      newChild = isSvg ? document.createElementNS(svgNamespace, tag) : document.createElement(tag)
+      newChild = isSvg
+        ? document.createElementNS(svgNamespace, tag)
+        : document.createElement(tag)
     }
 
     t = newChild ?? childNode
@@ -195,7 +200,11 @@ const morph = (target, next, variables, same, meta) => {
           child = [child]
         }
 
-        for (let grandIndex = 0, length = child.length; grandIndex < length; grandIndex++) {
+        for (
+          let grandIndex = 0, length = child.length;
+          grandIndex < length;
+          grandIndex++
+        ) {
           let grand = child[grandIndex]
 
           grand = resolve(grand)
@@ -271,18 +280,18 @@ const isSpaceChar = (char) => /\s/.test(char)
 const isOfClose = (char) => char === '/' || char === '>' || isSpaceChar(char)
 const isOfTag = (char) => !isOfClose(char)
 const isOfKey = (char) => char !== '=' && !isOfClose(char)
-const isQuoteChar = (char) => char === '"' || char === '\''
+const isQuoteChar = (char) => char === '"' || char === "'"
 
 const endToken = {
   type: 'end'
 }
 
 const tokenizer = {
-  * get(acc, strs, vlength) {
+  *get(acc, strs, vlength) {
     for (let index = 0; index < strs.length; index++) {
       const str = strs[index]
 
-      yield * this.tokenize(acc, str, index > 0)
+      yield* this.tokenize(acc, str, index > 0)
 
       if (index < vlength) {
         yield {
@@ -292,7 +301,7 @@ const tokenizer = {
       }
     }
   },
-  * tokenize(acc, str, first) {
+  *tokenize(acc, str, first) {
     let tag = acc.tag
     let i = 0
 
@@ -337,7 +346,7 @@ const tokenizer = {
       }
 
       if (tag && current() === '/' && next() === '>') {
-        yield * [
+        yield* [
           endToken,
           {
             type: 'endtag',

@@ -4,6 +4,7 @@ import delay from 'delay'
 import {createApp, createDomView, html} from './main.mjs'
 import {stringify} from './stringify.mjs'
 import {component} from './fixtures/component.mjs'
+/* prettier-ignore */
 const document = `
 <!doctype html>
 <html>
@@ -45,10 +46,13 @@ test('main.mjs commit', async (t) => {
 })
 
 test('main.mjs html', async (t) => {
+  /* prettier-ignore */
   t.deepEqual(html`<div class=${'a'}>${1}</div>`, {view: 1, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['a', 1]})
 
+  /* prettier-ignore */
   t.deepEqual(html`<div class=${'b'}>${2}</div>`, {view: 2, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['b', 2]})
 
+  /* prettier-ignore */
   t.deepEqual(html`<div class=${'c'}>${3}</div>`, {view: 3, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['c', 3]})
 })
 
@@ -74,6 +78,7 @@ test('main.mjs events', async (t) => {
 
   const result1 = main.outerHTML
 
+  /* prettier-ignore */
   t.deepEqual(result1, '<main><h1>Test 1</h1><img src="foo.jpg"><button type="button">Approve</button> </main>')
 
   view({
@@ -93,6 +98,7 @@ test('main.mjs events', async (t) => {
 
   const result2 = main.outerHTML
 
+  /* prettier-ignore */
   t.deepEqual(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><button type="button">Approve</button><p class="red">lorem ipsum dolor ?</p> </main>')
 
   view({
@@ -112,6 +118,7 @@ test('main.mjs events', async (t) => {
 
   const result3 = main.outerHTML
 
+  /* prettier-ignore */
   t.deepEqual(result3, '<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button><p class="blue">lorem ipsum dolor ?</p> </main>')
 })
 
@@ -131,6 +138,7 @@ test('main.mjs elements', async (t) => {
 
   const result6 = main.outerHTML
 
+  /* prettier-ignore */
   t.deepEqual(result6, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button> <svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>')
 
   view({
@@ -143,10 +151,12 @@ test('main.mjs elements', async (t) => {
 
   const result7 = main.outerHTML
 
+  /* prettier-ignore */
   t.deepEqual(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button> <svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
 })
 
 test('stringify.mjs stringify', async (t) => {
+  /* prettier-ignore */
   const component = ({state}) => html`<div class=${state.classes}>
       ${html`<span>${state.one}</span>`}
       ${html`<span>${[state.two, state.three]}</span>`}
@@ -162,5 +172,6 @@ test('stringify.mjs stringify', async (t) => {
     three: '3'
   }
 
+  /* prettier-ignore */
   t.deepEqual(stringify(component({state})), '<div class="a b c"><span>1</span>\n      <span>23</span><div><span></span></div></div>')
 })
