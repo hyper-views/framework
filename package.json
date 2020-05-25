@@ -26,6 +26,8 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@erickmerchant/eslint-config": "^1.0.0",
+    "@erickmerchant/prettier-config": "^1.0.1",
     "ava": "^3.8.2",
     "babel-eslint": "^10.1.0",
     "delay": "^4.3.0",
@@ -38,6 +40,7 @@
     "node": ">=14.2"
   },
   "eslintConfig": {
+    "extends": "@erickmerchant/eslint-config",
     "parser": "babel-eslint",
     "parserOptions": {
       "ecmaVersion": 2020,
@@ -52,45 +55,8 @@
       "es6": true
     },
     "rules": {
-      "prettier/prettier": "error",
-      "eqeqeq": [
-        "error",
-        "always",
-        {
-          "null": "never"
-        }
-      ],
-      "no-else-return": "error",
-      "no-useless-escape": "error",
-      "no-useless-return": "error",
-      "no-delete-var": "error",
-      "no-undef": "error",
-      "no-unused-vars": [
-        "error",
-        {
-          "vars": "all",
-          "args": "none"
-        }
-      ],
-      "handle-callback-err": "error",
-      "no-path-concat": "error",
-      "no-var": "error",
-      "prefer-arrow-callback": "error",
-      "prefer-const": "error",
-      "prefer-template": "error"
+      "prettier/prettier": "error"
     }
   },
-  "prettier": {
-    "arrowParens": "always",
-    "bracketSpacing": false,
-    "htmlWhitespaceSensitivity": "ignore",
-    "printWidth": 80,
-    "proseWrap": "preserve",
-    "quoteProps": "consistent",
-    "semi": false,
-    "singleQuote": true,
-    "tabWidth": 2,
-    "trailingComma": "none",
-    "useTabs": false
-  }
+  "prettier": "@erickmerchant/prettier-config"
 }
