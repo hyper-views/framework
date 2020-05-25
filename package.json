@@ -26,8 +26,8 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@erickmerchant/eslint-config": "^1.0.0",
-    "@erickmerchant/prettier-config": "^1.0.1",
+    "@erickmerchant/eslint-config": "^1.0.1",
+    "@erickmerchant/prettier-config": "^1.0.2",
     "ava": "^3.8.2",
     "babel-eslint": "^10.1.0",
     "delay": "^4.3.0",
@@ -40,23 +40,7 @@
     "node": ">=14.2"
   },
   "eslintConfig": {
-    "extends": "@erickmerchant/eslint-config",
-    "parser": "babel-eslint",
-    "parserOptions": {
-      "ecmaVersion": 2020,
-      "sourceType": "module"
-    },
-    "plugins": [
-      "prettier"
-    ],
-    "env": {
-      "browser": true,
-      "node": true,
-      "es6": true
-    },
-    "rules": {
-      "prettier/prettier": "error"
-    }
+    "extends": "@erickmerchant/eslint-config"
   },
   "prettier": "@erickmerchant/prettier-config"
 }
