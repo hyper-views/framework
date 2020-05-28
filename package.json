@@ -21,7 +21,8 @@
   "main": "main.mjs",
   "module": "main.mjs",
   "scripts": {
-    "pretest": "eslint '*.mjs'",
+    "lint": "eslint '*.mjs'",
+    "pretest": "npm run lint",
     "test": "ava test.mjs"
   },
   "dependencies": {},
