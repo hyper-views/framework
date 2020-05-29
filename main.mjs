@@ -605,27 +605,30 @@ export const html = (strs, ...variables) => {
 }
 
 export const createApp = (state) => {
+  let viewCalled = false
+
   return {
-    isInited: false,
     render(view) {
       this.view = view
 
+      viewCalled = false
+
       return Promise.resolve().then(() => {
-        if (!this.isInited) {
-          this.isInited = true
+        if (!viewCalled) {
+          viewCalled = true
 
           this.view(state)
         }
       })
     },
     commit(arg) {
-      this.isInited = true
-
       if (typeof arg === 'function') {
         state = arg(state) ?? state
       } else {
         state = arg
       }
+
+      viewCalled = true
 
       if (this.view != null) {
         this.view(state)
