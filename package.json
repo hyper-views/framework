@@ -27,7 +27,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@erickmerchant/eslint-config": "^1.1.0",
+    "@erickmerchant/eslint-config": "^1.1.1",
     "@erickmerchant/prettier-config": "^1.1.0",
     "ava": "^3.8.2",
     "babel-eslint": "^10.1.0",
