@@ -3,7 +3,7 @@
 ## Example
 
 ```javascript
-import {createApp, createDomView, html} from '@erickmerchant/framework'
+import {createApp, createDomView, html} from 'https://unpkg.com/@erickmerchant/framework/main.mjs'
 
 const app = createApp(0)
 
@@ -15,7 +15,9 @@ const increment = () => {
   app.commit((current) => current + 1)
 }
 
-const view = createDomView(document.querySelector('main'), (state) => {
+const target = document.querySelector('main')
+
+const view = createDomView(target, (state) => {
   return html`
     <main>
       <output>${state}</output>
