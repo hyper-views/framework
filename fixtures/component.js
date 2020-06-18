@@ -1,4 +1,4 @@
-import {html} from '../main.mjs'
+import {html} from '../main.js'
 
 export const component = (state) => html`
   <main>

@@ -12,18 +12,19 @@
   },
   "license": "ISC",
   "author": "Erick Merchant <erickmerchant@gmail.com>",
+  "type": "module",
   "files": [
     "LICENSE",
     "README.md",
-    "main.mjs",
-    "stringify.mjs"
+    "main.js",
+    "stringify.js"
   ],
-  "main": "main.mjs",
-  "module": "main.mjs",
+  "main": "main.js",
+  "module": "main.js",
   "scripts": {
-    "lint": "eslint '*.mjs'",
+    "lint": "eslint '*.js'",
     "pretest": "npm run lint",
-    "test": "ava test.mjs"
+    "test": "ava test.js"
   },
   "dependencies": {},
   "devDependencies": {

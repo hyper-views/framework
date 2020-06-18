@@ -1,9 +1,9 @@
 import test from 'ava'
 import jsdom from 'jsdom'
 import delay from 'delay'
-import {createApp, createDomView, html} from './main.mjs'
-import {stringify} from './stringify.mjs'
-import {component} from './fixtures/component.mjs'
+import {createApp, createDomView, html} from './main.js'
+import {stringify} from './stringify.js'
+import {component} from './fixtures/component.js'
 /* prettier-ignore */
 const document = `
 <!doctype html>
@@ -21,7 +21,7 @@ const document = `
 const noop = () => {}
 const newElement = Symbol('new target')
 
-test('main.mjs render', async (t) => {
+test('main.js render', async (t) => {
   const app = createApp(null)
 
   t.deepEqual(typeof app.commit, 'function')
@@ -33,7 +33,7 @@ test('main.mjs render', async (t) => {
   })
 })
 
-test('main.mjs commit', async (t) => {
+test('main.js commit', async (t) => {
   const app = createApp(null)
 
   await app.render(noop)
@@ -45,7 +45,7 @@ test('main.mjs commit', async (t) => {
   })
 })
 
-test('main.mjs html', async (t) => {
+test('main.js html', async (t) => {
   /* prettier-ignore */
   t.deepEqual(html`<div class=${'a'}>${1}</div>`, {view: 1, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['a', 1]})
 
@@ -56,7 +56,7 @@ test('main.mjs html', async (t) => {
   t.deepEqual(html`<div class=${'c'}>${3}</div>`, {view: 3, type: 'node', tag: 'div', dynamic: true, attributes: [{key: 'class', variable: true, value: 0}], children: [{type: 'variable', variable: true, value: 1}], variables: ['c', 3]})
 })
 
-test('main.mjs events', async (t) => {
+test('main.js events', async (t) => {
   const dom = new jsdom.JSDOM(document)
   const main = dom.window.document.querySelector('main')
 
@@ -122,7 +122,7 @@ test('main.mjs events', async (t) => {
   t.deepEqual(result3, '<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button><p class="blue">lorem ipsum dolor ?</p> </main>')
 })
 
-test('main.mjs elements', async (t) => {
+test('main.js elements', async (t) => {
   const dom = new jsdom.JSDOM(document)
   const main = dom.window.document.querySelector('main')
 
@@ -155,7 +155,7 @@ test('main.mjs elements', async (t) => {
   t.deepEqual(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button> <svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
 })
 
-test('stringify.mjs stringify', async (t) => {
+test('stringify.js stringify', async (t) => {
   /* prettier-ignore */
   const component = ({state}) => html`<div class=${state.classes}>
       ${html`<span>${state.one}</span>`}

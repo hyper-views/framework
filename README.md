@@ -3,7 +3,7 @@
 ## Example
 
 ```javascript
-import {createApp, createDomView, html} from 'https://unpkg.com/@erickmerchant/framework/main.mjs'
+import {createApp, createDomView, html} from 'https://unpkg.com/@erickmerchant/framework/main.js'
 
 const app = createApp(0)
 
