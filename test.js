@@ -79,7 +79,8 @@ test('main.js events', async (t) => {
   const result1 = main.outerHTML
 
   /* prettier-ignore */
-  t.deepEqual(result1, '<main><h1>Test 1</h1><img src="foo.jpg"><button type="button">Approve</button> </main>')
+  t.deepEqual(result1, `<main><h1>Test 1</h1><img src="foo.jpg"><button type="button">Approve</button>
+    </main>`)
 
   view({
     heading: 'Test 2',
@@ -99,7 +100,8 @@ test('main.js events', async (t) => {
   const result2 = main.outerHTML
 
   /* prettier-ignore */
-  t.deepEqual(result2, '<main><h1>Test 2</h1><img src="foo.jpg"><button type="button">Approve</button><p class="red">lorem ipsum dolor ?</p> </main>')
+  t.deepEqual(result2, `<main><h1>Test 2</h1><img src="foo.jpg"><button type="button">Approve</button><p class="red">lorem ipsum dolor ?</p>
+    </main>`)
 
   view({
     heading: 'Test 3',
@@ -119,7 +121,8 @@ test('main.js events', async (t) => {
   const result3 = main.outerHTML
 
   /* prettier-ignore */
-  t.deepEqual(result3, '<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button><p class="blue">lorem ipsum dolor ?</p> </main>')
+  t.deepEqual(result3, `<main><h1>Test 3</h1><img src="bar.jpg"><button type="button">Approve</button><p class="blue">lorem ipsum dolor ?</p>
+    </main>`)
 })
 
 test('main.js elements', async (t) => {
@@ -139,7 +142,8 @@ test('main.js elements', async (t) => {
   const result6 = main.outerHTML
 
   /* prettier-ignore */
-  t.deepEqual(result6, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button> <svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>')
+  t.deepEqual(result6, `<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button>
+    <svg><path d="M2 2 2 34 34 34 34 2 z"></path></svg></main>`)
 
   view({
     heading: 'Test 6',
@@ -152,7 +156,8 @@ test('main.js elements', async (t) => {
   const result7 = main.outerHTML
 
   /* prettier-ignore */
-  t.deepEqual(result7, '<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button> <svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>')
+  t.deepEqual(result7, `<main><h1>Test 6</h1><img src="bar.jpg"><button type="button">Approve</button>
+    <svg><path d="M2 0 0 30 32 32 30 2 z"></path></svg></main>`)
 })
 
 test('stringify.js stringify', async (t) => {
