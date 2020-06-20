@@ -22,7 +22,7 @@
   "main": "main.js",
   "module": "main.js",
   "scripts": {
-    "lint": "eslint '*.js'",
+    "lint": "eslint . --ignore-path .gitignore",
     "pretest": "npm run lint",
     "test": "ava test.js"
   },
