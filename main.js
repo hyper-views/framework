@@ -257,17 +257,7 @@ const morphRoot = (target, next) => {
 }
 
 export const createDomView = (target, view) => (state) => {
-  let current = resolve(view(state))
-
-  if (Array.isArray(current)) {
-    current = {
-      type: 'node',
-      tag: target.nodeName.toLowerCase(),
-      dynamic: true,
-      attributes: [],
-      children: current
-    }
-  }
+  const current = resolve(view(state))
 
   morphRoot(target, current)
 
@@ -418,18 +408,7 @@ const tokenizer = {
               value
             }
           } else if (next()) {
-            while (next() && !isSpaceChar(next()) && next() !== '>') {
-              i++
-
-              value += current()
-            }
-
-            if (next() !== '>') i++
-
-            yield {
-              type: 'value',
-              value
-            }
+            throw Error('Quote expected')
           }
         } else {
           yield {

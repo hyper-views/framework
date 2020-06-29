@@ -24,7 +24,7 @@
   "scripts": {
     "lint": "eslint . --ignore-path .gitignore",
     "pretest": "npm run lint",
-    "test": "ava test.js"
+    "test": "ava 'test/**/*.js'"
   },
   "dependencies": {},
   "devDependencies": {
