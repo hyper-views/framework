@@ -19,4 +19,6 @@ test('app is created and responds to state changes', async (t) => {
   app.commit(() => {})
 
   app.commit()
+
+  t.deepEqual(expectedValues.length, 0)
 })

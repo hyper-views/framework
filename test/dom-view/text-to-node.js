@@ -19,7 +19,7 @@ test('text to node', async (t) => {
   const view = createDomView(
     el,
     () => /* prettier-ignore */ html`
-      <body><p>lorem ipsum</p></body>
+      <body><p>lorem ipsum dolor</p></body>
     `
   )
 
@@ -30,4 +30,9 @@ test('text to node', async (t) => {
   t.deepEqual(el.childNodes?.length, 1)
 
   t.deepEqual(el.childNodes?.[0]?.nodeName, 'P')
+
+  t.deepEqual(
+    el.childNodes?.[0]?.childNodes?.[0]?.nodeValue,
+    'lorem ipsum dolor'
+  )
 })

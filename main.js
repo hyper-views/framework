@@ -395,10 +395,14 @@ const tokenizer = {
 
             quote = current()
 
-            while (next() && next() !== quote) {
-              i++
+            while (next() !== quote) {
+              if (next()) {
+                i++
 
-              value += current()
+                value += current()
+              } else {
+                throw Error('Quote mismatch')
+              }
             }
 
             i++

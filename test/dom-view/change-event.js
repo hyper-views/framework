@@ -17,13 +17,18 @@ test('change event', async (t) => {
   const el = dom.window.document.body
 
   let clicked = -1
+  let totalClicks = 0
 
   const onclicks = [
     () => {
       clicked = 0
+
+      totalClicks++
     },
     () => {
       clicked = 1
+
+      totalClicks++
     }
   ]
 
@@ -57,4 +62,6 @@ test('change event', async (t) => {
   await delay(0)
 
   t.deepEqual(clicked, 1)
+
+  t.deepEqual(totalClicks, 2)
 })

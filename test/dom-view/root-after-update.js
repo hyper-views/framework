@@ -3,7 +3,7 @@ import jsdom from 'jsdom'
 import delay from 'delay'
 import {createDomView, html} from '../../main.js'
 
-test('add attributes', async (t) => {
+test('root after update', async (t) => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -16,24 +16,23 @@ test('add attributes', async (t) => {
 
   const el = dom.window.document.body
 
-  const view = createDomView(
-    el,
-    () => html`
-      <body>
-        <input required placeholder="Add a Value" ${{value: "I'm the Value"}} />
+  const afterUpdate = (afterUpdate) => {
+    afterUpdate((el) => {
+      el.className = 'has-support'
+    })
+
+    return html`
+      <body class="has-no-support">
+        testing
       </body>
     `
-  )
+  }
+
+  const view = createDomView(el, () => afterUpdate)
 
   view()
 
   await delay(0)
 
-  const input = el.querySelector('input')
-
-  t.deepEqual(input?.required, true)
-
-  t.deepEqual(input?.placeholder, 'Add a Value')
-
-  t.deepEqual(input?.value, "I'm the Value")
+  t.deepEqual(el.className, 'has-support')
 })

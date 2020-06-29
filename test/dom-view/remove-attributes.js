@@ -22,7 +22,7 @@ test('remove attributes', async (t) => {
     el,
     () => html`
       <body>
-        <input required=${false} placeholder=${null} value=${null} />
+        <input required=${false} placeholder=${null} ${{value: null}} />
       </body>
     `
   )

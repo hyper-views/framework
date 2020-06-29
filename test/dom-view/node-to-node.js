@@ -30,4 +30,6 @@ test('node to node', async (t) => {
   t.deepEqual(el.childNodes?.length, 1)
 
   t.deepEqual(el.childNodes?.[0]?.nodeName, 'UL')
+
+  t.deepEqual(el.childNodes?.[0]?.children?.length, 3)
 })
