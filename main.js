@@ -568,6 +568,8 @@ const toTemplate = (strs, vlength) => {
 
   if (children.length !== 1) {
     throw Error(`Found ${children.length} root nodes. Expected 1.`)
+  } else if (children[0].type !== 'node') {
+    throw Error(`Found '${children[0].type}'. Expected 'node'.`)
   }
 
   children[0].view = view++
