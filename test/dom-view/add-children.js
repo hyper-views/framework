@@ -1,9 +1,10 @@
-import test from 'ava'
+import test from 'uvu'
+import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createDomView, html} from '../../main.js'
 
-test('add children', async (t) => {
+test('add children', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -34,9 +35,9 @@ test('add children', async (t) => {
 
   await delay(0)
 
-  t.deepEqual(el.childNodes?.length, 1)
+  assert.equal(el.childNodes?.length, 1)
 
-  t.deepEqual(el.childNodes?.[0]?.nodeName, 'UL')
+  assert.equal(el.childNodes?.[0]?.nodeName, 'UL')
 
-  t.deepEqual(el.childNodes?.[0]?.childNodes?.length, 3)
+  assert.equal(el.childNodes?.[0]?.childNodes?.length, 3)
 })

@@ -1,9 +1,10 @@
-import test from 'ava'
+import test from 'uvu'
+import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createDomView, html} from '../../main.js'
 
-test('after update', async (t) => {
+test('after update', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -41,5 +42,5 @@ test('after update', async (t) => {
 
   const p = el.querySelector('p')
 
-  t.deepEqual(p?.className, 'has-support')
+  assert.equal(p?.className, 'has-support')
 })

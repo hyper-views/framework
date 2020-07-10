@@ -1,9 +1,10 @@
-import test from 'ava'
+import test from 'uvu'
+import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createDomView, html} from '../../main.js'
 
-test('change event', async (t) => {
+test('change event', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -51,7 +52,7 @@ test('change event', async (t) => {
 
   await delay(0)
 
-  t.deepEqual(clicked, 0)
+  assert.equal(clicked, 0)
 
   view(1)
 
@@ -61,7 +62,7 @@ test('change event', async (t) => {
 
   await delay(0)
 
-  t.deepEqual(clicked, 1)
+  assert.equal(clicked, 1)
 
-  t.deepEqual(totalClicks, 2)
+  assert.equal(totalClicks, 2)
 })

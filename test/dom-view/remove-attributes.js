@@ -1,9 +1,10 @@
-import test from 'ava'
+import test from 'uvu'
+import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createDomView, html} from '../../main.js'
 
-test('remove attributes', async (t) => {
+test('remove attributes', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -33,9 +34,9 @@ test('remove attributes', async (t) => {
 
   const input = el.querySelector('input')
 
-  t.deepEqual(input?.required, false)
+  assert.equal(input?.required, false)
 
-  t.deepEqual(input?.placeholder, '')
+  assert.equal(input?.placeholder, '')
 
-  t.deepEqual(input?.value, '')
+  assert.equal(input?.value, '')
 })

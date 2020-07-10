@@ -1,14 +1,15 @@
-import test from 'ava'
+import test from 'uvu'
+import * as assert from 'uvu/assert'
 import {html} from '../../main.js'
 
-test('throws on various quote issues', (t) => {
-  t.throws(() => {
+test('throws on various quote issues', () => {
+  assert.throws(() => {
     /* prettier-ignore */ html`
       <div foo=bar />
     `
   })
 
-  t.throws(() => {
+  assert.throws(() => {
     html`
       <div foo="${'bar'}" />
     `

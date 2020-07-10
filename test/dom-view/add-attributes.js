@@ -1,9 +1,10 @@
-import test from 'ava'
+import test from 'uvu'
+import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createDomView, html} from '../../main.js'
 
-test('add attributes', async (t) => {
+test('add attributes', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -31,9 +32,9 @@ test('add attributes', async (t) => {
 
   const input = el.querySelector('input')
 
-  t.deepEqual(input?.required, true)
+  assert.equal(input?.required, true)
 
-  t.deepEqual(input?.placeholder, 'Add a Value')
+  assert.equal(input?.placeholder, 'Add a Value')
 
-  t.deepEqual(input?.value, "I'm the Value")
+  assert.equal(input?.value, "I'm the Value")
 })

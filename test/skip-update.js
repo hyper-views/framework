@@ -1,12 +1,13 @@
-import test from 'ava'
+import test from 'uvu'
+import * as assert from 'uvu/assert'
 import {skipUpdate} from '../main.js'
 
-test('skip update is the object expected', (t) => {
+test('skip update is the object expected', () => {
   const skipped = skipUpdate()
 
-  t.deepEqual(skipped.type, 'node')
+  assert.equal(skipped.type, 'node')
 
-  t.deepEqual(skipped.view, 0)
+  assert.equal(skipped.view, 0)
 
-  t.deepEqual(skipped.dynamic, false)
+  assert.equal(skipped.dynamic, false)
 })
