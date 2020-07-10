@@ -1,4 +1,4 @@
-import test from 'uvu'
+import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
@@ -35,5 +35,5 @@ test('root after update', async () => {
 
   await delay(0)
 
-  assert.equal(el.className, 'has-support')
+  assert.is(el.className, 'has-support')
 })

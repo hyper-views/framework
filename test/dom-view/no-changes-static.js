@@ -1,4 +1,4 @@
-import test from 'uvu'
+import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
@@ -36,27 +36,27 @@ test('no change - static', async () => {
 
   await delay(0)
 
-  assert.equal(el.childNodes?.length, 2)
+  assert.is(el.childNodes?.length, 2)
 
-  assert.equal(el.childNodes?.[0]?.nodeName, 'UL')
+  assert.is(el.childNodes?.[0]?.nodeName, 'UL')
 
-  assert.equal(el.childNodes?.[0]?.childNodes?.length, 3)
+  assert.is(el.childNodes?.[0]?.childNodes?.length, 3)
 
-  assert.equal(el.childNodes?.[1]?.nodeName, 'P')
+  assert.is(el.childNodes?.[1]?.nodeName, 'P')
 
-  assert.equal(el.childNodes?.[1]?.childNodes?.length, 1)
+  assert.is(el.childNodes?.[1]?.childNodes?.length, 1)
 
   view()
 
   await delay(0)
 
-  assert.equal(el.childNodes?.length, 2)
+  assert.is(el.childNodes?.length, 2)
 
-  assert.equal(el.childNodes?.[0]?.nodeName, 'UL')
+  assert.is(el.childNodes?.[0]?.nodeName, 'UL')
 
-  assert.equal(el.childNodes?.[0]?.childNodes?.length, 3)
+  assert.is(el.childNodes?.[0]?.childNodes?.length, 3)
 
-  assert.equal(el.childNodes?.[1]?.nodeName, 'P')
+  assert.is(el.childNodes?.[1]?.nodeName, 'P')
 
-  assert.equal(el.childNodes?.[1]?.childNodes?.length, 1)
+  assert.is(el.childNodes?.[1]?.childNodes?.length, 1)
 })

@@ -1,4 +1,4 @@
-import test from 'uvu'
+import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
@@ -42,5 +42,5 @@ test('after update', async () => {
 
   const p = el.querySelector('p')
 
-  assert.equal(p?.className, 'has-support')
+  assert.is(p?.className, 'has-support')
 })

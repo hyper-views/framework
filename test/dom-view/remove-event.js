@@ -1,4 +1,4 @@
-import test from 'uvu'
+import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
@@ -45,7 +45,7 @@ test('remove event', async () => {
 
   await delay(0)
 
-  assert.equal(clicked, 1)
+  assert.is(clicked, 1)
 
   view(1)
 
@@ -55,5 +55,5 @@ test('remove event', async () => {
 
   await delay(0)
 
-  assert.equal(clicked, 1)
+  assert.is(clicked, 1)
 })

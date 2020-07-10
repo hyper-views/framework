@@ -1,4 +1,4 @@
-import test from 'uvu'
+import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
@@ -30,5 +30,5 @@ test('remove text', async () => {
 
   await delay(0)
 
-  assert.equal(el.childNodes?.length, 0)
+  assert.is(el.childNodes?.length, 0)
 })

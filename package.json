@@ -24,7 +24,7 @@
   "scripts": {
     "lint": "eslint . --ignore-path .gitignore",
     "pretest": "npm run lint",
-    "test": "uvu 'test/**/*.js'"
+    "test": "node test/index.js"
   },
   "dependencies": {},
   "devDependencies": {

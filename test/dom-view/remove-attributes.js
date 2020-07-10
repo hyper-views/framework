@@ -1,4 +1,4 @@
-import test from 'uvu'
+import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
@@ -34,9 +34,9 @@ test('remove attributes', async () => {
 
   const input = el.querySelector('input')
 
-  assert.equal(input?.required, false)
+  assert.is(input?.required, false)
 
-  assert.equal(input?.placeholder, '')
+  assert.is(input?.placeholder, '')
 
-  assert.equal(input?.value, '')
+  assert.is(input?.value, '')
 })

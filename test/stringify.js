@@ -1,10 +1,10 @@
-import test from 'uvu'
+import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 import {stringify} from '../stringify.js'
 import {html} from '../main.js'
 
 test('stringify', () => {
-  assert.equal(
+  assert.is(
     stringify(html`
       <form action=${'/submit'}>
         <fieldset>
