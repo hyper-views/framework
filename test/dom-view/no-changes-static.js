@@ -1,9 +1,10 @@
-import test from 'ava'
+import {test} from 'uvu'
+import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createDomView, html} from '../../main.js'
 
-test('no change - static', async (t) => {
+test('no change - static', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -35,27 +36,27 @@ test('no change - static', async (t) => {
 
   await delay(0)
 
-  t.deepEqual(el.childNodes?.length, 2)
+  assert.is(el.childNodes?.length, 2)
 
-  t.deepEqual(el.childNodes?.[0]?.nodeName, 'UL')
+  assert.is(el.childNodes?.[0]?.nodeName, 'UL')
 
-  t.deepEqual(el.childNodes?.[0]?.childNodes?.length, 3)
+  assert.is(el.childNodes?.[0]?.childNodes?.length, 3)
 
-  t.deepEqual(el.childNodes?.[1]?.nodeName, 'P')
+  assert.is(el.childNodes?.[1]?.nodeName, 'P')
 
-  t.deepEqual(el.childNodes?.[1]?.childNodes?.length, 1)
+  assert.is(el.childNodes?.[1]?.childNodes?.length, 1)
 
   view()
 
   await delay(0)
 
-  t.deepEqual(el.childNodes?.length, 2)
+  assert.is(el.childNodes?.length, 2)
 
-  t.deepEqual(el.childNodes?.[0]?.nodeName, 'UL')
+  assert.is(el.childNodes?.[0]?.nodeName, 'UL')
 
-  t.deepEqual(el.childNodes?.[0]?.childNodes?.length, 3)
+  assert.is(el.childNodes?.[0]?.childNodes?.length, 3)
 
-  t.deepEqual(el.childNodes?.[1]?.nodeName, 'P')
+  assert.is(el.childNodes?.[1]?.nodeName, 'P')
 
-  t.deepEqual(el.childNodes?.[1]?.childNodes?.length, 1)
+  assert.is(el.childNodes?.[1]?.childNodes?.length, 1)
 })

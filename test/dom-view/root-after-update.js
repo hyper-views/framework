@@ -1,9 +1,10 @@
-import test from 'ava'
+import {test} from 'uvu'
+import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createDomView, html} from '../../main.js'
 
-test('root after update', async (t) => {
+test('root after update', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -34,5 +35,5 @@ test('root after update', async (t) => {
 
   await delay(0)
 
-  t.deepEqual(el.className, 'has-support')
+  assert.is(el.className, 'has-support')
 })

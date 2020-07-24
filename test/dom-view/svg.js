@@ -1,9 +1,10 @@
-import test from 'ava'
+import {test} from 'uvu'
+import * as assert from 'uvu/assert'
 import jsdom from 'jsdom'
 import delay from 'delay'
 import {createDomView, html} from '../../main.js'
 
-test('svg', async (t) => {
+test('svg', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -31,11 +32,11 @@ test('svg', async (t) => {
 
   await delay(0)
 
-  t.deepEqual(el.childNodes?.length, 1)
+  assert.is(el.childNodes?.length, 1)
 
-  t.deepEqual(el.childNodes?.[0]?.nodeName, 'svg')
+  assert.is(el.childNodes?.[0]?.nodeName, 'svg')
 
-  t.deepEqual(el.childNodes?.[0]?.childNodes?.length, 1)
+  assert.is(el.childNodes?.[0]?.childNodes?.length, 1)
 
-  t.deepEqual(el.childNodes?.[0]?.childNodes?.[0]?.nodeName, 'circle')
+  assert.is(el.childNodes?.[0]?.childNodes?.[0]?.nodeName, 'circle')
 })

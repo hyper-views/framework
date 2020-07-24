@@ -1,13 +1,14 @@
-import test from 'ava'
+import {test} from 'uvu'
+import * as assert from 'uvu/assert'
 import {createApp} from '../main.js'
 
-test('app is created and responds to state changes', async (t) => {
+test('app is created and responds to state changes', async () => {
   const expectedValues = [null, 1, 2, 2, undefined]
 
   const app = createApp(null)
 
   await app.render((state) => {
-    t.deepEqual(state, expectedValues.shift())
+    assert.is(state, expectedValues.shift())
 
     return true
   })
@@ -20,5 +21,5 @@ test('app is created and responds to state changes', async (t) => {
 
   app.commit()
 
-  t.deepEqual(expectedValues.length, 0)
+  assert.is(expectedValues.length, 0)
 })

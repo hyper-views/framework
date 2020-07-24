@@ -1,9 +1,10 @@
-import test from 'ava'
+import {test} from 'uvu'
+import * as assert from 'uvu/assert'
 import {stringify} from '../stringify.js'
 import {html} from '../main.js'
 
-test('stringify', (t) => {
-  t.deepEqual(
+test('stringify', () => {
+  assert.is(
     stringify(html`
       <form action=${'/submit'}>
         <fieldset>

@@ -24,19 +24,19 @@
   "scripts": {
     "lint": "eslint . --ignore-path .gitignore",
     "pretest": "npm run lint",
-    "test": "ava 'test/**/*.js'"
+    "test": "node test/index.js"
   },
   "dependencies": {},
   "devDependencies": {
     "@erickmerchant/eslint-config": "^1.1.1",
     "@erickmerchant/prettier-config": "^1.1.0",
-    "ava": "^3.10.1",
     "babel-eslint": "^10.1.0",
-    "delay": "^4.3.0",
-    "eslint": "^7.4.0",
+    "delay": "^4.4.0",
+    "eslint": "^7.5.0",
     "eslint-plugin-prettier": "^3.1.4",
     "jsdom": "^16.3.0",
-    "prettier": "^2.0.5"
+    "prettier": "^2.0.5",
+    "uvu": "^0.3.0"
   },
   "engines": {
     "node": ">=14.3"
