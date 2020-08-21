@@ -209,7 +209,7 @@ const morph = (target, next, variables, same, meta) => {
 
           grand = resolve(grand)
 
-          if (grand == null) continue
+          if (grand == null) grand = ''
 
           if (grand.type == null) {
             grand = {type: 'text', value: grand}
