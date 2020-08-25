@@ -15,16 +15,16 @@ const increment = () => {
   app.commit((current) => current + 1)
 }
 
-const target = document.querySelector('main')
+const target = document.querySelector('div')
 
 const view = createDomView(target, (state) => {
   return html`
-    <main>
+    <div>
       <output>${state}</output>
       <br />
       <button type="button" onclick=${decrement}>--</button>
       <button type="button" onclick=${increment}>++</button>
-    </main>
+    </div>
   `
 })
 
