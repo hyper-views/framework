@@ -592,9 +592,9 @@ export const html = (strs, ...variables) => {
 export const createApp = (state) => {
   let viewCalled = false
 
-  return {
+  const app = {
     render(view) {
-      this.view = view
+      weakMap.set(app, view)
 
       viewCalled = false
 
@@ -602,11 +602,13 @@ export const createApp = (state) => {
         if (!viewCalled) {
           viewCalled = true
 
-          this.view(state)
+          view(state)
         }
       })
     },
     commit(arg) {
+      const view = weakMap.get(app)
+
       if (typeof arg === 'function') {
         state = arg(state) ?? state
       } else {
@@ -615,9 +617,11 @@ export const createApp = (state) => {
 
       viewCalled = true
 
-      if (this.view != null) {
-        this.view(state)
+      if (view != null) {
+        view(state)
       }
     }
   }
+
+  return app
 }
