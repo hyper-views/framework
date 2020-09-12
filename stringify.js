@@ -83,10 +83,8 @@ export const stringify = (obj) => {
         child = resolve(variables[child.value])
       }
 
-      if (Array.isArray(child)) {
-        for (let i = 0; i < child.length; i++) {
-          const c = child[i]
-
+      if (child?.[Symbol.iterator] != null) {
+        for (const c of child) {
           descendants.push(c)
         }
       } else {

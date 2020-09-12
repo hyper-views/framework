@@ -196,17 +196,11 @@ const morph = (target, next, variables, same, meta) => {
       if (child.variable) {
         child = variables[child.value]
 
-        if (!Array.isArray(child)) {
+        if (child?.[Symbol.iterator] == null) {
           child = [child]
         }
 
-        for (
-          let grandIndex = 0, length = child.length;
-          grandIndex < length;
-          grandIndex++
-        ) {
-          let grand = child[grandIndex]
-
+        for (let grand of child) {
           grand = resolve(grand)
 
           if (grand == null) grand = ''
