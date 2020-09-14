@@ -196,7 +196,7 @@ const morph = (target, next, variables, same, meta) => {
       if (child.variable) {
         child = variables[child.value]
 
-        if (child?.[Symbol.iterator] == null) {
+        if (child?.[Symbol.iterator] == null || typeof child === 'string') {
           child = [child]
         }
 
