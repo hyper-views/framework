@@ -38,7 +38,7 @@ test('add event', async () => {
 
   const button = el.querySelector('button')
 
-  button.dispatchEvent(new dom.window.Event('click'))
+  button.dispatchEvent(new dom.window.Event('click', {bubbles: true}))
 
   await delay(0)
 
