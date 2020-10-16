@@ -83,11 +83,11 @@ const morphChild = (
   target,
   childNode,
   next,
-  {variables, isSame, listeners}
+  {variables, isSameView, forceAppend, listeners}
 ) => {
   const document = target.ownerDocument
 
-  const append = childNode == null
+  const append = forceAppend || childNode == null
 
   let replace = false
 
@@ -126,11 +126,13 @@ const morphChild = (
     } else {
       const meta = {_read: false}
 
-      morph(currentChild, next, {variables, isSame, meta, listeners})
+      morph(currentChild, next, {variables, isSameView, meta, listeners})
     }
   }
 
-  if (append) {
+  if (forceAppend && childNode) {
+    childNode.before(currentChild)
+  } else if (append) {
     target.append(currentChild)
   } else if (replace) {
     childNode.replaceWith(currentChild)
@@ -143,8 +145,8 @@ const morphChild = (
   return currentChild?.nextSibling
 }
 
-const morph = (target, next, {variables, isSame, meta, listeners}) => {
-  if (isSame && !next.dynamic) {
+const morph = (target, next, {variables, isSameView, meta, listeners}) => {
+  if (isSameView && !next.dynamic) {
     return
   }
 
@@ -154,7 +156,7 @@ const morph = (target, next, {variables, isSame, meta, listeners}) => {
     for (let i = 0, length = attributesLength; i < length; i++) {
       const attribute = next.attributes[i]
 
-      if (isSame && !attribute.variable) {
+      if (isSameView && !attribute.variable) {
         continue
       }
 
@@ -176,10 +178,19 @@ const morph = (target, next, {variables, isSame, meta, listeners}) => {
 
   const childrenLength = next.children.length
   let childNode = target.firstChild
-  // let outerChildIndex = 0
+
+  if (!meta._read) {
+    Object.assign(meta, weakMap.get(target) || {})
+
+    meta._read = true
+  }
+
+  let keys
+
+  let prevKeys
 
   if (childrenLength) {
-    let deopt = !isSame
+    let deopt = !isSameView
 
     for (let childIndex = 0; childIndex < childrenLength; childIndex++) {
       let child = next.children[childIndex]
@@ -197,46 +208,99 @@ const morph = (target, next, {variables, isSame, meta, listeners}) => {
       deopt = true
 
       if (child.variable) {
-        child = variables[child.value]
+        const variableValue = child.value
+
+        child = variables[variableValue]
 
         if (child?.[Symbol.iterator] == null || typeof child === 'string') {
           child = [child]
         }
+
+        let keyIndex = 0
+        let lengthDifference
 
         for (let grand of child) {
           grand = resolve(grand)
 
           if (grand == null) grand = ''
 
+          let keysMatch = true
+
+          if (grand.key) {
+            if (!meta._read) {
+              Object.assign(meta, weakMap.get(target) || {})
+
+              meta._read = true
+            }
+
+            if (!keys) {
+              keys = {}
+
+              prevKeys = meta.keys ?? {}
+            }
+
+            if (!keys[variableValue]) {
+              keys[variableValue] = []
+            }
+
+            keys[variableValue].push(grand.key)
+
+            keysMatch = prevKeys[variableValue]?.[keyIndex] === grand.key
+
+            grand = grand.value
+
+            lengthDifference =
+              (child.length || 0) - (prevKeys[variableValue]?.length || 0)
+          }
+
+          keyIndex++
+
           if (grand.type == null) {
             grand = {type: 'text', value: grand}
           }
 
-          if (isSame && grand.view != null && !grand.dynamic) {
+          if (!keysMatch && lengthDifference < 0 && childNode != null) {
+            lengthDifference++
+
+            const extraNode = childNode
+
+            childNode = childNode.nextSibling
+
+            extraNode.remove()
+          }
+
+          if (isSameView && grand.view != null && !grand.dynamic) {
             childNode = childNode?.nextSibling
           } else {
+            const forceAppend = !keysMatch && lengthDifference > 0 && childNode
+
+            if (forceAppend) {
+              lengthDifference--
+
+              keyIndex--
+            }
+
             childNode = morphChild(target, childNode, grand, {
               variables,
-              isSame,
+              isSameView,
+              forceAppend,
               listeners
             })
           }
-
-          // outerChildIndex++
         }
       } else {
         childNode = morphChild(target, childNode, child, {
           variables,
-          isSame,
+          isSameView,
           listeners
         })
-
-        // outerChildIndex++
       }
     }
   }
 
-  // console.log(target, outerChildIndex, target.children.length)
+  if (keys) {
+    meta.keys = keys
+  }
 
   if (childNode) {
     while (childNode.nextSibling) {
@@ -254,17 +318,17 @@ const morphRoot = (target, next, {listeners}) => {
 
   meta._read = true
 
-  const isSame = next.view === 0 || next.view === meta.view
+  const isSameView = next.view === 0 || next.view === meta.view
 
-  if (isSame && next.view != null && !next.dynamic) {
+  if (isSameView && next.view != null && !next.dynamic) {
     return
   }
 
-  if (!isSame) {
+  if (!isSameView) {
     meta.view = next.view
   }
 
-  morph(target, next, {variables: next.variables, isSame, meta, listeners})
+  morph(target, next, {variables: next.variables, isSameView, meta, listeners})
 }
 
 export const createDomView = (target, view) => {
