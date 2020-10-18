@@ -18,14 +18,6 @@ const resolve = (obj) => {
   return obj
 }
 
-const viewZero = {
-  type: 'node',
-  view: 0,
-  dynamic: false
-}
-
-export const skipUpdate = () => viewZero
-
 const getListener = (key) => (e) => {
   const map = weakMap.get(e.target)
 
@@ -34,7 +26,7 @@ const getListener = (key) => (e) => {
   }
 }
 
-const morphAttribute = (target, key, value, {meta, listeners}) => {
+const morphAttribute = (target, key, value, meta, listeners) => {
   const document = target.ownerDocument
   const remove = value == null || value === false
 
@@ -83,7 +75,10 @@ const morphChild = (
   target,
   childNode,
   next,
-  {variables, isSameView, forceAppend, listeners}
+  variables,
+  isSameView,
+  forceAppend,
+  listeners
 ) => {
   const document = target.ownerDocument
 
@@ -122,11 +117,11 @@ const morphChild = (
     }
 
     if (next.view != null) {
-      morphRoot(currentChild, next, {listeners})
+      morphRoot(currentChild, next, listeners)
     } else {
       const meta = {_read: false}
 
-      morph(currentChild, next, {variables, isSameView, meta, listeners})
+      morph(currentChild, next, variables, isSameView, meta, listeners)
     }
   }
 
@@ -145,7 +140,7 @@ const morphChild = (
   return currentChild?.nextSibling
 }
 
-const morph = (target, next, {variables, isSameView, meta, listeners}) => {
+const morph = (target, next, variables, isSameView, meta, listeners) => {
   if (isSameView && !next.dynamic) {
     return
   }
@@ -167,10 +162,10 @@ const morph = (target, next, {variables, isSameView, meta, listeners}) => {
       }
 
       if (attribute.key) {
-        morphAttribute(target, attribute.key, value, {meta, listeners})
+        morphAttribute(target, attribute.key, value, meta, listeners)
       } else {
         for (const key of Object.keys(value)) {
-          morphAttribute(target, key, value[key], {meta, listeners})
+          morphAttribute(target, key, value[key], meta, listeners)
         }
       }
     }
@@ -280,20 +275,27 @@ const morph = (target, next, {variables, isSameView, meta, listeners}) => {
               keyIndex--
             }
 
-            childNode = morphChild(target, childNode, grand, {
+            childNode = morphChild(
+              target,
+              childNode,
+              grand,
               variables,
               isSameView,
               forceAppend,
               listeners
-            })
+            )
           }
         }
       } else {
-        childNode = morphChild(target, childNode, child, {
+        childNode = morphChild(
+          target,
+          childNode,
+          child,
           variables,
           isSameView,
+          false,
           listeners
-        })
+        )
       }
     }
   }
@@ -313,7 +315,7 @@ const morph = (target, next, {variables, isSameView, meta, listeners}) => {
   weakMap.set(target, meta)
 }
 
-const morphRoot = (target, next, {listeners}) => {
+const morphRoot = (target, next, listeners) => {
   const meta = weakMap.get(target) ?? {}
 
   meta._read = true
@@ -328,7 +330,7 @@ const morphRoot = (target, next, {listeners}) => {
     meta.view = next.view
   }
 
-  morph(target, next, {variables: next.variables, isSameView, meta, listeners})
+  morph(target, next, next.variables, isSameView, meta, listeners)
 }
 
 export const createDomView = (target, view) => {
@@ -337,7 +339,7 @@ export const createDomView = (target, view) => {
   return (state) => {
     const current = resolve(view(state))
 
-    morphRoot(target, current, {listeners})
+    morphRoot(target, current, listeners)
 
     if (current.afterUpdate) {
       current.afterUpdate(target)
@@ -345,22 +347,193 @@ export const createDomView = (target, view) => {
   }
 }
 
+const viewZero = {
+  type: 'node',
+  view: 0,
+  dynamic: false
+}
+
+export const skipUpdate = () => viewZero
+
+const valueTrue = {
+  type: 'value',
+  value: true
+}
+
+const END = Symbol('end')
+
 const isSpaceChar = (char) => /\s/.test(char)
 const isOfClose = (char) => char === '/' || char === '>' || isSpaceChar(char)
 const isOfTag = (char) => !isOfClose(char)
 const isOfKey = (char) => char !== '=' && !isOfClose(char)
 const isQuoteChar = (char) => char === '"' || char === "'"
 
-const endToken = {
-  type: 'end'
-}
-
 const tokenizer = {
   *get(acc, strs, vlength) {
     for (let index = 0, length = strs.length; index < length; index++) {
       const str = strs[index]
+      let first = index > 0
 
-      yield* this.tokenize(acc, str, index > 0)
+      let tag = acc.tag
+      let i = 0
+
+      const current = () => str.charAt(i)
+      const next = () => str.charAt(i + 1)
+
+      while (current()) {
+        if (!tag && current() === '<') {
+          let value = ''
+          let end = false
+
+          if (next() === '/') {
+            end = true
+
+            i++
+          }
+
+          while (next() && isOfTag(next())) {
+            i++
+
+            value += current()
+          }
+
+          yield {
+            type: !end ? 'tag' : 'endtag',
+            value
+          }
+
+          first = false
+
+          tag = value
+
+          i++
+
+          continue
+        }
+
+        if (tag && isSpaceChar(current())) {
+          i++
+
+          continue
+        }
+
+        if (tag && current() === '/' && next() === '>') {
+          yield* [
+            END,
+            {
+              type: 'endtag',
+              value: tag
+            },
+            END
+          ]
+
+          first = false
+
+          tag = false
+
+          i += 2
+
+          continue
+        }
+
+        if (tag && current() === '>') {
+          yield END
+
+          first = false
+
+          tag = false
+
+          i++
+
+          continue
+        }
+
+        if (tag && isOfKey(current())) {
+          let value = ''
+
+          i--
+
+          while (next() && isOfKey(next())) {
+            i++
+
+            value += current()
+          }
+
+          yield {
+            type: 'key',
+            value
+          }
+
+          first = false
+
+          if (next() === '=') {
+            i++
+
+            let quote = ''
+            let value = ''
+
+            if (next() && isQuoteChar(next())) {
+              i++
+
+              quote = current()
+
+              while (next() !== quote) {
+                if (next()) {
+                  i++
+
+                  value += current()
+                } else {
+                  throw Error('Quote mismatch')
+                }
+              }
+
+              i++
+
+              yield {
+                type: 'value',
+                value
+              }
+            } else if (next()) {
+              throw Error('Quote expected')
+            }
+          } else {
+            yield valueTrue
+          }
+
+          i++
+
+          continue
+        }
+
+        if (!tag) {
+          let value = ''
+
+          while (current() && current() !== '<') {
+            value += current()
+
+            i++
+          }
+
+          let trim = true
+
+          if (!current() && first) {
+            trim = false
+          }
+
+          if ((!trim && value) || (trim && value.trim())) {
+            yield {
+              type: 'text',
+              value
+            }
+          }
+
+          continue
+        }
+
+        i++
+      }
+
+      acc.tag = tag
 
       if (index < vlength) {
         yield {
@@ -369,178 +542,13 @@ const tokenizer = {
         }
       }
     }
-  },
-  *tokenize(acc, str, first) {
-    let tag = acc.tag
-    let i = 0
-
-    const current = () => str.charAt(i)
-    const next = () => str.charAt(i + 1)
-
-    while (current()) {
-      if (!tag && current() === '<') {
-        let value = ''
-        let end = false
-
-        if (next() === '/') {
-          end = true
-
-          i++
-        }
-
-        while (next() && isOfTag(next())) {
-          i++
-
-          value += current()
-        }
-
-        yield {
-          type: !end ? 'tag' : 'endtag',
-          value
-        }
-
-        first = false
-
-        tag = value
-
-        i++
-
-        continue
-      }
-
-      if (tag && isSpaceChar(current())) {
-        i++
-
-        continue
-      }
-
-      if (tag && current() === '/' && next() === '>') {
-        yield* [
-          endToken,
-          {
-            type: 'endtag',
-            value: tag
-          },
-          endToken
-        ]
-
-        first = false
-
-        tag = false
-
-        i += 2
-
-        continue
-      }
-
-      if (tag && current() === '>') {
-        yield endToken
-
-        first = false
-
-        tag = false
-
-        i++
-
-        continue
-      }
-
-      if (tag && isOfKey(current())) {
-        let value = ''
-
-        i--
-
-        while (next() && isOfKey(next())) {
-          i++
-
-          value += current()
-        }
-
-        yield {
-          type: 'key',
-          value
-        }
-
-        first = false
-
-        if (next() === '=') {
-          i++
-
-          let quote = ''
-          let value = ''
-
-          if (next() && isQuoteChar(next())) {
-            i++
-
-            quote = current()
-
-            while (next() !== quote) {
-              if (next()) {
-                i++
-
-                value += current()
-              } else {
-                throw Error('Quote mismatch')
-              }
-            }
-
-            i++
-
-            yield {
-              type: 'value',
-              value
-            }
-          } else if (next()) {
-            throw Error('Quote expected')
-          }
-        } else {
-          yield {
-            type: 'value',
-            value: true
-          }
-        }
-
-        i++
-
-        continue
-      }
-
-      if (!tag) {
-        let value = ''
-
-        while (current() && current() !== '<') {
-          value += current()
-
-          i++
-        }
-
-        let trim = true
-
-        if (!current() && first) {
-          trim = false
-        }
-
-        if ((!trim && value) || (trim && value.trim())) {
-          yield {
-            type: 'text',
-            value
-          }
-        }
-
-        continue
-      }
-
-      i++
-    }
-
-    acc.tag = tag
   }
 }
 
 const parse = (tokens, parent, tag) => {
   const child = {
-    type: 'node',
     tag,
+    type: 'node',
     dynamic: false,
     attributes: [],
     children: []
@@ -555,7 +563,7 @@ const parse = (tokens, parent, tag) => {
 
     const token = current.value
 
-    if (token.type === 'end') {
+    if (token === END) {
       break
     } else if (token.type === 'key') {
       const next = (tokens.next() ?? {value: true}).value
