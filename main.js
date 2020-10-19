@@ -18,6 +18,18 @@ const resolve = (obj) => {
   return obj
 }
 
+const readMeta = (target, meta = {}) => {
+  if (!meta._read) {
+    Object.assign(meta, weakMap.get(target) ?? {})
+
+    meta._read = true
+  }
+
+  return meta
+}
+
+const getNextSibling = (current) => current?.nextSibling
+
 const getListener = (key) => (e) => {
   const map = weakMap.get(e.target)
 
@@ -31,11 +43,7 @@ const morphAttribute = (target, key, value, meta, listeners) => {
   const remove = value == null || value === false
 
   if (key.indexOf('on') === 0) {
-    if (!meta._read) {
-      Object.assign(meta, weakMap.get(target) || {})
-
-      meta._read = true
-    }
+    readMeta(target, meta)
 
     if (remove) {
       if (meta[key]) {
@@ -119,9 +127,7 @@ const morphChild = (
     if (next.view != null) {
       morphRoot(currentChild, next, listeners)
     } else {
-      const meta = {_read: false}
-
-      morph(currentChild, next, variables, isSameView, meta, listeners)
+      morph(currentChild, next, variables, isSameView, {}, listeners)
     }
   }
 
@@ -137,7 +143,7 @@ const morphChild = (
     next.afterUpdate(currentChild)
   }
 
-  return currentChild?.nextSibling
+  return getNextSibling(currentChild)
 }
 
 const morph = (target, next, variables, isSameView, meta, listeners) => {
@@ -174,12 +180,6 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
   const childrenLength = next.children.length
   let childNode = target.firstChild
 
-  if (!meta._read) {
-    Object.assign(meta, weakMap.get(target) || {})
-
-    meta._read = true
-  }
-
   let keys
 
   let prevKeys
@@ -195,7 +195,7 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
       }
 
       if (!deopt && !child.dynamic && !child.variable) {
-        childNode = childNode?.nextSibling
+        childNode = getNextSibling(childNode)
 
         continue
       }
@@ -222,16 +222,12 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
           let keysMatch = true
 
           if (grand.key) {
-            if (!meta._read) {
-              Object.assign(meta, weakMap.get(target) || {})
-
-              meta._read = true
-            }
-
             if (!keys) {
               keys = {}
 
-              prevKeys = meta.keys ?? {}
+              readMeta(target, meta)
+
+              prevKeys = meta.keys?.[variableValue] ?? {}
             }
 
             if (!keys[variableValue]) {
@@ -240,12 +236,11 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
 
             keys[variableValue].push(grand.key)
 
-            keysMatch = prevKeys[variableValue]?.[keyIndex] === grand.key
+            keysMatch = prevKeys[keyIndex] === grand.key
 
             grand = grand.value
 
-            lengthDifference =
-              (child.length || 0) - (prevKeys[variableValue]?.length || 0)
+            lengthDifference = (child.length || 0) - (prevKeys.length || 0)
           }
 
           keyIndex++
@@ -265,7 +260,7 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
           }
 
           if (isSameView && grand.view != null && !grand.dynamic) {
-            childNode = childNode?.nextSibling
+            childNode = getNextSibling(childNode)
           } else {
             const forceAppend = !keysMatch && lengthDifference > 0 && childNode
 
@@ -312,13 +307,11 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
     childNode.remove()
   }
 
-  weakMap.set(target, meta)
+  if (meta._read) weakMap.set(target, meta)
 }
 
 const morphRoot = (target, next, listeners) => {
-  const meta = weakMap.get(target) ?? {}
-
-  meta._read = true
+  const meta = readMeta(target)
 
   const isSameView = next.view === 0 || next.view === meta.view
 
@@ -566,7 +559,7 @@ const parse = (tokens, parent, tag) => {
     if (token === END) {
       break
     } else if (token.type === 'key') {
-      const next = (tokens.next() ?? {value: true}).value
+      const next = tokens.next()?.value ?? true
 
       if (next.type === 'value') {
         child.attributes.push({key: token.value, value: next.value})
@@ -602,9 +595,9 @@ const parse = (tokens, parent, tag) => {
     if (token.type === 'endtag' && token.value === child.tag) {
       break
     } else if (token.type === 'tag') {
-      const d = parse(tokens, child, token.value)
+      const dynamic = parse(tokens, child, token.value)
 
-      child.dynamic = child.dynamic || d
+      child.dynamic = child.dynamic || dynamic
     } else if (token.type === 'text') {
       child.children.push({
         type: 'text',
