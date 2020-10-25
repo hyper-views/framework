@@ -85,7 +85,7 @@ export const stringify = (obj) => {
 
       if (child?.[Symbol.iterator] != null && typeof child !== 'string') {
         for (const c of child) {
-          descendants.push(c)
+          descendants.push(c.key != null ? c.value : c)
         }
       } else {
         descendants.push(child)

@@ -221,7 +221,7 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
 
           let keysMatch = true
 
-          if (grand.key) {
+          if (grand.key != null) {
             if (!keys) {
               keys = {}
 
