@@ -3,23 +3,26 @@ import * as assert from 'uvu/assert'
 import {stringify} from '../stringify.js'
 import {html} from '../main.js'
 
-test('stringify', () => {
+test('stringify with keys', () => {
   assert.is(
     stringify(html`
       <form action=${'/submit'}>
         <fieldset>
           <legend>Very Important ${'Values'}</legend>
-          ${[1, 2, 3].map(
-            (i) => html`
-              <input
-                required
-                id=${`value${i}`}
-                name=${`value${i}`}
-                type="input"
-                ${{placeholder: 'Add A Value'}}
-              />
-            `
-          )}
+          ${[1, 2, 3].map((i) => {
+            return {
+              key: i,
+              value: html`
+                <input
+                  required
+                  id=${`value${i}`}
+                  name=${`value${i}`}
+                  type="input"
+                  ${{placeholder: 'Add A Value'}}
+                />
+              `
+            }
+          })}
         </fieldset>
         <button type="button" onclick=${() => {}}>Submit</button>
       </form>
