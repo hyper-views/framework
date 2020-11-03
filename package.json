@@ -36,7 +36,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "jsdom": "^16.4.0",
     "prettier": "^2.1.2",
-    "uvu": "^0.3.4"
+    "uvu": "^0.3.5"
   },
   "engines": {
     "node": ">=14.3"
