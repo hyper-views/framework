@@ -99,7 +99,7 @@ export const stringify = (obj) => {
         if (child.type != null) {
           switch (child.type) {
             case 'text':
-              result += escape(child.value)
+              result += tag !== 'style' ? escape(child.value) : child.value
               break
 
             case 'node':
@@ -111,7 +111,7 @@ export const stringify = (obj) => {
               break
           }
         } else {
-          result += escape(child)
+          result += tag !== 'style' ? escape(child) : child
         }
       }
 
