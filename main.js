@@ -126,7 +126,7 @@ const morphChild = (
 
     if (next.view != null) {
       morphRoot(currentChild, next, listeners)
-    } else {
+    } else if (!isSameView || next.dynamic) {
       morph(currentChild, next, variables, isSameView, {}, listeners)
     }
   }
@@ -147,10 +147,6 @@ const morphChild = (
 }
 
 const morph = (target, next, variables, isSameView, meta, listeners) => {
-  if (isSameView && !next.dynamic) {
-    return
-  }
-
   const attributesLength = next.attributes.length
 
   if (attributesLength) {
@@ -189,10 +185,6 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
 
     for (let childIndex = 0; childIndex < childrenLength; childIndex++) {
       let child = next.children[childIndex]
-
-      if (child == null) {
-        continue
-      }
 
       if (!deopt && !child.dynamic && !child.variable) {
         childNode = getNextSibling(childNode)
@@ -240,7 +232,7 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
 
             grand = grand.value
 
-            lengthDifference = (child.length || 0) - (prevKeys.length || 0)
+            lengthDifference = child.length - prevKeys.length
           }
 
           keyIndex++
@@ -323,7 +315,9 @@ const morphRoot = (target, next, listeners) => {
     meta.view = next.view
   }
 
-  morph(target, next, next.variables, isSameView, meta, listeners)
+  if (!isSameView || next.dynamic) {
+    morph(target, next, next.variables, isSameView, meta, listeners)
+  }
 }
 
 export const createDomView = (target, view) => {
@@ -522,8 +516,6 @@ const tokenizer = {
 
           continue
         }
-
-        i++
       }
 
       acc.tag = tag
@@ -559,7 +551,7 @@ const parse = (tokens, parent, tag) => {
     if (token === END) {
       break
     } else if (token.type === 'key') {
-      const next = tokens.next()?.value ?? true
+      const next = tokens.next()?.value
 
       if (next.type === 'value') {
         child.attributes.push({key: token.value, value: next.value})
