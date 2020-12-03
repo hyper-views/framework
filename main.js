@@ -2,17 +2,19 @@ const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const weakMap = new WeakMap()
 
-const resolve = (obj) => {
-  let afterUpdate
+const createQuoteError = (problem) => Error(`Quote ${problem}`)
+const createAssertionError = (actual, expected) =>
+  Error(`Expected ${expected}. Found ${actual}.`)
 
+const resolve = (obj) => {
   if (typeof obj === 'function') {
+    let afterUpdate
+
     obj = obj((cb) => {
       afterUpdate = cb
     })
 
-    if (afterUpdate != null) {
-      obj.afterUpdate = afterUpdate
-    }
+    obj.afterUpdate = afterUpdate
   }
 
   return obj
@@ -153,21 +155,19 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
     for (let i = 0, length = attributesLength; i < length; i++) {
       const attribute = next.attributes[i]
 
-      if (isSameView && !attribute.variable) {
-        continue
-      }
+      if (!isSameView || attribute.variable) {
+        let value = attribute.value
 
-      let value = attribute.value
+        if (attribute.variable) {
+          value = variables[value]
+        }
 
-      if (attribute.variable) {
-        value = variables[value]
-      }
-
-      if (attribute.key) {
-        morphAttribute(target, attribute.key, value, meta, listeners)
-      } else {
-        for (const key of Object.keys(value)) {
-          morphAttribute(target, key, value[key], meta, listeners)
+        if (attribute.key) {
+          morphAttribute(target, attribute.key, value, meta, listeners)
+        } else {
+          for (const key of Object.keys(value)) {
+            morphAttribute(target, key, value[key], meta, listeners)
+          }
         }
       }
     }
@@ -188,101 +188,100 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
 
       if (!deopt && !child.dynamic && !child.variable) {
         childNode = getNextSibling(childNode)
-
-        continue
-      }
-
-      deopt = true
-
-      if (child.variable) {
-        const variableValue = child.value
-
-        child = variables[variableValue]
-
-        if (child?.[Symbol.iterator] == null || typeof child === 'string') {
-          child = [child]
-        }
-
-        let keyIndex = 0
-        let lengthDifference
-
-        for (let grand of child) {
-          grand = resolve(grand)
-
-          if (grand == null) grand = ''
-
-          let keysMatch = true
-
-          if (grand.key != null) {
-            if (!keys) {
-              keys = {}
-
-              readMeta(target, meta)
-
-              prevKeys = meta.keys?.[variableValue] ?? {}
-            }
-
-            if (!keys[variableValue]) {
-              keys[variableValue] = []
-            }
-
-            keys[variableValue].push(grand.key)
-
-            keysMatch = prevKeys[keyIndex] === grand.key
-
-            grand = grand.value
-
-            lengthDifference = child.length - prevKeys.length
-          }
-
-          keyIndex++
-
-          if (grand.type == null) {
-            grand = {type: 'text', value: grand}
-          }
-
-          if (!keysMatch && lengthDifference < 0 && childNode != null) {
-            lengthDifference++
-
-            const extraNode = childNode
-
-            childNode = childNode.nextSibling
-
-            extraNode.remove()
-          }
-
-          if (isSameView && grand.view != null && !grand.dynamic) {
-            childNode = getNextSibling(childNode)
-          } else {
-            const forceAppend = !keysMatch && lengthDifference > 0 && childNode
-
-            if (forceAppend) {
-              lengthDifference--
-
-              keyIndex--
-            }
-
-            childNode = morphChild(
-              target,
-              childNode,
-              grand,
-              variables,
-              isSameView,
-              forceAppend,
-              listeners
-            )
-          }
-        }
       } else {
-        childNode = morphChild(
-          target,
-          childNode,
-          child,
-          variables,
-          isSameView,
-          false,
-          listeners
-        )
+        deopt = true
+
+        if (child.variable) {
+          const variableValue = child.value
+
+          child = variables[variableValue]
+
+          if (child?.[Symbol.iterator] == null || typeof child === 'string') {
+            child = [child]
+          }
+
+          let keyIndex = 0
+          let lengthDifference
+
+          for (let grand of child) {
+            grand = resolve(grand)
+
+            if (grand == null) grand = ''
+
+            let keysMatch = true
+
+            if (grand.key != null) {
+              if (!keys) {
+                keys = {}
+
+                readMeta(target, meta)
+
+                prevKeys = meta.keys?.[variableValue] ?? {}
+              }
+
+              if (!keys[variableValue]) {
+                keys[variableValue] = []
+              }
+
+              keys[variableValue].push(grand.key)
+
+              keysMatch = prevKeys[keyIndex] === grand.key
+
+              grand = grand.value
+
+              lengthDifference = child.length - prevKeys.length
+            }
+
+            keyIndex++
+
+            if (grand.type == null) {
+              grand = {type: 'text', value: grand}
+            }
+
+            if (!keysMatch && lengthDifference < 0 && childNode != null) {
+              lengthDifference++
+
+              const extraNode = childNode
+
+              childNode = childNode.nextSibling
+
+              extraNode.remove()
+            }
+
+            if (isSameView && grand.view != null && !grand.dynamic) {
+              childNode = getNextSibling(childNode)
+            } else {
+              const forceAppend =
+                !keysMatch && lengthDifference > 0 && childNode
+
+              if (forceAppend) {
+                lengthDifference--
+
+                keyIndex--
+              }
+
+              childNode = morphChild(
+                target,
+                childNode,
+                grand,
+                variables,
+                isSameView,
+                forceAppend,
+                listeners
+              )
+            }
+          }
+        } else {
+          childNode = morphChild(
+            target,
+            childNode,
+            child,
+            variables,
+            isSameView,
+            false,
+            listeners
+          )
+        }
       }
     }
   }
@@ -394,17 +393,9 @@ const tokenizer = {
           tag = value
 
           i++
-
-          continue
-        }
-
-        if (tag && isSpaceChar(current())) {
+        } else if (tag && isSpaceChar(current())) {
           i++
-
-          continue
-        }
-
-        if (tag && current() === '/' && next() === '>') {
+        } else if (tag && current() === '/' && next() === '>') {
           yield* [
             END,
             {
@@ -419,11 +410,7 @@ const tokenizer = {
           tag = false
 
           i += 2
-
-          continue
-        }
-
-        if (tag && current() === '>') {
+        } else if (tag && current() === '>') {
           yield END
 
           first = false
@@ -431,11 +418,7 @@ const tokenizer = {
           tag = false
 
           i++
-
-          continue
-        }
-
-        if (tag && isOfKey(current())) {
+        } else if (tag && isOfKey(current())) {
           let value = ''
 
           i--
@@ -470,7 +453,7 @@ const tokenizer = {
 
                   value += current()
                 } else {
-                  throw Error('Quote mismatch')
+                  throw createQuoteError('mismatch')
                 }
               }
 
@@ -481,18 +464,14 @@ const tokenizer = {
                 value
               }
             } else if (next()) {
-              throw Error('Quote expected')
+              throw createQuoteError('expected')
             }
           } else {
             yield valueTrue
           }
 
           i++
-
-          continue
-        }
-
-        if (!tag) {
+        } else if (!tag) {
           let value = ''
 
           while (current() && current() !== '<') {
@@ -513,8 +492,6 @@ const tokenizer = {
               value
             }
           }
-
-          continue
         }
       }
 
@@ -639,9 +616,9 @@ const toTemplate = (strs, vlength) => {
   }
 
   if (children.length !== 1) {
-    throw Error(`Found ${children.length} root nodes. Expected 1.`)
+    throw createAssertionError(children.length, 1)
   } else if (children[0].type !== 'node') {
-    throw Error(`Found '${children[0].type}'. Expected 'node'.`)
+    throw createAssertionError(children[0].type, "'node'")
   }
 
   children[0].view = view++
