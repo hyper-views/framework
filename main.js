@@ -14,7 +14,7 @@ const resolve = (obj) => {
       afterUpdate = cb
     })
 
-    obj.afterUpdate = afterUpdate
+    if (obj) obj.afterUpdate = afterUpdate
   }
 
   return obj
