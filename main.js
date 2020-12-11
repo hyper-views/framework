@@ -151,6 +151,10 @@ const morphChild = (
 const morph = (target, next, variables, isSameView, meta, listeners) => {
   const attributesLength = next.attributes.length
 
+  const attrNames = []
+
+  const hasExistingAttributes = target.attributes.length
+
   if (attributesLength) {
     for (let i = 0, length = attributesLength; i < length; i++) {
       const attribute = next.attributes[i]
@@ -164,11 +168,23 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
 
         if (attribute.key) {
           morphAttribute(target, attribute.key, value, meta, listeners)
+
+          attrNames.push(attribute.key)
         } else {
           for (const key of Object.keys(value)) {
             morphAttribute(target, key, value[key], meta, listeners)
+
+            attrNames.push(key)
           }
         }
+      }
+    }
+  }
+
+  if (!isSameView && hasExistingAttributes) {
+    for (const attr of target.attributes) {
+      if (!~attrNames.indexOf(attr.name)) {
+        target.removeAttribute(attr.name)
       }
     }
   }
