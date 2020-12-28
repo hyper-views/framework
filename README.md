@@ -8,11 +8,11 @@ import {createApp, createDomView, html} from 'https://unpkg.com/@erickmerchant/f
 const app = createApp(0)
 
 const decrement = () => {
-  app.commit((current) => current - 1)
+  app.state--
 }
 
 const increment = () => {
-  app.commit((current) => current + 1)
+  app.state++
 }
 
 const target = document.querySelector('div')

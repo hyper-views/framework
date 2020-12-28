@@ -658,34 +658,46 @@ export const createApp = (state) => {
   let viewCalled = false
   let view
 
-  const app = {
+  const callView = () => {
+    viewCalled = false
+
+    return Promise.resolve().then(() => {
+      if (!viewCalled) {
+        viewCalled = true
+
+        view(state)
+      }
+    })
+  }
+
+  const proxy = (state) =>
+    typeof state === 'object'
+      ? new Proxy(state, {
+          set(state, key, val) {
+            state[key] = val
+
+            callView()
+
+            return true
+          }
+        })
+      : state
+
+  state = proxy(state)
+
+  return {
     render(v) {
       view = v
 
-      viewCalled = false
-
-      return Promise.resolve().then(() => {
-        if (!viewCalled) {
-          viewCalled = true
-
-          view(state)
-        }
-      })
+      callView()
     },
-    commit(arg) {
-      if (typeof arg === 'function') {
-        state = arg(state) ?? state
-      } else {
-        state = arg
-      }
+    set state(val) {
+      state = proxy(val)
 
-      viewCalled = true
-
-      if (view != null) {
-        view(state)
-      }
+      callView()
+    },
+    get state() {
+      return state
     }
   }
-
-  return app
 }
