@@ -655,7 +655,7 @@ export const html = (strs, ...variables) => {
 }
 
 export const createApp = (state) => {
-  let viewCalled = false
+  let viewCalled
   let view
 
   const callView = () => {
@@ -665,7 +665,7 @@ export const createApp = (state) => {
       if (!viewCalled) {
         viewCalled = true
 
-        view(state)
+        view(typeof state === 'object' ? Object.assign({}, state) : state)
       }
     })
   }
