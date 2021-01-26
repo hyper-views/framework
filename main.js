@@ -59,7 +59,7 @@ const morphAttribute = (target, key, value, meta, listeners) => {
 
         const type = key.substring(2)
 
-        document.addEventListener(type, getListener(key))
+        document.addEventListener(type, getListener(key), {capture: true})
       }
     }
   } else {
