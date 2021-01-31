@@ -374,7 +374,7 @@ const tokenizer = {
   *get(acc, strs, vlength) {
     for (let index = 0, length = strs.length; index < length; index++) {
       const str = strs[index]
-      let first = index > 0
+      let trailing = index > 0
 
       let tag = acc.tag
       let i = 0
@@ -404,7 +404,7 @@ const tokenizer = {
             value
           }
 
-          first = false
+          trailing = false
 
           tag = value
 
@@ -421,7 +421,7 @@ const tokenizer = {
             END
           ]
 
-          first = false
+          trailing = false
 
           tag = false
 
@@ -429,7 +429,7 @@ const tokenizer = {
         } else if (tag && current() === '>') {
           yield END
 
-          first = false
+          trailing = false
 
           tag = false
 
@@ -450,7 +450,7 @@ const tokenizer = {
             value
           }
 
-          first = false
+          trailing = false
 
           if (next() === '=') {
             i++
@@ -498,7 +498,7 @@ const tokenizer = {
 
           let trim = true
 
-          if (!current() && first) {
+          if (!current() && trailing) {
             trim = false
           }
 
