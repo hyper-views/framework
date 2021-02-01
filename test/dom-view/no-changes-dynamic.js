@@ -41,27 +41,27 @@ test('no change - dynamic', async () => {
 
   await delay(0)
 
-  assert.is(el.childNodes?.length, 2)
+  assert.is(el.childNodes?.length, 5)
 
-  assert.is(el.childNodes?.[0]?.nodeName, 'UL')
+  assert.is(el.childNodes?.[1]?.nodeName, 'UL')
 
-  assert.is(el.childNodes?.[0]?.childNodes?.length, 3)
+  assert.is(el.childNodes?.[1]?.childNodes?.length, 5)
 
-  assert.is(el.childNodes?.[1]?.nodeName, 'P')
+  assert.is(el.childNodes?.[3]?.nodeName, 'P')
 
-  assert.is(el.childNodes?.[1]?.childNodes?.length, 1)
+  assert.is(el.childNodes?.[3]?.childNodes?.length, 1)
 
   view()
 
   await delay(0)
 
-  assert.is(el.childNodes?.length, 2)
+  assert.is(el.childNodes?.length, 5)
 
-  assert.is(el.childNodes?.[0]?.nodeName, 'UL')
+  assert.is(el.childNodes?.[1]?.nodeName, 'UL')
 
-  assert.is(el.childNodes?.[0]?.childNodes?.length, 3)
+  assert.is(el.childNodes?.[1]?.childNodes?.length, 5)
 
-  assert.is(el.childNodes?.[1]?.nodeName, 'P')
+  assert.is(el.childNodes?.[3]?.nodeName, 'P')
 
-  assert.is(el.childNodes?.[1]?.childNodes?.length, 1)
+  assert.is(el.childNodes?.[3]?.childNodes?.length, 1)
 })

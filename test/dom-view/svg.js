@@ -32,11 +32,11 @@ test('svg', async () => {
 
   await delay(0)
 
-  assert.is(el.childNodes?.length, 1)
+  assert.is(el.childNodes?.length, 3)
 
-  assert.is(el.childNodes?.[0]?.nodeName, 'svg')
+  assert.is(el.childNodes?.[1]?.nodeName, 'svg')
 
-  assert.is(el.childNodes?.[0]?.childNodes?.length, 1)
+  assert.is(el.childNodes?.[1]?.childNodes?.length, 3)
 
-  assert.is(el.childNodes?.[0]?.childNodes?.[0]?.nodeName, 'circle')
+  assert.is(el.childNodes?.[1]?.childNodes?.[1]?.nodeName, 'circle')
 })

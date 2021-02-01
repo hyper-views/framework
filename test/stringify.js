@@ -27,6 +27,12 @@ test('stringify', () => {
           `}
       </form>
     `),
-    '<form action="/submit"><fieldset><legend>Very Important Values</legend><input required id="value1" name="value1" type="input" placeholder="Add A Value"><input required id="value2" name="value2" type="input" placeholder="Add A Value"><input required id="value3" name="value3" type="input" placeholder="Add A Value"></fieldset><button type="button">Submit</button></form>'
+    `<form action="/submit">
+        <fieldset>
+          <legend>Very Important Values</legend>
+          <input required id="value1" name="value1" type="input" placeholder="Add A Value"><input required id="value2" name="value2" type="input" placeholder="Add A Value"><input required id="value3" name="value3" type="input" placeholder="Add A Value">
+        </fieldset>
+        <button type="button">Submit</button>
+      </form>`
   )
 })

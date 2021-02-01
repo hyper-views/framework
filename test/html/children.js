@@ -17,51 +17,51 @@ test('nodes -- static and dynamic', () => {
 
   assert.is(el.dynamic, true)
 
-  assert.is(el.children?.length, 3)
-
-  assert.is(el.children?.[0]?.type, 'node')
-
-  assert.is(el.children?.[0]?.tag, 'li')
-
-  assert.is(el.children?.[0]?.dynamic, false)
-
-  assert.is(el.children?.[0]?.children?.length, 1)
-
-  assert.is(el.children?.[0]?.children?.[0]?.type, 'text')
-
-  assert.is(el.children?.[0]?.children?.[0]?.value, '0')
+  assert.is(el.children?.length, 7)
 
   assert.is(el.children?.[1]?.type, 'node')
 
   assert.is(el.children?.[1]?.tag, 'li')
 
-  assert.is(el.children?.[1]?.dynamic, true)
+  assert.is(el.children?.[1]?.dynamic, false)
 
   assert.is(el.children?.[1]?.children?.length, 1)
 
-  assert.is(el.children?.[1]?.children?.[0]?.type, 'variable')
+  assert.is(el.children?.[1]?.children?.[0]?.type, 'text')
 
-  assert.is(el.children?.[1]?.children?.[0]?.variable, true)
+  assert.is(el.children?.[1]?.children?.[0]?.value, '0')
 
-  assert.is(el.children?.[1]?.children?.[0]?.value, 0)
+  assert.is(el.children?.[3]?.type, 'node')
 
-  assert.is(el.children?.[2]?.type, 'node')
+  assert.is(el.children?.[3]?.tag, 'li')
 
-  assert.is(el.children?.[2]?.tag, 'li')
+  assert.is(el.children?.[3]?.dynamic, true)
 
-  assert.is(el.children?.[2]?.dynamic, false)
+  assert.is(el.children?.[3]?.children?.length, 1)
 
-  assert.is(el.children?.[2]?.children?.length, 1)
+  assert.is(el.children?.[3]?.children?.[0]?.type, 'variable')
 
-  assert.is(el.children?.[2]?.children?.[0]?.type, 'node')
+  assert.is(el.children?.[3]?.children?.[0]?.variable, true)
 
-  assert.is(el.children?.[2]?.children?.[0]?.tag, 'span')
+  assert.is(el.children?.[3]?.children?.[0]?.value, 0)
 
-  assert.is(el.children?.[2]?.children?.[0]?.dynamic, false)
+  assert.is(el.children?.[5]?.type, 'node')
 
-  assert.is(el.children?.[2]?.children?.[0]?.children?.length, 1)
+  assert.is(el.children?.[5]?.tag, 'li')
 
-  assert.is(el.children?.[2]?.children?.[0]?.children?.[0]?.type, 'text')
+  assert.is(el.children?.[5]?.dynamic, false)
 
-  assert.is(el.children?.[2]?.children?.[0]?.children?.[0]?.value, '2')
+  assert.is(el.children?.[5]?.children?.length, 1)
+
+  assert.is(el.children?.[5]?.children?.[0]?.type, 'node')
+
+  assert.is(el.children?.[5]?.children?.[0]?.tag, 'span')
+
+  assert.is(el.children?.[5]?.children?.[0]?.dynamic, false)
+
+  assert.is(el.children?.[5]?.children?.[0]?.children?.length, 1)
+
+  assert.is(el.children?.[5]?.children?.[0]?.children?.[0]?.type, 'text')
+
+  assert.is(el.children?.[5]?.children?.[0]?.children?.[0]?.value, '2')
 })

@@ -374,7 +374,6 @@ const tokenizer = {
   *get(acc, strs, vlength) {
     for (let index = 0, length = strs.length; index < length; index++) {
       const str = strs[index]
-      let trailing = index > 0
 
       let tag = acc.tag
       let i = 0
@@ -404,8 +403,6 @@ const tokenizer = {
             value
           }
 
-          trailing = false
-
           tag = value
 
           i++
@@ -421,15 +418,11 @@ const tokenizer = {
             END
           ]
 
-          trailing = false
-
           tag = false
 
           i += 2
         } else if (tag && current() === '>') {
           yield END
-
-          trailing = false
 
           tag = false
 
@@ -449,8 +442,6 @@ const tokenizer = {
             type: 'key',
             value
           }
-
-          trailing = false
 
           if (next() === '=') {
             i++
@@ -496,13 +487,7 @@ const tokenizer = {
             i++
           }
 
-          let trim = true
-
-          if (!current() && trailing) {
-            trim = false
-          }
-
-          if ((!trim && value) || (trim && value.trim())) {
+          if (value) {
             yield {
               type: 'text',
               value
@@ -626,15 +611,13 @@ const toTemplate = (strs, vlength) => {
 
     if (token.type === 'tag') {
       parse(tokens, {children}, token.value)
-    } else if (token.type === 'text') {
-      children.push({value: token.value})
+    } else if (token.type === 'text' && token.value.trim()) {
+      throw createAssertionError(token.type, "'node'")
     }
   }
 
   if (children.length !== 1) {
     throw createAssertionError(children.length, 1)
-  } else if (children[0].type !== 'node') {
-    throw createAssertionError(children[0].type, "'node'")
   }
 
   children[0].view = view++

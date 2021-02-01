@@ -42,9 +42,9 @@ test('remove children', async () => {
 
   await delay(0)
 
-  assert.is(el.childNodes?.length, 1)
+  assert.is(el.childNodes?.length, 3)
 
-  assert.is(el.childNodes?.[0]?.nodeName, 'UL')
+  assert.is(el.childNodes?.[1]?.nodeName, 'UL')
 
-  assert.is(el.childNodes?.[0]?.childNodes?.length, 3)
+  assert.is(el.childNodes?.[1]?.childNodes?.length, 7)
 })

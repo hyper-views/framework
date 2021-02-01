@@ -51,9 +51,9 @@ test('add children with keys', async () => {
 
   const list = el.querySelector('ul')
 
-  const one = list.childNodes?.[0]
+  const one = list.childNodes?.[1]
 
-  const three = list.childNodes?.[1]
+  const three = list.childNodes?.[2]
 
   assert.not(one == null)
 
@@ -76,7 +76,7 @@ test('add children with keys', async () => {
 
   await delay(0)
 
-  assert.is(one, list.childNodes?.[0])
+  assert.is(one, list.childNodes?.[1])
 
-  assert.is(three, list.childNodes?.[2])
+  assert.is(three, list.childNodes?.[3])
 })
