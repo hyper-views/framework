@@ -80,15 +80,17 @@ export const stringify = (obj) => {
       let child = children[i]
 
       if (child?.type === 'variable') {
-        child = resolve(variables[child.value])
+        child = variables[child.value]
       }
 
-      if (child?.[Symbol.iterator] != null && typeof child !== 'string') {
-        for (const c of child) {
-          descendants.push(c.key != null ? c.value : c)
-        }
-      } else {
-        descendants.push(child)
+      if (child?.[Symbol.iterator] == null || typeof child === 'string') {
+        child = [child]
+      }
+
+      for (let c of child) {
+        c = resolve(c) ?? ''
+
+        descendants.push(c.key != null ? c.value : c)
       }
     }
 
