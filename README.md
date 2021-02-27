@@ -17,8 +17,7 @@ const increment = () => {
 
 const target = document.querySelector('div')
 
-const view = createDomView(target, (state) => {
-  return html`
+const view = createDomView(target, (state) => html`
     <div>
       <output>${state}</output>
       <br />
@@ -26,7 +25,7 @@ const view = createDomView(target, (state) => {
       <button type="button" onclick=${increment}>++</button>
     </div>
   `
-})
+)
 
 app.render(view)
 ```
