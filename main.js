@@ -22,7 +22,9 @@ const resolve = (obj) => {
 
 const readMeta = (target, meta = {}) => {
   if (!meta._read) {
-    Object.assign(meta, weakMap.get(target) ?? {})
+    const read = weakMap.get(target)
+
+    Object.assign(meta, read ?? {})
 
     meta._read = true
   }
@@ -30,37 +32,42 @@ const readMeta = (target, meta = {}) => {
   return meta
 }
 
-const getNextSibling = (current) => current?.nextSibling
-
-const getListener = (key) => (e) => {
-  const map = weakMap.get(e.target)
-
-  if (map && map[key]) {
-    map[key](e)
+const writeMeta = (target, meta) => {
+  if (meta._read) {
+    weakMap.set(target, meta)
   }
 }
 
+const getNextSibling = (current) => current?.nextSibling
+
+const addListener = (document, type) => {
+  document.addEventListener(
+    type,
+    (e) => {
+      const map = weakMap.get(e.target)
+
+      if (map && map[type]) {
+        map[type](e)
+      }
+    },
+    {capture: true}
+  )
+}
+
 const morphAttribute = (target, key, value, meta, listeners) => {
-  const document = target.ownerDocument
   const remove = value == null || value === false
 
   if (key.indexOf('on') === 0) {
+    const type = key.substring(2)
+
     readMeta(target, meta)
 
-    if (remove) {
-      if (meta[key]) {
-        meta[key] = null
-      }
-    } else {
-      meta[key] = value
+    meta[type] = remove ? null : value
 
-      if (!listeners.includes(key)) {
-        listeners.push(key)
+    if (!remove && !listeners.includes(type)) {
+      listeners.push(type)
 
-        const type = key.substring(2)
-
-        document.addEventListener(type, getListener(key), {capture: true})
-      }
+      addListener(target.ownerDocument, type)
     }
   } else {
     if (remove) {
@@ -314,7 +321,7 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
     childNode.remove()
   }
 
-  if (meta._read) weakMap.set(target, meta)
+  writeMeta(target, meta)
 }
 
 const morphRoot = (target, next, listeners) => {
@@ -645,7 +652,7 @@ export const createApp = (state) => {
     viewCalled = false
 
     return Promise.resolve().then(() => {
-      if (!viewCalled) {
+      if (!viewCalled && view) {
         viewCalled = true
 
         view(typeof state === 'object' ? Object.assign({}, state) : state)
