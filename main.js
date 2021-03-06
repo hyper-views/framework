@@ -2,7 +2,6 @@ const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const weakMap = new WeakMap()
 
-const createQuoteError = (problem) => Error(`Quote ${problem}`)
 const createAssertionError = (actual, expected) =>
   Error(`Expected ${expected}. Found ${actual}.`)
 
@@ -467,7 +466,7 @@ const tokenizer = {
 
                   value += current()
                 } else {
-                  throw createQuoteError('mismatch')
+                  throw createAssertionError('', quote)
                 }
               }
 
@@ -478,7 +477,7 @@ const tokenizer = {
                 value
               }
             } else if (next()) {
-              throw createQuoteError('expected')
+              throw createAssertionError(next(), '"')
             }
           } else {
             yield valueTrue
