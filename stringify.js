@@ -94,7 +94,7 @@ export const stringify = (obj) => {
       for (let c of child) {
         c = resolve(c) ?? ''
 
-        descendants.push(c.key != null ? c.value : c)
+        descendants.push(c)
       }
     }
 

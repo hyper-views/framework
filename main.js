@@ -93,12 +93,11 @@ const morphChild = (
   next,
   variables,
   isSameView,
-  forceAppend,
   listeners
 ) => {
   const document = target.ownerDocument
 
-  const append = forceAppend || childNode == null
+  const append = childNode == null
 
   let replace = false
 
@@ -139,9 +138,7 @@ const morphChild = (
     }
   }
 
-  if (forceAppend && childNode) {
-    childNode.before(currentChild)
-  } else if (append) {
+  if (append) {
     target.append(currentChild)
   } else if (replace) {
     childNode.replaceWith(currentChild)
@@ -198,10 +195,6 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
   const childrenLength = next.children.length
   let childNode = target.firstChild
 
-  let keys
-
-  let prevKeys
-
   if (childrenLength) {
     let deopt = !isSameView
 
@@ -222,73 +215,24 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
             child = [child]
           }
 
-          let keyIndex = 0
-          let lengthDifference
-
           for (let grand of child) {
             grand = resolve(grand)
 
             if (grand == null) grand = ''
 
-            let keysMatch = true
-
-            if (grand.key != null) {
-              if (!keys) {
-                keys = {}
-
-                readMeta(target, meta)
-
-                prevKeys = meta.keys?.[variableValue] ?? {}
-              }
-
-              if (!keys[variableValue]) {
-                keys[variableValue] = []
-              }
-
-              keys[variableValue].push(grand.key)
-
-              keysMatch = prevKeys[keyIndex] === grand.key
-
-              grand = grand.value
-
-              lengthDifference = child.length - prevKeys.length
-            }
-
-            keyIndex++
-
             if (grand.type == null) {
               grand = {type: 'text', value: grand}
-            }
-
-            if (!keysMatch && lengthDifference < 0 && childNode != null) {
-              lengthDifference++
-
-              const extraNode = childNode
-
-              childNode = childNode.nextSibling
-
-              extraNode.remove()
             }
 
             if (isSameView && grand.view != null && !grand.dynamic) {
               childNode = getNextSibling(childNode)
             } else {
-              const forceAppend =
-                !keysMatch && lengthDifference > 0 && childNode
-
-              if (forceAppend) {
-                lengthDifference--
-
-                keyIndex--
-              }
-
               childNode = morphChild(
                 target,
                 childNode,
                 grand,
                 variables,
                 isSameView,
-                forceAppend,
                 listeners
               )
             }
@@ -300,16 +244,11 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
             child,
             variables,
             isSameView,
-            false,
             listeners
           )
         }
       }
     }
-  }
-
-  if (keys) {
-    meta.keys = keys
   }
 
   if (childNode) {
