@@ -626,7 +626,9 @@ export const createApp = (state) => {
       callView()
     },
     set state(val) {
-      state = val
+      if (val !== proxy) {
+        state = val
+      }
 
       callView()
     },
