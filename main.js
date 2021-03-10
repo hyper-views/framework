@@ -31,12 +31,6 @@ const readMeta = (target, meta = {}) => {
   return meta
 }
 
-const writeMeta = (target, meta) => {
-  if (meta._read) {
-    weakMap.set(target, meta)
-  }
-}
-
 const getNextSibling = (current) => current?.nextSibling
 
 const addListener = (document, type) => {
@@ -156,8 +150,6 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
 
   const attrNames = []
 
-  const hasExistingAttributes = target.attributes.length
-
   if (attributesLength) {
     for (let i = 0, length = attributesLength; i < length; i++) {
       const attribute = next.attributes[i]
@@ -174,7 +166,11 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
 
           attrNames.push(attribute.key)
         } else {
-          for (const key of Object.keys(value)) {
+          const keys = Object.keys(value)
+
+          for (let i = 0, len = keys.length; i < len; i++) {
+            const key = keys[i]
+
             morphAttribute(target, key, value[key], meta, listeners)
 
             attrNames.push(key)
@@ -184,7 +180,7 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
     }
   }
 
-  if (!isSameView && hasExistingAttributes) {
+  if (!isSameView) {
     for (const attr of target.attributes) {
       if (!~attrNames.indexOf(attr.name)) {
         target.removeAttribute(attr.name)
@@ -252,24 +248,30 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
   }
 
   if (childNode) {
-    while (childNode.nextSibling) {
-      childNode.nextSibling.remove()
-    }
+    let nextChild
 
-    childNode.remove()
+    do {
+      nextChild = getNextSibling(childNode)
+
+      childNode.remove()
+
+      childNode = nextChild
+    } while (childNode)
   }
 
-  writeMeta(target, meta)
+  if (meta._read) {
+    weakMap.set(target, meta)
+  }
 }
 
 const morphRoot = (target, next, listeners) => {
-  const meta = readMeta(target)
-
-  const isSameView = next.view === 0 || next.view === meta.view
-
-  if (isSameView && next.view != null && !next.dynamic) {
+  if (next.view === 0) {
     return
   }
+
+  const meta = readMeta(target)
+
+  const isSameView = next.view === meta.view
 
   if (!isSameView) {
     meta.view = next.view
@@ -309,10 +311,9 @@ const valueTrue = {
 
 const END = Symbol('end')
 
-const isSpaceChar = (char) => /\s/.test(char)
-const isOfClose = (char) => char === '/' || char === '>' || isSpaceChar(char)
-const isOfTag = (char) => !isOfClose(char)
-const isOfKey = (char) => char !== '=' && !isOfClose(char)
+const isSpaceChar = (char) => !char.trim()
+const isOfTag = (char) => char !== '/' && char !== '>' && !isSpaceChar(char)
+const isOfKey = (char) => char !== '=' && isOfTag(char)
 const isQuoteChar = (char) => char === '"' || char === "'"
 
 const tokenizer = {
@@ -545,10 +546,8 @@ const toTemplate = (strs, vlength) => {
 
   const children = []
 
-  let current
-
   for (;;) {
-    current = tokens.next()
+    const current = tokens.next()
 
     if (current.done) break
 
@@ -583,7 +582,7 @@ export const html = (strs, ...variables) => {
 }
 
 export const createApp = (state) => {
-  let viewCalled
+  let viewCalled = false
   let view
 
   const callView = () => {
@@ -593,25 +592,32 @@ export const createApp = (state) => {
       if (!viewCalled && view) {
         viewCalled = true
 
-        view(typeof state === 'object' ? Object.assign({}, state) : state)
+        view(get())
+
+        viewCalled = false
       }
     })
   }
 
-  const proxy = (state) =>
-    typeof state === 'object'
-      ? new Proxy(state, {
-          set(state, key, val) {
-            state[key] = val
+  const proxy = new Proxy(
+    {},
+    {
+      set(_, key, val) {
+        if (viewCalled) return false
 
-            callView()
+        state[key] = val
 
-            return true
-          }
-        })
-      : state
+        callView()
 
-  state = proxy(state)
+        return true
+      },
+      get(_, key) {
+        return state[key]
+      }
+    }
+  )
+
+  const get = () => (typeof state === 'object' ? proxy : state)
 
   return {
     render(v) {
@@ -620,12 +626,12 @@ export const createApp = (state) => {
       callView()
     },
     set state(val) {
-      state = proxy(val)
+      state = val
 
       callView()
     },
     get state() {
-      return state
+      return get()
     }
   }
 }
