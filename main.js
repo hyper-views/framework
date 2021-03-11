@@ -10,7 +10,7 @@ const resolve = (obj) => {
     let afterUpdate
 
     obj = obj((cb) => {
-      afterUpdate = cb
+      afterUpdate = async (el) => cb(el)
     })
 
     if (obj) obj.afterUpdate = afterUpdate
