@@ -6,7 +6,7 @@ test('app is created and responds to state changes', async () => {
   const app = createApp(0)
 
   app.render((state) => {
-    assert.is(app.state, 2)
+    assert.is(state, 2)
   })
 
   app.state = 1
