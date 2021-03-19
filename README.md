@@ -1,5 +1,7 @@
 # @erickmerchant/framework
 
+A very simple framework in a bit more than 2kB minified + gzipped. No build step required to use. Import it from a cdn like skypack or unpkg and get started.
+
 ## Example
 
 ```javascript
