@@ -1,5 +1,6 @@
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
+
 import {skipUpdate} from '../main.js'
 
 test('skip update is the object expected', () => {

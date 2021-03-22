@@ -1,4 +1,3 @@
-import {test} from 'uvu'
 import './create-app.js'
 import './skip-update.js'
 import './stringify.js'
@@ -27,5 +26,7 @@ import './html/closing-elements.js'
 import './html/text.js'
 import './html/throws-bad-roots.js'
 import './html/throws-quotes.js'
+
+import {test} from 'uvu'
 
 test.run()

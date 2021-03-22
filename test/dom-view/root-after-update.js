@@ -1,7 +1,8 @@
+import delay from 'delay'
+import jsdom from 'jsdom'
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
-import jsdom from 'jsdom'
-import delay from 'delay'
+
 import {createDomView, html} from '../../main.js'
 
 test('root after update', async () => {

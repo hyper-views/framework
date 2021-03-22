@@ -27,7 +27,7 @@
     "test": "node test/index.js"
   },
   "devDependencies": {
-    "@erickmerchant/eslint-config": "^2.0.0",
+    "@erickmerchant/eslint-config": "^3.0.0",
     "@erickmerchant/prettier-config": "^1.2.0",
     "delay": "^5.0.0",
     "jsdom": "^16.4.0",

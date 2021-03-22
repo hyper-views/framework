@@ -1,7 +1,8 @@
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
-import {stringify} from '../stringify.js'
+
 import {html} from '../main.js'
+import {stringify} from '../stringify.js'
 
 test('stringify', () => {
   assert.is(

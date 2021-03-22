@@ -1,5 +1,6 @@
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
+
 import {html} from '../../main.js'
 
 test('handles self closing and not', () => {
