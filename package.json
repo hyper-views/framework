@@ -16,21 +16,23 @@
   "files": [
     "LICENSE",
     "README.md",
-    "main.js",
+    "dist/main.js",
     "stringify.js"
   ],
-  "main": "main.js",
-  "module": "main.js",
+  "main": "dist/main.js",
+  "module": "dist/main.js",
   "scripts": {
     "lint": "eslint . --ignore-path .gitignore",
     "pretest": "npm run lint",
-    "test": "node test/index.js"
+    "test": "node test/index.js",
+    "prepare": "rollup main.js --file dist/main.js --format esm"
   },
   "devDependencies": {
     "@erickmerchant/eslint-config": "^3.0.0",
     "@erickmerchant/prettier-config": "^1.2.0",
     "delay": "^5.0.0",
     "jsdom": "^16.4.0",
+    "rollup": "^2.42.4",
     "uvu": "^0.5.0"
   },
   "engines": {
