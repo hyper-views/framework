@@ -1,5 +1,4 @@
 import './create-app.js'
-import './skip-update.js'
 import './stringify.js'
 import './dom-view/add-attributes.js'
 import './dom-view/add-children.js'
