@@ -17,6 +17,8 @@ const isQuoteChar = (char) => char === '"' || char === "'"
 
 const tokenizer = {
   *get(acc, strs, vlength) {
+    let afterVar = false
+
     for (let index = 0, length = strs.length; index < length; index++) {
       const str = strs[index]
 
@@ -42,6 +44,8 @@ const tokenizer = {
 
             value += current()
           }
+
+          afterVar = false
 
           yield {
             type: !end ? 'tag' : 'endtag',
@@ -132,7 +136,7 @@ const tokenizer = {
             i++
           }
 
-          if (value) {
+          if (value.trim() || (afterVar && current() !== '<')) {
             yield {
               type: 'text',
               value
@@ -144,6 +148,8 @@ const tokenizer = {
       acc.tag = tag
 
       if (index < vlength) {
+        afterVar = true
+
         yield {
           type: 'variable',
           value: index

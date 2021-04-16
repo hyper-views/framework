@@ -2,30 +2,16 @@ const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const weakMap = new WeakMap()
 
-const resolve = (obj) => {
-  if (typeof obj === 'function') {
-    let afterUpdate
+const readMeta = (target) => {
+  let result = weakMap.get(target)
 
-    obj = obj((cb) => {
-      afterUpdate = async (el) => cb(el)
-    })
+  if (!result) {
+    result = {}
 
-    if (obj) obj.afterUpdate = afterUpdate
+    weakMap.set(target, result)
   }
 
-  return obj
-}
-
-const readMeta = (target, meta = {}) => {
-  if (!meta._read) {
-    const read = weakMap.get(target)
-
-    Object.assign(meta, read ?? {})
-
-    meta._read = true
-  }
-
-  return meta
+  return result
 }
 
 const getNextSibling = (current) => current?.nextSibling
@@ -44,20 +30,24 @@ const addListener = (document, type) => {
   )
 }
 
-const morphAttribute = (target, key, value, meta, listeners) => {
+const morphAttribute = (target, key, value) => {
   const remove = value == null || value === false
 
   if (key.indexOf('on') === 0) {
     const type = key.substring(2)
 
-    readMeta(target, meta)
+    const meta = readMeta(target)
 
     meta[type] = remove ? null : value
 
-    if (!remove && !listeners.includes(type)) {
-      listeners.push(type)
+    if (!remove) {
+      const listeners = readMeta(target.ownerDocument)
 
-      addListener(target.ownerDocument, type)
+      if (!listeners[type]) {
+        listeners[type] = true
+
+        addListener(target.ownerDocument, type)
+      }
     }
   } else {
     if (remove) {
@@ -78,14 +68,7 @@ const morphAttribute = (target, key, value, meta, listeners) => {
   }
 }
 
-const morphChild = (
-  target,
-  childNode,
-  next,
-  variables,
-  isSameView,
-  listeners
-) => {
+const morphChild = (target, childNode, next, variables, isSameView) => {
   const document = target.ownerDocument
 
   const append = childNode == null
@@ -105,27 +88,26 @@ const morphChild = (
       childNode.data = next.value
     }
   } else {
-    const tag = next.tag
+    if (!append) {
+      const nodeName = childNode.nodeName
 
-    if (
-      !append &&
-      (childNode.nodeType !== 1 || childNode.nodeName.toLowerCase() !== tag)
-    ) {
-      replace = true
+      if (childNode.nodeType !== 1 || nodeName.toLowerCase() !== next.tag) {
+        replace = true
+      }
     }
 
     if (append || replace) {
-      const isSvg = tag === 'svg' || target.namespaceURI === svgNamespace
+      const isSvg = next.tag === 'svg' || target.namespaceURI === svgNamespace
 
       currentChild = isSvg
-        ? document.createElementNS(svgNamespace, tag)
-        : document.createElement(tag)
+        ? document.createElementNS(svgNamespace, next.tag)
+        : document.createElement(next.tag)
     }
 
     if (next.view != null) {
-      morphRoot(currentChild, next, listeners)
+      morphRoot(currentChild, next)
     } else if (!isSameView || next.dynamic) {
-      morph(currentChild, next, variables, isSameView, {}, listeners)
+      morph(currentChild, next, variables, isSameView)
     }
   }
 
@@ -135,43 +117,37 @@ const morphChild = (
     childNode.replaceWith(currentChild)
   }
 
-  if (currentChild != null && next.afterUpdate) {
-    next.afterUpdate(currentChild)
-  }
-
   return getNextSibling(currentChild)
 }
 
-const morph = (target, next, variables, isSameView, meta, listeners) => {
+const morph = (target, next, variables, isSameView) => {
   const attributesLength = next.attributes.length
 
   const attrNames = []
 
-  if (attributesLength) {
-    for (let i = 0, length = attributesLength; i < length; i++) {
-      const attribute = next.attributes[i]
+  for (let i = 0, length = attributesLength; i < length; i++) {
+    const attribute = next.attributes[i]
 
-      if (!isSameView || attribute.variable) {
-        let value = attribute.value
+    if (!isSameView || attribute.variable) {
+      let value = attribute.value
 
-        if (attribute.variable) {
-          value = variables[value]
-        }
+      if (attribute.variable) {
+        value = variables[value]
+      }
 
-        if (attribute.key) {
-          morphAttribute(target, attribute.key, value, meta, listeners)
+      if (attribute.key) {
+        morphAttribute(target, attribute.key, value)
 
-          attrNames.push(attribute.key)
-        } else {
-          const keys = Object.keys(value)
+        attrNames.push(attribute.key)
+      } else {
+        const keys = Object.keys(value)
 
-          for (let i = 0, len = keys.length; i < len; i++) {
-            const key = keys[i]
+        for (let i = 0, len = keys.length; i < len; i++) {
+          const key = keys[i]
 
-            morphAttribute(target, key, value[key], meta, listeners)
+          morphAttribute(target, key, value[key])
 
-            attrNames.push(key)
-          }
+          attrNames.push(key)
         }
       }
     }
@@ -188,58 +164,36 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
   const childrenLength = next.children.length
   let childNode = target.firstChild
 
-  if (childrenLength) {
-    let deopt = !isSameView
+  let deopt = !isSameView
 
-    for (let childIndex = 0; childIndex < childrenLength; childIndex++) {
-      let child = next.children[childIndex]
+  for (let childIndex = 0; childIndex < childrenLength; childIndex++) {
+    let child = next.children[childIndex]
 
-      if (!deopt && !child.dynamic && !child.variable) {
-        childNode = getNextSibling(childNode)
-      } else {
-        deopt = true
+    if (!deopt && !child.dynamic && !child.variable) {
+      childNode = getNextSibling(childNode)
+    } else {
+      deopt = true
 
-        if (child.variable) {
-          const variableValue = child.value
+      if (child.variable) {
+        const variableValue = child.value
 
-          child = variables[variableValue]
+        child = variables[variableValue]
 
-          if (child?.[Symbol.iterator] == null || typeof child === 'string') {
-            child = [child]
-          }
-
-          for (let grand of child) {
-            grand = resolve(grand)
-
-            if (grand == null) grand = ''
-
-            if (grand.type == null) {
-              grand = {type: 'text', value: grand}
-            }
-
-            if (isSameView && grand.view != null && !grand.dynamic) {
-              childNode = getNextSibling(childNode)
-            } else {
-              childNode = morphChild(
-                target,
-                childNode,
-                grand,
-                variables,
-                isSameView,
-                listeners
-              )
-            }
-          }
-        } else {
-          childNode = morphChild(
-            target,
-            childNode,
-            child,
-            variables,
-            isSameView,
-            listeners
-          )
+        if (typeof child === 'string') {
+          child = [{type: 'text', value: child}]
+        } else if (child?.[Symbol.iterator] == null) {
+          child = [child]
         }
+
+        for (let grand of child) {
+          if (grand == null || grand.type == null) {
+            grand = {type: 'text', value: grand == null ? '' : grand}
+          }
+
+          childNode = morphChild(target, childNode, grand, variables, false)
+        }
+      } else {
+        childNode = morphChild(target, childNode, child, variables, isSameView)
       }
     }
   }
@@ -255,17 +209,9 @@ const morph = (target, next, variables, isSameView, meta, listeners) => {
       childNode = nextChild
     } while (childNode)
   }
-
-  if (meta._read) {
-    weakMap.set(target, meta)
-  }
 }
 
-const morphRoot = (target, next, listeners) => {
-  if (next.view === 0) {
-    return
-  }
-
+const morphRoot = (target, next) => {
   const meta = readMeta(target)
 
   const isSameView = next.view === meta.view
@@ -275,20 +221,14 @@ const morphRoot = (target, next, listeners) => {
   }
 
   if (!isSameView || next.dynamic) {
-    morph(target, next, next.variables, isSameView, meta, listeners)
+    morph(target, next, next.variables, isSameView)
   }
 }
 
 export const createDomView = (target, view) => {
-  const listeners = []
-
   return (state) => {
-    const current = resolve(view(state))
+    const current = view(state)
 
-    morphRoot(target, current, listeners)
-
-    if (current.afterUpdate) {
-      current.afterUpdate(target)
-    }
+    morphRoot(target, current)
   }
 }
