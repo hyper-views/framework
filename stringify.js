@@ -23,18 +23,8 @@ const selfClosing = [
   'wbr'
 ]
 
-const noop = () => {}
-
-const resolve = (obj) => {
-  if (typeof obj === 'function') {
-    obj = obj(noop)
-  }
-
-  return obj
-}
-
 export const stringify = (obj) => {
-  const {tag, attributes, children, variables} = resolve(obj)
+  const {tag, attributes, children, variables} = obj
 
   let result = `<${tag}`
   const isSelfClosing = selfClosing.includes(tag)
@@ -92,7 +82,7 @@ export const stringify = (obj) => {
       }
 
       for (let c of child) {
-        c = resolve(c) ?? ''
+        c = c ?? ''
 
         descendants.push(c)
       }

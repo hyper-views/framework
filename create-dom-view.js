@@ -38,7 +38,7 @@ const morphAttribute = (target, key, value) => {
 
     const meta = readMeta(target)
 
-    meta[type] = remove ? null : value
+    meta[type] = value
 
     if (!remove) {
       const listeners = readMeta(target.ownerDocument)
@@ -88,12 +88,12 @@ const morphChild = (target, childNode, next, variables, isSameView) => {
       childNode.data = next.value
     }
   } else {
-    if (!append) {
-      const nodeName = childNode.nodeName
-
-      if (childNode.nodeType !== 1 || nodeName.toLowerCase() !== next.tag) {
-        replace = true
-      }
+    if (
+      !append &&
+      (childNode.nodeType !== 1 ||
+        childNode.nodeName.toLowerCase() !== next.tag)
+    ) {
+      replace = true
     }
 
     if (append || replace) {
@@ -112,7 +112,7 @@ const morphChild = (target, childNode, next, variables, isSameView) => {
   }
 
   if (append) {
-    target.append(currentChild)
+    target.appendChild(currentChild)
   } else if (replace) {
     childNode.replaceWith(currentChild)
   }
@@ -179,21 +179,19 @@ const morph = (target, next, variables, isSameView) => {
 
         child = variables[variableValue]
 
-        if (typeof child === 'string') {
-          child = [{type: 'text', value: child}]
-        } else if (child?.[Symbol.iterator] == null) {
+        if (typeof child === 'string' || child?.[Symbol.iterator] == null) {
           child = [child]
         }
-
-        for (let grand of child) {
-          if (grand == null || grand.type == null) {
-            grand = {type: 'text', value: grand == null ? '' : grand}
-          }
-
-          childNode = morphChild(target, childNode, grand, variables, false)
-        }
       } else {
-        childNode = morphChild(target, childNode, child, variables, isSameView)
+        child = [child]
+      }
+
+      for (let grand of child) {
+        if (grand == null || grand.type == null) {
+          grand = {type: 'text', value: grand == null ? '' : grand}
+        }
+
+        childNode = morphChild(target, childNode, grand, variables, isSameView)
       }
     }
   }
@@ -225,10 +223,8 @@ const morphRoot = (target, next) => {
   }
 }
 
-export const createDomView = (target, view) => {
-  return (state) => {
-    const current = view(state)
+export const createDomView = (target, view) => (state) => {
+  const current = view(state)
 
-    morphRoot(target, current)
-  }
+  morphRoot(target, current)
 }
