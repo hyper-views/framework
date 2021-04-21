@@ -163,7 +163,7 @@ const parse = (tokens, parent, tag) => {
   const child = {
     tag,
     type: 'node',
-    dynamic: false,
+    dynamic: 0,
     attributes: [],
     children: []
   }
@@ -187,7 +187,7 @@ const parse = (tokens, parent, tag) => {
       } else {
         const value = next.value
 
-        child.dynamic = true
+        child.dynamic |= 0b01
 
         child.attributes.push({
           key: token.value,
@@ -196,7 +196,7 @@ const parse = (tokens, parent, tag) => {
         })
       }
     } else if (token.type === 'variable') {
-      child.dynamic = true
+      child.dynamic |= 0b01
 
       child.attributes.push({
         key: false,
@@ -216,16 +216,16 @@ const parse = (tokens, parent, tag) => {
     if (token.type === 'endtag' && token.value === child.tag) {
       break
     } else if (token.type === 'tag') {
-      const dynamic = parse(tokens, child, token.value)
+      const dynamic = parse(tokens, child, token.value) ? 0b10 : 0
 
-      child.dynamic = child.dynamic || dynamic
+      child.dynamic = child.dynamic | dynamic
     } else if (token.type === 'text') {
       child.children.push({
         type: 'text',
         value: token.value
       })
     } else if (token.type === 'variable') {
-      child.dynamic = true
+      child.dynamic |= 0b10
 
       child.children.push({
         type: 'variable',

@@ -16,7 +16,7 @@ test('nodes -- static and dynamic', () => {
 
   assert.is(el.tag, 'ul')
 
-  assert.is(el.dynamic, true)
+  assert.is(el.dynamic, 0b10)
 
   assert.is(el.children?.length, 3)
 
@@ -24,7 +24,7 @@ test('nodes -- static and dynamic', () => {
 
   assert.is(el.children?.[0]?.tag, 'li')
 
-  assert.is(el.children?.[0]?.dynamic, false)
+  assert.is(el.children?.[0]?.dynamic, 0)
 
   assert.is(el.children?.[0]?.children?.length, 1)
 
@@ -36,7 +36,7 @@ test('nodes -- static and dynamic', () => {
 
   assert.is(el.children?.[1]?.tag, 'li')
 
-  assert.is(el.children?.[1]?.dynamic, true)
+  assert.is(el.children?.[1]?.dynamic, 0b10)
 
   assert.is(el.children?.[1]?.children?.length, 1)
 
@@ -50,7 +50,7 @@ test('nodes -- static and dynamic', () => {
 
   assert.is(el.children?.[2]?.tag, 'li')
 
-  assert.is(el.children?.[2]?.dynamic, false)
+  assert.is(el.children?.[2]?.dynamic, 0)
 
   assert.is(el.children?.[2]?.children?.length, 1)
 
@@ -58,7 +58,7 @@ test('nodes -- static and dynamic', () => {
 
   assert.is(el.children?.[2]?.children?.[0]?.tag, 'span')
 
-  assert.is(el.children?.[2]?.children?.[0]?.dynamic, false)
+  assert.is(el.children?.[2]?.children?.[0]?.dynamic, 0)
 
   assert.is(el.children?.[2]?.children?.[0]?.children?.length, 1)
 

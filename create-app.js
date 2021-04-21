@@ -1,17 +1,22 @@
 export const createApp = (state) => {
-  let viewCalled = false
+  let callingView = false
+  let willCallView = false
   let view
 
   const callView = () => {
-    viewCalled = false
+    if (willCallView) return
 
-    return Promise.resolve().then(() => {
-      if (!viewCalled && view) {
-        viewCalled = true
+    willCallView = true
+
+    Promise.resolve().then(() => {
+      willCallView = false
+
+      if (!callingView && view) {
+        callingView = true
 
         view(get())
 
-        viewCalled = false
+        callingView = false
       }
     })
   }
@@ -20,7 +25,7 @@ export const createApp = (state) => {
     {},
     {
       set(_, key, val) {
-        if (viewCalled) return false
+        if (callingView) return false
 
         state[key] = val
 

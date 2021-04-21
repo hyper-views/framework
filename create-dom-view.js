@@ -30,7 +30,7 @@ const addListener = (document, type) => {
   )
 }
 
-const morphAttribute = (target, key, value) => {
+const morphAttribute = (target, key, value, isExistingElement) => {
   const remove = value == null || value === false
 
   if (key.indexOf('on') === 0) {
@@ -50,12 +50,12 @@ const morphAttribute = (target, key, value) => {
       }
     }
   } else {
-    if (remove) {
+    if (isExistingElement && remove) {
       target.removeAttribute(key)
-    } else {
-      const stringified = value === true ? '' : value
+    } else if (!remove) {
+      const stringified = value === true ? '' : String(value)
 
-      if (target.getAttribute(key) !== stringified) {
+      if (!isExistingElement || target.getAttribute(key) !== stringified) {
         target.setAttribute(key, stringified)
       }
     }
@@ -68,10 +68,17 @@ const morphAttribute = (target, key, value) => {
   }
 }
 
-const morphChild = (target, childNode, next, variables, isSameView) => {
+const morphChild = (
+  target,
+  childNode,
+  next,
+  variables,
+  isExistingElement,
+  isSameView
+) => {
   const document = target.ownerDocument
 
-  const append = childNode == null
+  const append = !isExistingElement || childNode == null
 
   let replace = false
 
@@ -105,9 +112,9 @@ const morphChild = (target, childNode, next, variables, isSameView) => {
     }
 
     if (next.view != null) {
-      morphRoot(currentChild, next)
-    } else if (!isSameView || next.dynamic) {
-      morph(currentChild, next, variables, isSameView)
+      morphRoot(currentChild, next, !(append || replace))
+    } else if (append || replace || !isSameView || next.dynamic) {
+      morph(currentChild, next, variables, !(append || replace), isSameView)
     }
   }
 
@@ -120,40 +127,42 @@ const morphChild = (target, childNode, next, variables, isSameView) => {
   return getNextSibling(currentChild)
 }
 
-const morph = (target, next, variables, isSameView) => {
+const morph = (target, next, variables, isExistingElement, isSameView) => {
   const attributesLength = next.attributes.length
 
   const attrNames = []
 
-  for (let i = 0, length = attributesLength; i < length; i++) {
-    const attribute = next.attributes[i]
+  if (!isExistingElement || !isSameView || next.dynamic & 0b01) {
+    for (let i = 0, length = attributesLength; i < length; i++) {
+      const attribute = next.attributes[i]
 
-    if (!isSameView || attribute.variable) {
-      let value = attribute.value
+      if (!isExistingElement || !isSameView || attribute.variable) {
+        let value = attribute.value
 
-      if (attribute.variable) {
-        value = variables[value]
-      }
+        if (attribute.variable) {
+          value = variables[value]
+        }
 
-      if (attribute.key) {
-        morphAttribute(target, attribute.key, value)
+        if (attribute.key) {
+          morphAttribute(target, attribute.key, value, isExistingElement)
 
-        attrNames.push(attribute.key)
-      } else {
-        const keys = Object.keys(value)
+          attrNames.push(attribute.key)
+        } else {
+          const keys = Object.keys(value)
 
-        for (let i = 0, len = keys.length; i < len; i++) {
-          const key = keys[i]
+          for (let i = 0, len = keys.length; i < len; i++) {
+            const key = keys[i]
 
-          morphAttribute(target, key, value[key])
+            morphAttribute(target, key, value[key], isExistingElement)
 
-          attrNames.push(key)
+            attrNames.push(key)
+          }
         }
       }
     }
   }
 
-  if (!isSameView) {
+  if (isExistingElement && !isSameView) {
     for (const attr of target.attributes) {
       if (!~attrNames.indexOf(attr.name)) {
         target.removeAttribute(attr.name)
@@ -162,64 +171,74 @@ const morph = (target, next, variables, isSameView) => {
   }
 
   const childrenLength = next.children.length
+
   let childNode = target.firstChild
 
-  let deopt = !isSameView
+  let skip = isExistingElement && isSameView
 
-  for (let childIndex = 0; childIndex < childrenLength; childIndex++) {
-    let child = next.children[childIndex]
+  if (!isExistingElement || !isSameView || next.dynamic & 0b10) {
+    for (let childIndex = 0; childIndex < childrenLength; childIndex++) {
+      let child = next.children[childIndex]
 
-    if (!deopt && !child.dynamic && !child.variable) {
-      childNode = getNextSibling(childNode)
-    } else {
-      deopt = true
+      if (skip && !child.dynamic && !child.variable) {
+        childNode = getNextSibling(childNode)
+      } else {
+        skip = false
 
-      if (child.variable) {
-        const variableValue = child.value
+        if (child.variable) {
+          const variableValue = child.value
 
-        child = variables[variableValue]
+          child = variables[variableValue]
 
-        if (typeof child === 'string' || child?.[Symbol.iterator] == null) {
+          if (typeof child === 'string' || child?.[Symbol.iterator] == null) {
+            child = [child]
+          }
+        } else {
           child = [child]
         }
-      } else {
-        child = [child]
-      }
 
-      for (let grand of child) {
-        if (grand == null || grand.type == null) {
-          grand = {type: 'text', value: grand == null ? '' : grand}
+        for (let grand of child) {
+          if (grand == null || grand.type == null) {
+            grand = {type: 'text', value: grand == null ? '' : grand}
+          }
+
+          childNode = morphChild(
+            target,
+            childNode,
+            grand,
+            variables,
+            isExistingElement,
+            isSameView
+          )
         }
-
-        childNode = morphChild(target, childNode, grand, variables, isSameView)
       }
     }
-  }
 
-  if (childNode) {
-    let nextChild
+    if (childNode) {
+      let nextChild
 
-    do {
-      nextChild = getNextSibling(childNode)
+      do {
+        nextChild = getNextSibling(childNode)
 
-      childNode.remove()
+        childNode.remove()
 
-      childNode = nextChild
-    } while (childNode)
+        childNode = nextChild
+      } while (childNode)
+    }
   }
 }
 
-const morphRoot = (target, next) => {
+const morphRoot = (target, next, isExistingElement = true) => {
   const meta = readMeta(target)
 
   const isSameView = next.view === meta.view
 
-  if (!isSameView) {
+  if (!isExistingElement || !isSameView) {
     meta.view = next.view
   }
 
-  if (!isSameView || next.dynamic) {
-    morph(target, next, next.variables, isSameView)
+  if (!isExistingElement || !isSameView || next.dynamic) {
+    morph(target, next, next.variables, isExistingElement, isSameView)
   }
 }
 

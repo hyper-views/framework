@@ -12,7 +12,7 @@ test('text nodes -- static and dynamic', () => {
 
   assert.is(el1.tag, 'div')
 
-  assert.is(el1.dynamic, true)
+  assert.is(el1.dynamic, 0b10)
 
   assert.is(el1.children?.length, 2)
 
@@ -34,7 +34,7 @@ test('text nodes -- static and dynamic', () => {
 
   assert.is(el2.tag, 'div')
 
-  assert.is(el2.dynamic, true)
+  assert.is(el2.dynamic, 0b10)
 
   assert.is(el2.children?.length, 2)
 
@@ -56,7 +56,7 @@ test('text nodes -- static and dynamic', () => {
 
   assert.is(el3.tag, 'div')
 
-  assert.is(el3.dynamic, true)
+  assert.is(el3.dynamic, 0b10)
 
   assert.is(el3.children?.length, 3)
 
