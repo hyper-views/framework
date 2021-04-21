@@ -1,10 +1,24 @@
-const escape = (str) =>
-  String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
+const escapeObj = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#039;'
+}
+const escapeValuesArr = Object.values(escapeObj)
+const escapeKeysStr = Object.keys(escapeObj).join('')
+const escapeRegex = new RegExp(escapeKeysStr, 'g')
+
+const escape = (str) => {
+  try {
+    return str.replaceAll(
+      escapeRegex,
+      (match) => escapeValuesArr[escapeKeysStr.indexOf(match)]
+    )
+  } catch {
+    return str
+  }
+}
 
 const selfClosing = [
   'area',
