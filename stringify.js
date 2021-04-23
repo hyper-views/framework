@@ -1,3 +1,5 @@
+import {tokenTypes} from './html.js'
+
 const escapeObj = {
   '&': '&amp;',
   '<': '&lt;',
@@ -87,7 +89,7 @@ export const stringify = (obj) => {
     for (let i = 0; i < children.length; i++) {
       let child = children[i]
 
-      if (child?.type === 'variable') {
+      if (child?.type === tokenTypes.variable) {
         child = variables[child.value]
       }
 
@@ -108,11 +110,11 @@ export const stringify = (obj) => {
       if (child != null) {
         if (child.type != null) {
           switch (child.type) {
-            case 'text':
+            case tokenTypes.text:
               result += tag !== 'style' ? escape(child.value) : child.value
               break
 
-            case 'node':
+            case tokenTypes.node:
               result += stringify(
                 Object.assign({}, child, {
                   variables: child.view != null ? child.variables : variables

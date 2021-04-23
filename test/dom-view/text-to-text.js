@@ -3,7 +3,8 @@ import jsdom from 'jsdom'
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 
-import {createDomView, html} from '../../main.js'
+import {createDomView} from '../../create-dom-view.js'
+import {html} from '../../html.js'
 
 test('text to text', async () => {
   const dom = new jsdom.JSDOM(`

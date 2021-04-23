@@ -1,7 +1,7 @@
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 
-import {html} from '../main.js'
+import {html} from '../html.js'
 import {stringify} from '../stringify.js'
 
 test('stringify', () => {

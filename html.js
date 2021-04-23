@@ -3,8 +3,18 @@ const weakMap = new WeakMap()
 const createAssertionError = (actual, expected) =>
   Error(`Expected ${expected}. Found ${actual}.`)
 
+export const tokenTypes = {
+  variable: 0,
+  tag: 1,
+  endtag: 2,
+  key: 3,
+  value: 4,
+  node: 5,
+  text: 6
+}
+
 const valueTrue = {
-  type: 'value',
+  type: tokenTypes.value,
   value: true
 }
 
@@ -48,7 +58,7 @@ const tokenizer = {
           afterVar = false
 
           yield {
-            type: !end ? 'tag' : 'endtag',
+            type: !end ? tokenTypes.tag : tokenTypes.endtag,
             value
           }
 
@@ -61,7 +71,7 @@ const tokenizer = {
           yield* [
             END,
             {
-              type: 'endtag',
+              type: tokenTypes.endtag,
               value: tag
             },
             END
@@ -88,7 +98,7 @@ const tokenizer = {
           }
 
           yield {
-            type: 'key',
+            type: tokenTypes.key,
             value
           }
 
@@ -116,7 +126,7 @@ const tokenizer = {
               i++
 
               yield {
-                type: 'value',
+                type: tokenTypes.value,
                 value
               }
             } else if (next()) {
@@ -138,7 +148,7 @@ const tokenizer = {
 
           if (value.trim() || (afterVar && current() !== '<')) {
             yield {
-              type: 'text',
+              type: tokenTypes.text,
               value
             }
           }
@@ -151,7 +161,7 @@ const tokenizer = {
         afterVar = true
 
         yield {
-          type: 'variable',
+          type: tokenTypes.variable,
           value: index
         }
       }
@@ -162,7 +172,7 @@ const tokenizer = {
 const parse = (tokens, parent, tag) => {
   const child = {
     tag,
-    type: 'node',
+    type: tokenTypes.node,
     dynamic: 0,
     attributes: [],
     children: []
@@ -179,11 +189,15 @@ const parse = (tokens, parent, tag) => {
 
     if (token === END) {
       break
-    } else if (token.type === 'key') {
+    } else if (token.type === tokenTypes.key) {
       const next = tokens.next()?.value
 
-      if (next.type === 'value') {
-        child.attributes.push({key: token.value, value: next.value})
+      if (next.type === tokenTypes.value) {
+        child.attributes.push({
+          key: token.value,
+          variable: false,
+          value: next.value
+        })
       } else {
         const value = next.value
 
@@ -195,7 +209,7 @@ const parse = (tokens, parent, tag) => {
           value
         })
       }
-    } else if (token.type === 'variable') {
+    } else if (token.type === tokenTypes.variable) {
       child.dynamic |= 0b01
 
       child.attributes.push({
@@ -213,22 +227,23 @@ const parse = (tokens, parent, tag) => {
 
     const token = current.value
 
-    if (token.type === 'endtag' && token.value === child.tag) {
+    if (token.type === tokenTypes.endtag && token.value === child.tag) {
       break
-    } else if (token.type === 'tag') {
+    } else if (token.type === tokenTypes.tag) {
       const dynamic = parse(tokens, child, token.value) ? 0b10 : 0
 
       child.dynamic = child.dynamic | dynamic
-    } else if (token.type === 'text') {
+    } else if (token.type === tokenTypes.text) {
       child.children.push({
-        type: 'text',
+        type: tokenTypes.text,
+        text: true,
         value: token.value
       })
-    } else if (token.type === 'variable') {
+    } else if (token.type === tokenTypes.variable) {
       child.dynamic |= 0b10
 
       child.children.push({
-        type: 'variable',
+        type: tokenTypes.variable,
         variable: true,
         value: token.value
       })
@@ -258,9 +273,9 @@ const toTemplate = (strs, vlength) => {
 
     const token = current.value
 
-    if (token.type === 'tag') {
+    if (token.type === tokenTypes.tag) {
       parse(tokens, {children}, token.value)
-    } else if (token.type === 'text' && token.value.trim()) {
+    } else if (token.type === tokenTypes.text && token.value.trim()) {
       throw createAssertionError(token.type, "'node'")
     }
   }

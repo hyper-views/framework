@@ -84,7 +84,7 @@ const morphChild = (
 
   let currentChild = childNode
 
-  if (next.type === 'text') {
+  if (next.text) {
     if (!append && childNode.nodeType !== 3) {
       replace = true
     }
@@ -199,7 +199,7 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
 
         for (let grand of child) {
           if (grand == null || grand.type == null) {
-            grand = {type: 'text', value: grand == null ? '' : grand}
+            grand = {text: true, value: grand == null ? '' : grand}
           }
 
           childNode = morphChild(
