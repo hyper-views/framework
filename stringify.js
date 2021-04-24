@@ -13,7 +13,7 @@ const escapeRegex = new RegExp(escapeKeysStr, 'g')
 
 const escape = (str) => {
   try {
-    return str.replaceAll(
+    return str.replace(
       escapeRegex,
       (match) => escapeValuesArr[escapeKeysStr.indexOf(match)]
     )
