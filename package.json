@@ -18,6 +18,7 @@
     "README.md",
     "main.js",
     "stringify.js",
+    "escape.js",
     "create-app.js",
     "create-dom-view.js",
     "html.js"

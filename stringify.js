@@ -1,26 +1,5 @@
+import {escape} from './escape.js'
 import {tokenTypes} from './html.js'
-
-const escapeObj = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#039;'
-}
-const escapeValuesArr = Object.values(escapeObj)
-const escapeKeysStr = Object.keys(escapeObj).join('')
-const escapeRegex = new RegExp(escapeKeysStr, 'g')
-
-const escape = (str) => {
-  try {
-    return str.replace(
-      escapeRegex,
-      (match) => escapeValuesArr[escapeKeysStr.indexOf(match)]
-    )
-  } catch {
-    return str
-  }
-}
 
 const selfClosing = [
   'area',
