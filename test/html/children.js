@@ -42,8 +42,6 @@ test('nodes -- static and dynamic', () => {
 
   assert.is(el.children?.[1]?.children?.[0]?.type, tokenTypes.variable)
 
-  assert.is(el.children?.[1]?.children?.[0]?.variable, true)
-
   assert.is(el.children?.[1]?.children?.[0]?.value, 0)
 
   assert.is(el.children?.[2]?.type, tokenTypes.node)

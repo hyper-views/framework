@@ -22,8 +22,6 @@ test('text nodes -- static and dynamic', () => {
 
   assert.is(el1.children?.[1]?.type, tokenTypes.variable)
 
-  assert.is(el1.children?.[1]?.variable, true)
-
   assert.is(el1.children?.[1]?.value, 0)
 
   const el2 = /* prettier-ignore */ html`
@@ -39,8 +37,6 @@ test('text nodes -- static and dynamic', () => {
   assert.is(el2.children?.length, 2)
 
   assert.is(el2.children?.[0]?.type, tokenTypes.variable)
-
-  assert.is(el2.children?.[0]?.variable, true)
 
   assert.is(el2.children?.[0]?.value, 0)
 
@@ -62,8 +58,6 @@ test('text nodes -- static and dynamic', () => {
 
   assert.is(el3.children?.[0]?.type, tokenTypes.variable)
 
-  assert.is(el3.children?.[0]?.variable, true)
-
   assert.is(el3.children?.[0]?.value, 0)
 
   assert.is(el3.children?.[1]?.type, tokenTypes.text)
@@ -71,8 +65,6 @@ test('text nodes -- static and dynamic', () => {
   assert.is(el3.children?.[1]?.value, ' ')
 
   assert.is(el3.children?.[2]?.type, tokenTypes.variable)
-
-  assert.is(el3.children?.[2]?.variable, true)
 
   assert.is(el3.children?.[2]?.value, 1)
 })

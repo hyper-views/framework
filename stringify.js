@@ -47,7 +47,7 @@ export const stringify = (obj) => {
   for (const attr of reducedAttributes) {
     let value = attr.value
 
-    if (attr.variable) {
+    if (attr.type === tokenTypes.variable) {
       value = variables[value]
     }
 

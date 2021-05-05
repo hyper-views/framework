@@ -10,7 +10,8 @@ export const tokenTypes = {
   key: 3,
   value: 4,
   node: 5,
-  text: 6
+  text: 6,
+  constant: 7
 }
 
 const valueTrue = {
@@ -194,8 +195,8 @@ const parse = (tokens, parent, tag) => {
 
       if (next.type === tokenTypes.value) {
         child.attributes.push({
+          type: tokenTypes.constant,
           key: token.value,
-          variable: false,
           value: next.value
         })
       } else {
@@ -204,8 +205,8 @@ const parse = (tokens, parent, tag) => {
         child.dynamic |= 0b01
 
         child.attributes.push({
+          type: tokenTypes.variable,
           key: token.value,
-          variable: true,
           value
         })
       }
@@ -213,8 +214,8 @@ const parse = (tokens, parent, tag) => {
       child.dynamic |= 0b01
 
       child.attributes.push({
+        type: tokenTypes.variable,
         key: false,
-        variable: true,
         value: token.value
       })
     }
@@ -236,7 +237,6 @@ const parse = (tokens, parent, tag) => {
     } else if (token.type === tokenTypes.text) {
       child.children.push({
         type: tokenTypes.text,
-        text: true,
         value: token.value
       })
     } else if (token.type === tokenTypes.variable) {
@@ -244,7 +244,6 @@ const parse = (tokens, parent, tag) => {
 
       child.children.push({
         type: tokenTypes.variable,
-        variable: true,
         value: token.value
       })
     }

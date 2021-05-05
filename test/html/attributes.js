@@ -1,7 +1,7 @@
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 
-import {html} from '../../html.js'
+import {html, tokenTypes} from '../../html.js'
 
 test('attributes', () => {
   const el = /* prettier-ignore */ html`
@@ -24,13 +24,13 @@ test('attributes', () => {
 
   assert.is(el.attributes?.[3]?.key, 'qux')
 
-  assert.is(el.attributes?.[3]?.variable, true)
+  assert.is(el.attributes?.[3]?.type, tokenTypes.variable)
 
   assert.is(el.attributes?.[3]?.value, 0)
 
   assert.is(el.attributes?.[4]?.key, false)
 
-  assert.is(el.attributes?.[4]?.variable, true)
+  assert.is(el.attributes?.[4]?.type, tokenTypes.variable)
 
   assert.is(el.attributes?.[4]?.value, 1)
 })

@@ -1,3 +1,5 @@
+import {tokenTypes} from './html.js'
+
 const svgNamespace = 'http://www.w3.org/2000/svg'
 
 const weakMap = new WeakMap()
@@ -84,7 +86,7 @@ const morphChild = (
 
   let currentChild = childNode
 
-  if (next.text) {
+  if (next.type === tokenTypes.text) {
     if (!append && childNode.nodeType !== 3) {
       replace = true
     }
@@ -136,10 +138,14 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
     for (let i = 0, length = attributesLength; i < length; i++) {
       const attribute = next.attributes[i]
 
-      if (!isExistingElement || !isSameView || attribute.variable) {
+      if (
+        !isExistingElement ||
+        !isSameView ||
+        attribute.type === tokenTypes.variable
+      ) {
         let value = attribute.value
 
-        if (attribute.variable) {
+        if (attribute.type === tokenTypes.variable) {
           value = variables[value]
         }
 
@@ -180,12 +186,12 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
     for (let childIndex = 0; childIndex < childrenLength; childIndex++) {
       let child = next.children[childIndex]
 
-      if (skip && !child.dynamic && !child.variable) {
+      if (skip && !child.dynamic && child.type !== tokenTypes.variable) {
         childNode = getNextSibling(childNode)
       } else {
         skip = false
 
-        if (child.variable) {
+        if (child.type === tokenTypes.variable) {
           const variableValue = child.value
 
           child = variables[variableValue]
@@ -199,7 +205,7 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
 
         for (let grand of child) {
           if (grand == null || grand.type == null) {
-            grand = {text: true, value: grand == null ? '' : grand}
+            grand = {type: tokenTypes.text, value: grand == null ? '' : grand}
           }
 
           childNode = morphChild(
