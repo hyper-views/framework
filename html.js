@@ -170,7 +170,7 @@ const tokenizer = {
   }
 }
 
-const parse = (tokens, parent, tag) => {
+const parse = (tokens, parent, tag, variables) => {
   const child = {
     tag,
     type: tokenTypes.node,
@@ -192,22 +192,35 @@ const parse = (tokens, parent, tag) => {
       break
     } else if (token.type === tokenTypes.key) {
       const next = tokens.next()?.value
+      let key = token.value
+
+      const firstChar = key.charAt(0)
+      const hasColon = ':' === firstChar
+      const hasAtSign = '@' === firstChar
+
+      if (hasColon) {
+        key = token.value.substring(1)
+      }
 
       if (next.type === tokenTypes.value) {
         child.attributes.push({
           type: tokenTypes.constant,
-          key: token.value,
+          key,
           value: next.value
         })
+      } else if (!hasColon && !hasAtSign) {
+        child.attributes.push({
+          type: tokenTypes.constant,
+          key,
+          value: variables[next.value]
+        })
       } else {
-        const value = next.value
-
         child.dynamic |= 0b01
 
         child.attributes.push({
           type: tokenTypes.variable,
-          key: token.value,
-          value
+          key,
+          value: next.value
         })
       }
     } else if (token.type === tokenTypes.variable) {
@@ -231,7 +244,7 @@ const parse = (tokens, parent, tag) => {
     if (token.type === tokenTypes.endtag && token.value === child.tag) {
       break
     } else if (token.type === tokenTypes.tag) {
-      const dynamic = parse(tokens, child, token.value) ? 0b10 : 0
+      const dynamic = parse(tokens, child, token.value, variables) ? 0b10 : 0
 
       child.dynamic = child.dynamic | dynamic
     } else if (token.type === tokenTypes.text) {
@@ -256,12 +269,12 @@ const parse = (tokens, parent, tag) => {
 
 let view = 1
 
-const toTemplate = (strs, vlength) => {
+const toTemplate = (strs, variables) => {
   const acc = {
     tag: false
   }
 
-  const tokens = tokenizer.get(acc, strs, vlength)
+  const tokens = tokenizer.get(acc, strs, variables.length)
 
   const children = []
 
@@ -273,7 +286,7 @@ const toTemplate = (strs, vlength) => {
     const token = current.value
 
     if (token.type === tokenTypes.tag) {
-      parse(tokens, {children}, token.value)
+      parse(tokens, {children}, token.value, variables)
     } else if (token.type === tokenTypes.text && token.value.trim()) {
       throw createAssertionError(token.type, "'node'")
     }
@@ -292,7 +305,7 @@ export const html = (strs, ...variables) => {
   let result = weakMap.get(strs)
 
   if (!result) {
-    result = toTemplate(strs, variables.length)
+    result = toTemplate(strs, variables)
 
     weakMap.set(strs, result)
   }

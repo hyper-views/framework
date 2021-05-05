@@ -35,8 +35,8 @@ const addListener = (document, type) => {
 const morphAttribute = (target, key, value, isExistingElement) => {
   const remove = value == null || value === false
 
-  if (key.indexOf('on') === 0) {
-    const type = key.substring(2)
+  if (key.charAt(0) === '@') {
+    const type = key.substring(1)
 
     const meta = readMeta(target)
 

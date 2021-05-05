@@ -29,7 +29,7 @@ test('add event', async () => {
     el,
     () => html`
       <body>
-        <button type="button" onclick=${onclick}>Click Me</button>
+        <button type="button" @click=${onclick}>Click Me</button>
       </body>
     `
   )

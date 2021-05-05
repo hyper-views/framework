@@ -28,16 +28,26 @@ export const stringify = (obj) => {
     *[Symbol.iterator]() {
       for (const attribute of attributes) {
         if (attribute.key) {
-          if (attribute.key.startsWith('on')) continue
+          if (attribute.key.startsWith('@')) continue
+
+          const hasColon = attribute.key.startsWith(':')
+
+          if (hasColon) {
+            attribute.key = attribute.key.substring(1)
+          }
 
           yield attribute
         } else {
-          for (const [key, value] of Object.entries(
-            variables[attribute.value]
-          )) {
-            if (key.startsWith('on')) continue
+          for (let key of Object.keys(variables[attribute.value])) {
+            if (key.startsWith('@')) continue
 
-            yield {key, value}
+            const hasColon = key.startsWith(':')
+
+            if (hasColon) {
+              key = key.substring(1)
+            }
+
+            yield {key, value: variables[attribute.value][key]}
           }
         }
       }

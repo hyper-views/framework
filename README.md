@@ -29,8 +29,8 @@ const view = createDomView(
     <div>
       <output>${state}</output>
       <br />
-      <button type="button" onclick=${decrement}>--</button>
-      <button type="button" onclick=${increment}>++</button>
+      <button type="button" @click=${decrement}>--</button>
+      <button type="button" @click=${increment}>++</button>
     </div>
   `
 )

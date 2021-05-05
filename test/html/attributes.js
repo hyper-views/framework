@@ -5,7 +5,7 @@ import {html, tokenTypes} from '../../html.js'
 
 test('attributes', () => {
   const el = /* prettier-ignore */ html`
-    <div foo bar="a" baz='b' qux=${'c'} ${{'doo': 'd'}} />
+    <div foo bar="a" baz='b' :qux=${'c'} ${{'doo': 'd'}} />
   `
 
   assert.is(el.attributes?.length, 5)
