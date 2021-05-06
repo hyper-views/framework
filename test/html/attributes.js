@@ -10,17 +10,17 @@ test('attributes', () => {
 
   assert.is(el.attributes?.length, 5)
 
-  assert.is(el.attributes?.[0]?.key, 'foo')
+  assert.is(el.attributes?.[0]?.key, 'baz')
 
-  assert.is(el.attributes?.[0]?.value, true)
+  assert.is(el.attributes?.[0]?.value, 'b')
 
   assert.is(el.attributes?.[1]?.key, 'bar')
 
   assert.is(el.attributes?.[1]?.value, 'a')
 
-  assert.is(el.attributes?.[2]?.key, 'baz')
+  assert.is(el.attributes?.[2]?.key, 'foo')
 
-  assert.is(el.attributes?.[2]?.value, 'b')
+  assert.is(el.attributes?.[2]?.value, true)
 
   assert.is(el.attributes?.[3]?.key, 'qux')
 

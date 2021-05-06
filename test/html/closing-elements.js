@@ -12,7 +12,7 @@ test('handles self closing and not', () => {
 
   assert.is(div1.tag, 'div')
 
-  assert.is(div1.dynamic, 0)
+  assert.is(div1.dynamic, false)
 
   const div2 = html`
     <div></div>
@@ -22,5 +22,5 @@ test('handles self closing and not', () => {
 
   assert.is(div2.tag, 'div')
 
-  assert.is(div2.dynamic, 0)
+  assert.is(div2.dynamic, false)
 })

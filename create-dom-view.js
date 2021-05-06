@@ -123,47 +123,47 @@ const morphChild = (
   if (append) {
     target.appendChild(currentChild)
   } else if (replace) {
-    childNode.replaceWith(currentChild)
+    target.replaceChild(currentChild, childNode)
   }
 
   return getNextSibling(currentChild)
 }
 
 const morph = (target, next, variables, isExistingElement, isSameView) => {
-  const attributesLength = next.attributes.length
-
   const attrNames = []
 
-  if (!isExistingElement || !isSameView || next.dynamic & 0b01) {
-    for (let i = 0, length = attributesLength; i < length; i++) {
-      const attribute = next.attributes[i]
+  let attributeIndex = 0
 
-      if (
-        !isExistingElement ||
-        !isSameView ||
-        attribute.type === tokenTypes.variable
-      ) {
-        let value = attribute.value
+  if (isExistingElement && isSameView) {
+    attributeIndex = next.attributes.inset ?? 0
+  }
 
-        if (attribute.type === tokenTypes.variable) {
-          value = variables[value]
-        }
+  for (
+    const length = next.attributes.length;
+    attributeIndex < length;
+    attributeIndex++
+  ) {
+    const attribute = next.attributes[attributeIndex]
 
-        if (attribute.key) {
-          morphAttribute(target, attribute.key, value, isExistingElement)
+    let value = attribute.value
 
-          attrNames.push(attribute.key)
-        } else {
-          const keys = Object.keys(value)
+    if (attribute.type === tokenTypes.variable) {
+      value = variables[value]
+    }
 
-          for (let i = 0, len = keys.length; i < len; i++) {
-            const key = keys[i]
+    if (attribute.key) {
+      morphAttribute(target, attribute.key, value, isExistingElement)
 
-            morphAttribute(target, key, value[key], isExistingElement)
+      attrNames.push(attribute.key)
+    } else {
+      const keys = Object.keys(value)
 
-            attrNames.push(key)
-          }
-        }
+      for (let i = 0, len = keys.length; i < len; i++) {
+        const key = keys[i]
+
+        morphAttribute(target, key, value[key], isExistingElement)
+
+        attrNames.push(key)
       }
     }
   }
@@ -176,61 +176,59 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
     }
   }
 
-  const childrenLength = next.children.length
+  let childNode
 
-  let childNode = target.firstChild
+  let childIndex = 0
 
-  let skip = isExistingElement && isSameView
+  if (isExistingElement && isSameView) {
+    childIndex = next.children.inset ?? 0
 
-  if (!isExistingElement || !isSameView || next.dynamic & 0b10) {
-    for (let childIndex = 0; childIndex < childrenLength; childIndex++) {
-      let child = next.children[childIndex]
+    childNode = target.childNodes[childIndex]
+  } else {
+    childNode = target.firstChild
+  }
 
-      if (skip && !child.dynamic && child.type !== tokenTypes.variable) {
-        childNode = getNextSibling(childNode)
-      } else {
-        skip = false
+  for (const length = next.children.length; childIndex < length; childIndex++) {
+    let child = next.children[childIndex]
 
-        if (child.type === tokenTypes.variable) {
-          const variableValue = child.value
+    if (child.type === tokenTypes.variable) {
+      const variableValue = child.value
 
-          child = variables[variableValue]
+      child = variables[variableValue]
 
-          if (typeof child === 'string' || child?.[Symbol.iterator] == null) {
-            child = [child]
-          }
-        } else {
-          child = [child]
-        }
-
-        for (let grand of child) {
-          if (grand == null || grand.type == null) {
-            grand = {type: tokenTypes.text, value: grand == null ? '' : grand}
-          }
-
-          childNode = morphChild(
-            target,
-            childNode,
-            grand,
-            variables,
-            isExistingElement,
-            isSameView
-          )
-        }
+      if (typeof child === 'string' || child?.[Symbol.iterator] == null) {
+        child = [child]
       }
+    } else {
+      child = [child]
     }
 
-    if (childNode) {
-      let nextChild
+    for (let grand of child) {
+      if (grand == null || grand.type == null) {
+        grand = {type: tokenTypes.text, value: grand == null ? '' : grand}
+      }
 
-      do {
-        nextChild = getNextSibling(childNode)
-
-        childNode.remove()
-
-        childNode = nextChild
-      } while (childNode)
+      childNode = morphChild(
+        target,
+        childNode,
+        grand,
+        variables,
+        isExistingElement,
+        isSameView
+      )
     }
+  }
+
+  if (childNode) {
+    let nextChild
+
+    do {
+      nextChild = getNextSibling(childNode)
+
+      target.removeChild(childNode)
+
+      childNode = nextChild
+    } while (childNode)
   }
 }
 

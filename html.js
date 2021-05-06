@@ -173,8 +173,8 @@ const tokenizer = {
 const parse = (tokens, parent, tag, variables) => {
   const child = {
     tag,
+    dynamic: false,
     type: tokenTypes.node,
-    dynamic: 0,
     attributes: [],
     children: []
   }
@@ -203,19 +203,26 @@ const parse = (tokens, parent, tag, variables) => {
       }
 
       if (next.type === tokenTypes.value) {
-        child.attributes.push({
+        if (child.attributes.inset != null) child.attributes.inset++
+
+        child.attributes.unshift({
           type: tokenTypes.constant,
           key,
           value: next.value
         })
       } else if (!hasColon && !hasAtSign) {
-        child.attributes.push({
+        if (child.attributes.inset != null) child.attributes.inset++
+
+        child.attributes.unshift({
           type: tokenTypes.constant,
           key,
           value: variables[next.value]
         })
       } else {
-        child.dynamic |= 0b01
+        child.dynamic = true
+
+        child.attributes.inset =
+          child.attributes.inset ?? child.attributes.length
 
         child.attributes.push({
           type: tokenTypes.variable,
@@ -224,7 +231,9 @@ const parse = (tokens, parent, tag, variables) => {
         })
       }
     } else if (token.type === tokenTypes.variable) {
-      child.dynamic |= 0b01
+      child.dynamic = true
+
+      child.attributes.inset = child.attributes.inset ?? child.attributes.length
 
       child.attributes.push({
         type: tokenTypes.variable,
@@ -244,22 +253,28 @@ const parse = (tokens, parent, tag, variables) => {
     if (token.type === tokenTypes.endtag && token.value === child.tag) {
       break
     } else if (token.type === tokenTypes.tag) {
-      const dynamic = parse(tokens, child, token.value, variables) ? 0b10 : 0
+      const dynamic = parse(tokens, child, token.value, variables)
 
-      child.dynamic = child.dynamic | dynamic
+      child.dynamic = child.dynamic || dynamic
     } else if (token.type === tokenTypes.text) {
       child.children.push({
         type: tokenTypes.text,
         value: token.value
       })
     } else if (token.type === tokenTypes.variable) {
-      child.dynamic |= 0b10
+      child.dynamic = true
+
+      child.children.inset = child.children.inset ?? child.children.length
 
       child.children.push({
         type: tokenTypes.variable,
         value: token.value
       })
     }
+  }
+
+  if (child.dynamic) {
+    parent.children.inset = parent.children.inset ?? parent.children.length
   }
 
   parent.children.push(child)
