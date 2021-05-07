@@ -190,55 +190,54 @@ const parse = (tokens, parent, tag, variables) => {
 
     if (token === END) {
       break
-    } else if (token.type === tokenTypes.key) {
-      const next = tokens.next()?.value
-      let key = token.value
+    }
 
-      const firstChar = key.charAt(0)
-      const hasColon = ':' === firstChar
-      const hasAtSign = '@' === firstChar
+    let next = token
+    let key = false
+    let firstChar
+    let hasColon
+    let hasAtSign
+    let constant = false
+    let value = token.value
+
+    if (next.type === tokenTypes.key) {
+      next = tokens.next()?.value
+      key = token.value
+
+      firstChar = key.charAt(0)
+      hasColon = ':' === firstChar
+      hasAtSign = '@' === firstChar
 
       if (hasColon) {
         key = token.value.substring(1)
       }
 
-      if (next.type === tokenTypes.value) {
-        if (child.attributes.inset != null) child.attributes.inset++
+      constant = next.type === tokenTypes.value
+      value = next.value
 
-        child.attributes.unshift({
-          type: tokenTypes.constant,
-          key,
-          value: next.value
-        })
-      } else if (!hasColon && !hasAtSign) {
-        if (child.attributes.inset != null) child.attributes.inset++
-
-        child.attributes.unshift({
-          type: tokenTypes.constant,
-          key,
-          value: variables[next.value]
-        })
-      } else {
-        child.dynamic = true
-
-        child.attributes.inset =
-          child.attributes.inset ?? child.attributes.length
-
-        child.attributes.push({
-          type: tokenTypes.variable,
-          key,
-          value: next.value
-        })
+      if (next.type === tokenTypes.variable && !hasColon && !hasAtSign) {
+        value = variables[value]
+        constant = true
       }
-    } else if (token.type === tokenTypes.variable) {
+    }
+
+    if (constant) {
+      if (child.attributes.inset != null) child.attributes.inset++
+
+      child.attributes.unshift({
+        type: tokenTypes.constant,
+        key,
+        value
+      })
+    } else {
       child.dynamic = true
 
       child.attributes.inset = child.attributes.inset ?? child.attributes.length
 
       child.attributes.push({
         type: tokenTypes.variable,
-        key: false,
-        value: token.value
+        key,
+        value
       })
     }
   }
