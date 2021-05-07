@@ -135,7 +135,7 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
   let attributeIndex = 0
 
   if (isExistingElement && isSameView) {
-    attributeIndex = next.attributes.inset ?? 0
+    attributeIndex = next.attributes.offset ?? 0
   }
 
   for (
@@ -181,7 +181,7 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
   let childIndex = 0
 
   if (isExistingElement && isSameView) {
-    childIndex = next.children.inset ?? 0
+    childIndex = next.children.offset ?? 0
 
     childNode = target.childNodes[childIndex]
   } else {

@@ -170,7 +170,7 @@ const tokenizer = {
   }
 }
 
-const parse = (tokens, parent, tag, variables) => {
+const parse = (nextToken, parent, tag, variables) => {
   const child = {
     tag,
     dynamic: false,
@@ -179,50 +179,40 @@ const parse = (tokens, parent, tag, variables) => {
     children: []
   }
 
-  let current
+  let token
 
   for (;;) {
-    current = tokens.next()
+    token = nextToken()
 
-    if (current.done) break
+    if (token == null || token === END) break
 
-    const token = current.value
-
-    if (token === END) {
-      break
-    }
-
-    let next = token
     let key = false
-    let firstChar
-    let hasColon
-    let hasAtSign
     let constant = false
     let value = token.value
 
-    if (next.type === tokenTypes.key) {
-      next = tokens.next()?.value
+    if (token.type === tokenTypes.key) {
       key = token.value
+      token = nextToken()
 
-      firstChar = key.charAt(0)
-      hasColon = ':' === firstChar
-      hasAtSign = '@' === firstChar
+      const firstChar = key.charAt(0)
+      const colon = ':' === firstChar
+      const atSign = '@' === firstChar
 
-      if (hasColon) {
-        key = token.value.substring(1)
+      if (colon) {
+        key = key.substring(1)
       }
 
-      constant = next.type === tokenTypes.value
-      value = next.value
+      constant = token.type === tokenTypes.value
+      value = token.value
 
-      if (next.type === tokenTypes.variable && !hasColon && !hasAtSign) {
+      if (token.type === tokenTypes.variable && !colon && !atSign) {
         value = variables[value]
         constant = true
       }
     }
 
     if (constant) {
-      if (child.attributes.inset != null) child.attributes.inset++
+      if (child.attributes.offset != null) child.attributes.offset++
 
       child.attributes.unshift({
         type: tokenTypes.constant,
@@ -232,7 +222,8 @@ const parse = (tokens, parent, tag, variables) => {
     } else {
       child.dynamic = true
 
-      child.attributes.inset = child.attributes.inset ?? child.attributes.length
+      child.attributes.offset =
+        child.attributes.offset ?? child.attributes.length
 
       child.attributes.push({
         type: tokenTypes.variable,
@@ -243,16 +234,14 @@ const parse = (tokens, parent, tag, variables) => {
   }
 
   for (;;) {
-    current = tokens.next()
+    token = nextToken()
 
-    if (current.done) break
-
-    const token = current.value
+    if (token == null) break
 
     if (token.type === tokenTypes.endtag && token.value === child.tag) {
       break
     } else if (token.type === tokenTypes.tag) {
-      const dynamic = parse(tokens, child, token.value, variables)
+      const dynamic = parse(nextToken, child, token.value, variables)
 
       child.dynamic = child.dynamic || dynamic
     } else if (token.type === tokenTypes.text) {
@@ -263,7 +252,7 @@ const parse = (tokens, parent, tag, variables) => {
     } else if (token.type === tokenTypes.variable) {
       child.dynamic = true
 
-      child.children.inset = child.children.inset ?? child.children.length
+      child.children.offset = child.children.offset ?? child.children.length
 
       child.children.push({
         type: tokenTypes.variable,
@@ -273,7 +262,7 @@ const parse = (tokens, parent, tag, variables) => {
   }
 
   if (child.dynamic) {
-    parent.children.inset = parent.children.inset ?? parent.children.length
+    parent.children.offset = parent.children.offset ?? parent.children.length
   }
 
   parent.children.push(child)
@@ -290,17 +279,23 @@ const toTemplate = (strs, variables) => {
 
   const tokens = tokenizer.get(acc, strs, variables.length)
 
+  const nextToken = () => {
+    const token = tokens.next()
+
+    if (token.done) return
+
+    return token.value
+  }
+
   const children = []
 
   for (;;) {
-    const current = tokens.next()
+    const token = nextToken()
 
-    if (current.done) break
-
-    const token = current.value
+    if (token == null) break
 
     if (token.type === tokenTypes.tag) {
-      parse(tokens, {children}, token.value, variables)
+      parse(nextToken, {children}, token.value, variables)
     } else if (token.type === tokenTypes.text && token.value.trim()) {
       throw createAssertionError(token.type, "'node'")
     }
