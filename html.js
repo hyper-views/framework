@@ -310,14 +310,18 @@ const toTemplate = (strs, variables) => {
   return children[0]
 }
 
-export const html = (strs, ...variables) => {
-  let result = weakMap.get(strs)
+const html = (strs, ...variables) => {
+  let result = html.cache?.get(strs)
 
   if (!result) {
     result = toTemplate(strs, variables)
 
-    weakMap.set(strs, result)
+    html.cache?.set(strs, result)
   }
 
   return Object.assign({variables}, result)
 }
+
+html.cache = weakMap
+
+export {html}
