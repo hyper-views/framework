@@ -24,35 +24,35 @@ export const stringify = (obj) => {
   let result = `<${tag}`
   const isSelfClosing = selfClosing.includes(tag)
 
-  const reducedAttributes = Array.from({
-    *[Symbol.iterator]() {
-      for (const attribute of attributes) {
-        if (attribute.key) {
-          if (attribute.key.startsWith('@')) continue
+  const reducedAttributes = []
 
-          const hasColon = attribute.key.startsWith(':')
+  for (let i = 0; i < attributes.length; i++) {
+    const attribute = attributes[i]
 
-          if (hasColon) {
-            attribute.key = attribute.key.substring(1)
-          }
+    if (attribute.key) {
+      if (attribute.key.startsWith('@')) continue
 
-          yield attribute
-        } else {
-          for (let key of Object.keys(variables[attribute.value])) {
-            if (key.startsWith('@')) continue
+      const hasColon = attribute.key.startsWith(':')
 
-            const hasColon = key.startsWith(':')
+      if (hasColon) {
+        attribute.key = attribute.key.substring(1)
+      }
 
-            if (hasColon) {
-              key = key.substring(1)
-            }
+      reducedAttributes.push(attribute)
+    } else {
+      for (let key of Object.keys(variables[attribute.value])) {
+        if (key.startsWith('@')) continue
 
-            yield {key, value: variables[attribute.value][key]}
-          }
+        const hasColon = key.startsWith(':')
+
+        if (hasColon) {
+          key = key.substring(1)
         }
+
+        reducedAttributes.push({key, value: variables[attribute.value][key]})
       }
     }
-  })
+  }
 
   for (const attr of reducedAttributes) {
     let value = attr.value
