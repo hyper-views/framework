@@ -29,46 +29,63 @@ const isQuoteChar = (char) => char === '"' || char === "'"
 const tokenizer = {
   *get(acc, strs, vlength) {
     let afterVar = false
+    const current = () => str.charAt(i)
+    const next = () => str.charAt(i + 1)
+    let str
+    let i
 
     for (let index = 0, length = strs.length; index < length; index++) {
-      const str = strs[index]
+      str = strs[index]
+      i = 0
 
       let tag = acc.tag
-      let i = 0
-
-      const current = () => str.charAt(i)
-      const next = () => str.charAt(i + 1)
 
       while (current()) {
-        if (!tag && current() === '<') {
+        if (!tag) {
           let value = ''
-          let end = false
 
-          if (next() === '/') {
-            end = true
+          if (current() === '<') {
+            let end = false
+
+            if (next() === '/') {
+              end = true
+
+              i++
+            }
+
+            while (next() && isOfTag(next())) {
+              i++
+
+              value += current()
+            }
+
+            afterVar = false
+
+            yield {
+              type: !end ? tokenTypes.tag : tokenTypes.endtag,
+              value
+            }
+
+            tag = value
 
             i++
+          } else {
+            while (current() && current() !== '<') {
+              value += current()
+
+              i++
+            }
+
+            if (value.trim() || (afterVar && current() !== '<')) {
+              yield {
+                type: tokenTypes.text,
+                value
+              }
+            }
           }
-
-          while (next() && isOfTag(next())) {
-            i++
-
-            value += current()
-          }
-
-          afterVar = false
-
-          yield {
-            type: !end ? tokenTypes.tag : tokenTypes.endtag,
-            value
-          }
-
-          tag = value
-
+        } else if (isSpaceChar(current())) {
           i++
-        } else if (tag && isSpaceChar(current())) {
-          i++
-        } else if (tag && current() === '/' && next() === '>') {
+        } else if (current() === '/' && next() === '>') {
           yield* [
             END,
             {
@@ -81,13 +98,13 @@ const tokenizer = {
           tag = false
 
           i += 2
-        } else if (tag && current() === '>') {
+        } else if (current() === '>') {
           yield END
 
           tag = false
 
           i++
-        } else if (tag && isOfKey(current())) {
+        } else if (isOfKey(current())) {
           let value = ''
 
           i--
@@ -138,21 +155,6 @@ const tokenizer = {
           }
 
           i++
-        } else if (!tag) {
-          let value = ''
-
-          while (current() && current() !== '<') {
-            value += current()
-
-            i++
-          }
-
-          if (value.trim() || (afterVar && current() !== '<')) {
-            yield {
-              type: tokenTypes.text,
-              value
-            }
-          }
         }
       }
 
@@ -184,7 +186,7 @@ const parse = (nextToken, parent, tag, variables) => {
   for (;;) {
     token = nextToken()
 
-    if (token == null || token === END) break
+    if (!token || token === END) break
 
     let key = false
     let constant = false
@@ -236,7 +238,7 @@ const parse = (nextToken, parent, tag, variables) => {
   for (;;) {
     token = nextToken()
 
-    if (token == null) break
+    if (!token) break
 
     if (token.type === tokenTypes.endtag && token.value === child.tag) {
       break
@@ -292,7 +294,7 @@ const toTemplate = (strs, variables) => {
   for (;;) {
     const token = nextToken()
 
-    if (token == null) break
+    if (!token) break
 
     if (token.type === tokenTypes.tag) {
       parse(nextToken, {children}, token.value, variables)

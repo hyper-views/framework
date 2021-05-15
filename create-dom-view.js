@@ -24,9 +24,7 @@ const addListener = (document, type) => {
     (e) => {
       const map = weakMap.get(e.target)
 
-      if (map && map[type]) {
-        map[type](e)
-      }
+      map?.[type]?.(e)
     },
     {capture: true}
   )
@@ -80,32 +78,30 @@ const morphChild = (
 ) => {
   const document = target.ownerDocument
 
-  const append = !isExistingElement || childNode == null
-
-  let replace = false
+  let mode = !isExistingElement || childNode == null ? 2 : !isSameView ? 1 : 0
 
   let currentChild = childNode
 
   if (next.type === tokenTypes.text) {
-    if (!append && childNode.nodeType !== 3) {
-      replace = true
+    if (!mode && childNode.nodeType !== 3) {
+      mode = 1
     }
 
-    if (append || replace) {
+    if (mode) {
       currentChild = document.createTextNode(next.value)
     } else if (childNode.data !== next.value) {
       childNode.data = next.value
     }
   } else {
     if (
-      !append &&
+      !mode &&
       (childNode.nodeType !== 1 ||
         childNode.nodeName.toLowerCase() !== next.tag)
     ) {
-      replace = true
+      mode = 1
     }
 
-    if (append || replace) {
+    if (mode) {
       const isSvg = next.tag === 'svg' || target.namespaceURI === svgNamespace
 
       currentChild = isSvg
@@ -113,16 +109,16 @@ const morphChild = (
         : document.createElement(next.tag)
     }
 
-    if (next.view != null) {
-      morphRoot(currentChild, next, !(append || replace))
-    } else if (append || replace || !isSameView || next.dynamic) {
-      morph(currentChild, next, variables, !(append || replace), isSameView)
+    if (next.view) {
+      morphRoot(currentChild, next, !mode)
+    } else if (mode || next.dynamic) {
+      morph(currentChild, next, variables, !mode, isSameView)
     }
   }
 
-  if (append) {
+  if (mode === 2) {
     target.appendChild(currentChild)
-  } else if (replace) {
+  } else if (mode === 1) {
     target.replaceChild(currentChild, childNode)
   }
 
@@ -130,8 +126,6 @@ const morphChild = (
 }
 
 const morph = (target, next, variables, isExistingElement, isSameView) => {
-  const attrNames = []
-
   let attributeIndex = 0
 
   if (isExistingElement && isSameView) {
@@ -153,8 +147,6 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
 
     if (attribute.key) {
       morphAttribute(target, attribute.key, value, isExistingElement)
-
-      attrNames.push(attribute.key)
     } else {
       const keys = Object.keys(value)
 
@@ -162,16 +154,6 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
         const key = keys[i]
 
         morphAttribute(target, key, value[key], isExistingElement)
-
-        attrNames.push(key)
-      }
-    }
-  }
-
-  if (isExistingElement && !isSameView) {
-    for (const attr of target.attributes) {
-      if (!~attrNames.indexOf(attr.name)) {
-        target.removeAttribute(attr.name)
       }
     }
   }
@@ -196,16 +178,23 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
 
       child = variables[variableValue]
 
-      if (typeof child === 'string' || child?.[Symbol.iterator] == null) {
+      const isIterator = child?.[Symbol.iterator]
+      const isArray = Array.isArray(child)
+
+      if (typeof child === 'string' || !isIterator) {
         child = [child]
+      } else if (isIterator && !isArray) {
+        child = Array.from(child)
       }
     } else {
       child = [child]
     }
 
-    for (let grand of child) {
-      if (grand == null || grand.type == null) {
-        grand = {type: tokenTypes.text, value: grand == null ? '' : grand}
+    for (let i = 0; i < child.length; i++) {
+      let grand = child[i]
+
+      if (!grand?.type) {
+        grand = {type: tokenTypes.text, value: grand ?? ''}
       }
 
       childNode = morphChild(
@@ -236,12 +225,15 @@ const morphRoot = (target, next, isExistingElement = true) => {
   const meta = readMeta(target)
 
   const isSameView = next.view === meta.view
+  let doMorph = next.dynamic
 
   if (!isExistingElement || !isSameView) {
     meta.view = next.view
+
+    doMorph = true
   }
 
-  if (!isExistingElement || !isSameView || next.dynamic) {
+  if (doMorph) {
     morph(target, next, next.variables, isExistingElement, isSameView)
   }
 }

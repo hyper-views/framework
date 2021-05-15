@@ -82,7 +82,7 @@ export const stringify = (obj) => {
         child = variables[child.value]
       }
 
-      if (child?.[Symbol.iterator] == null || typeof child === 'string') {
+      if (!child?.[Symbol.iterator] || typeof child === 'string') {
         child = [child]
       }
 
@@ -96,8 +96,8 @@ export const stringify = (obj) => {
     while (i < descendants.length) {
       const child = descendants[i]
 
-      if (child != null) {
-        if (child.type != null) {
+      if (child) {
+        if (child.type) {
           switch (child.type) {
             case tokenTypes.text:
               result += tag !== 'style' ? escape(child.value) : child.value
@@ -106,7 +106,7 @@ export const stringify = (obj) => {
             case tokenTypes.node:
               result += stringify(
                 Object.assign({}, child, {
-                  variables: child.view != null ? child.variables : variables
+                  variables: child.view ? child.variables : variables
                 })
               )
               break
