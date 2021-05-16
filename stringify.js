@@ -82,7 +82,7 @@ export const stringify = (obj) => {
         child = variables[child.value]
       }
 
-      if (!child?.[Symbol.iterator] || typeof child === 'string') {
+      if (!Array.isArray(child)) {
         child = [child]
       }
 
@@ -104,11 +104,10 @@ export const stringify = (obj) => {
               break
 
             case tokenTypes.node:
-              result += stringify(
-                Object.assign({}, child, {
-                  variables: child.view ? child.variables : variables
-                })
-              )
+              result += stringify({
+                variables: child.view ? child.variables : variables,
+                ...child
+              })
               break
           }
         } else {

@@ -26,153 +26,154 @@ const isOfTag = (char) => char !== '/' && char !== '>' && !isSpaceChar(char)
 const isOfKey = (char) => char !== '=' && isOfTag(char)
 const isQuoteChar = (char) => char === '"' || char === "'"
 
-const tokenizer = {
-  *get(acc, strs, vlength) {
-    let afterVar = false
-    const current = () => str.charAt(i)
-    const next = () => str.charAt(i + 1)
-    let str
-    let i
+const tokenize = (acc, strs, vlength) => {
+  const tokens = []
+  let afterVar = false
+  const current = () => str.charAt(i)
+  const next = () => str.charAt(i + 1)
+  let str
+  let i
 
-    for (let index = 0, length = strs.length; index < length; index++) {
-      str = strs[index]
-      i = 0
+  for (let index = 0, length = strs.length; index < length; index++) {
+    str = strs[index]
+    i = 0
 
-      let tag = acc.tag
+    let tag = acc.tag
 
-      while (current()) {
-        if (!tag) {
-          let value = ''
+    while (current()) {
+      if (!tag) {
+        let value = ''
 
-          if (current() === '<') {
-            let end = false
+        if (current() === '<') {
+          let end = false
 
-            if (next() === '/') {
-              end = true
-
-              i++
-            }
-
-            while (next() && isOfTag(next())) {
-              i++
-
-              value += current()
-            }
-
-            afterVar = false
-
-            yield {
-              type: !end ? tokenTypes.tag : tokenTypes.endtag,
-              value
-            }
-
-            tag = value
+          if (next() === '/') {
+            end = true
 
             i++
-          } else {
-            while (current() && current() !== '<') {
-              value += current()
-
-              i++
-            }
-
-            if (value.trim() || (afterVar && current() !== '<')) {
-              yield {
-                type: tokenTypes.text,
-                value
-              }
-            }
           }
-        } else if (isSpaceChar(current())) {
-          i++
-        } else if (current() === '/' && next() === '>') {
-          yield* [
-            END,
-            {
-              type: tokenTypes.endtag,
-              value: tag
-            },
-            END
-          ]
 
-          tag = false
-
-          i += 2
-        } else if (current() === '>') {
-          yield END
-
-          tag = false
-
-          i++
-        } else if (isOfKey(current())) {
-          let value = ''
-
-          i--
-
-          while (next() && isOfKey(next())) {
+          while (next() && isOfTag(next())) {
             i++
 
             value += current()
           }
 
-          yield {
-            type: tokenTypes.key,
+          afterVar = false
+
+          tokens.push({
+            type: !end ? tokenTypes.tag : tokenTypes.endtag,
             value
-          }
+          })
 
-          if (next() === '=') {
-            i++
-
-            let quote = ''
-            let value = ''
-
-            if (next() && isQuoteChar(next())) {
-              i++
-
-              quote = current()
-
-              while (next() !== quote) {
-                if (next()) {
-                  i++
-
-                  value += current()
-                } else {
-                  throw createAssertionError('', quote)
-                }
-              }
-
-              i++
-
-              yield {
-                type: tokenTypes.value,
-                value
-              }
-            } else if (next()) {
-              throw createAssertionError(next(), '"')
-            }
-          } else {
-            yield valueTrue
-          }
+          tag = value
 
           i++
+        } else {
+          while (current() && current() !== '<') {
+            value += current()
+
+            i++
+          }
+
+          if (value.trim() || (afterVar && current() !== '<')) {
+            tokens.push({
+              type: tokenTypes.text,
+              value
+            })
+          }
         }
-      }
+      } else if (isSpaceChar(current())) {
+        i++
+      } else if (current() === '/' && next() === '>') {
+        tokens.push(
+          END,
+          {
+            type: tokenTypes.endtag,
+            value: tag
+          },
+          END
+        )
 
-      acc.tag = tag
+        tag = false
 
-      if (index < vlength) {
-        afterVar = true
+        i += 2
+      } else if (current() === '>') {
+        tokens.push(END)
 
-        yield {
-          type: tokenTypes.variable,
-          value: index
+        tag = false
+
+        i++
+      } else if (isOfKey(current())) {
+        let value = ''
+
+        i--
+
+        while (next() && isOfKey(next())) {
+          i++
+
+          value += current()
         }
+
+        tokens.push({
+          type: tokenTypes.key,
+          value
+        })
+
+        if (next() === '=') {
+          i++
+
+          let quote = ''
+          let value = ''
+
+          if (next() && isQuoteChar(next())) {
+            i++
+
+            quote = current()
+
+            while (next() !== quote) {
+              if (next()) {
+                i++
+
+                value += current()
+              } else {
+                throw createAssertionError('', quote)
+              }
+            }
+
+            i++
+
+            tokens.push({
+              type: tokenTypes.value,
+              value
+            })
+          } else if (next()) {
+            throw createAssertionError(next(), '"')
+          }
+        } else {
+          tokens.push(valueTrue)
+        }
+
+        i++
       }
     }
+
+    acc.tag = tag
+
+    if (index < vlength) {
+      afterVar = true
+
+      tokens.push({
+        type: tokenTypes.variable,
+        value: index
+      })
+    }
   }
+
+  return tokens
 }
 
-const parse = (nextToken, parent, tag, variables) => {
+const parse = (tokens, parent, tag, variables) => {
   const child = {
     tag,
     dynamic: false,
@@ -184,7 +185,7 @@ const parse = (nextToken, parent, tag, variables) => {
   let token
 
   for (;;) {
-    token = nextToken()
+    token = tokens.shift()
 
     if (!token || token === END) break
 
@@ -194,7 +195,7 @@ const parse = (nextToken, parent, tag, variables) => {
 
     if (token.type === tokenTypes.key) {
       key = token.value
-      token = nextToken()
+      token = tokens.shift()
 
       const firstChar = key.charAt(0)
       const colon = ':' === firstChar
@@ -236,14 +237,14 @@ const parse = (nextToken, parent, tag, variables) => {
   }
 
   for (;;) {
-    token = nextToken()
+    token = tokens.shift()
 
     if (!token) break
 
     if (token.type === tokenTypes.endtag && token.value === child.tag) {
       break
     } else if (token.type === tokenTypes.tag) {
-      const dynamic = parse(nextToken, child, token.value, variables)
+      const dynamic = parse(tokens, child, token.value, variables)
 
       child.dynamic = child.dynamic || dynamic
     } else if (token.type === tokenTypes.text) {
@@ -279,25 +280,17 @@ const toTemplate = (strs, variables) => {
     tag: false
   }
 
-  const tokens = tokenizer.get(acc, strs, variables.length)
-
-  const nextToken = () => {
-    const token = tokens.next()
-
-    if (token.done) return
-
-    return token.value
-  }
+  const tokens = tokenize(acc, strs, variables.length)
 
   const children = []
 
   for (;;) {
-    const token = nextToken()
+    const token = tokens.shift()
 
     if (!token) break
 
     if (token.type === tokenTypes.tag) {
-      parse(nextToken, {children}, token.value, variables)
+      parse(tokens, {children}, token.value, variables)
     } else if (token.type === tokenTypes.text && token.value.trim()) {
       throw createAssertionError(token.type, "'node'")
     }
@@ -321,7 +314,7 @@ const html = (strs, ...variables) => {
     html.cache?.set(strs, result)
   }
 
-  return Object.assign({variables}, result)
+  return {variables, ...result}
 }
 
 html.cache = weakMap

@@ -178,13 +178,8 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
 
       child = variables[variableValue]
 
-      const isIterator = child?.[Symbol.iterator]
-      const isArray = Array.isArray(child)
-
-      if (typeof child === 'string' || !isIterator) {
+      if (!Array.isArray(child)) {
         child = [child]
-      } else if (isIterator && !isArray) {
-        child = Array.from(child)
       }
     } else {
       child = [child]
