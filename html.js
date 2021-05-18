@@ -208,7 +208,12 @@ const parse = (tokens, parent, tag, variables) => {
       constant = token.type === tokenTypes.value
       value = token.value
 
-      if (token.type === tokenTypes.variable && !colon && !atSign) {
+      if (
+        token.type === tokenTypes.variable &&
+        !colon &&
+        !atSign &&
+        !html.dev
+      ) {
         value = variables[value]
         constant = true
       }
@@ -306,17 +311,17 @@ const toTemplate = (strs, variables) => {
 }
 
 const html = (strs, ...variables) => {
-  let result = html.cache?.get(strs)
+  let result = weakMap.get(strs)
 
   if (!result) {
     result = toTemplate(strs, variables)
 
-    html.cache?.set(strs, result)
+    weakMap.set(strs, result)
   }
 
   return {variables, ...result}
 }
 
-html.cache = weakMap
+html.dev = false
 
 export {html}
