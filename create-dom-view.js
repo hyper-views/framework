@@ -41,26 +41,29 @@ const morphAttribute = (target, key, value, isExistingElement) => {
     meta[type] = value
 
     if (!remove) {
-      const listeners = readMeta(target.ownerDocument)
+      const document = target.ownerDocument
+
+      const listeners = readMeta(document)
 
       if (!listeners[type]) {
         listeners[type] = true
 
-        addListener(target.ownerDocument, type)
+        addListener(document, type)
       }
     }
   } else {
     if (isExistingElement && remove) {
       target.removeAttribute(key)
     } else if (!remove) {
-      const stringified = value === true ? '' : String(value)
+      const stringified =
+        value === true ? '' : typeof value === 'string' ? value : String(value)
 
       if (!isExistingElement || target.getAttribute(key) !== stringified) {
         target.setAttribute(key, stringified)
       }
     }
 
-    if (key === 'value' || value === true || value === false) {
+    if (value === true || value === false || key === 'value') {
       if (target[key] !== value) {
         target[key] = value
       }
