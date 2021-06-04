@@ -151,9 +151,11 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
     if (attribute.key) {
       morphAttribute(target, attribute.key, value, isExistingElement)
     } else {
-      const keys = Object.keys(value)
-
-      for (let i = 0, len = keys.length; i < len; i++) {
+      for (
+        let i = 0, keys = Object.keys(value), len = keys.length;
+        i < len;
+        i++
+      ) {
         const key = keys[i]
 
         morphAttribute(target, key, value[key], isExistingElement)
@@ -177,9 +179,7 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
     let child = next.children[childIndex]
 
     if (child.type === tokenTypes.variable) {
-      const variableValue = child.value
-
-      child = variables[variableValue]
+      child = variables[child.value]
 
       if (!Array.isArray(child)) {
         child = [child]
@@ -223,21 +223,14 @@ const morphRoot = (target, next, isExistingElement = true) => {
   const meta = readMeta(target)
 
   const isSameView = next.view === meta.view
-  let doMorph = next.dynamic
 
-  if (!isExistingElement || !isSameView) {
+  if (next.dynamic || !isExistingElement || !isSameView) {
     meta.view = next.view
 
-    doMorph = true
-  }
-
-  if (doMorph) {
     morph(target, next, next.variables, isExistingElement, isSameView)
   }
 }
 
 export const createDomView = (target, view) => (state) => {
-  const current = view(state)
-
-  morphRoot(target, current)
+  morphRoot(target, view(state))
 }
