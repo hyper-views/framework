@@ -322,6 +322,6 @@ const html = (strs, ...variables) => {
   return {variables, ...result}
 }
 
-html.dev = false
+html.dev = import.meta.env?.DEV
 
 export {html}
