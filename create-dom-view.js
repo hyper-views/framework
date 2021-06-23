@@ -231,6 +231,6 @@ const morphRoot = (target, next, isExistingElement = true) => {
   }
 }
 
-export const createDomView = (target, view) => (state) => {
+export const createDOMView = (target, view) => (state) => {
   morphRoot(target, view(state))
 }

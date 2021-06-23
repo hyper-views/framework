@@ -3,7 +3,7 @@ import jsdom from 'jsdom'
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 
-import {createDomView} from '../../create-dom-view.js'
+import {createDOMView} from '../../create-dom-view.js'
 import {html} from '../../html.js'
 
 test('text to text', async () => {
@@ -19,7 +19,7 @@ test('text to text', async () => {
 
   const el = dom.window.document.body
 
-  const view = createDomView(
+  const view = createDOMView(
     el,
     () => /* prettier-ignore */ html`
       <body>dolor ipsum lorem</body>

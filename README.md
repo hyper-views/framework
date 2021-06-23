@@ -7,7 +7,7 @@ A very simple framework in a bit less than 3kB minified + gzipped. No build step
 ```javascript
 import {
   createApp,
-  createDomView,
+  createDOMView,
   html
 } from 'https://cdn.skypack.dev/@erickmerchant/framework?min'
 
@@ -23,7 +23,7 @@ const increment = () => {
 
 const target = document.querySelector('div')
 
-const view = createDomView(
+const view = createDOMView(
   target,
   (state) => html`
     <div>

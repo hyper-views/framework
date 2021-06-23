@@ -3,7 +3,7 @@ import jsdom from 'jsdom'
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 
-import {createDomView} from '../../create-dom-view.js'
+import {createDOMView} from '../../create-dom-view.js'
 import {html} from '../../html.js'
 
 test('no change - dynamic', async () => {
@@ -25,7 +25,7 @@ test('no change - dynamic', async () => {
       <li>${i}</li>
     `
 
-  const view = createDomView(
+  const view = createDOMView(
     el,
     () => html`
       <body>

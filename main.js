@@ -1,4 +1,4 @@
-export {createDomView} from './create-dom-view.js'
+export {createDOMView} from './create-dom-view.js'
 
 export {html} from './html.js'
 

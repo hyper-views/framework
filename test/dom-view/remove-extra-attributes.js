@@ -3,7 +3,7 @@ import jsdom from 'jsdom'
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 
-import {createDomView} from '../../create-dom-view.js'
+import {createDOMView} from '../../create-dom-view.js'
 import {html} from '../../html.js'
 
 test('do not reuse elements between different templates', async () => {
@@ -21,7 +21,7 @@ test('do not reuse elements between different templates', async () => {
 
   const el = dom.window.document.querySelector('div')
 
-  const view = createDomView(el, (state) =>
+  const view = createDOMView(el, (state) =>
     state?.class
       ? html`
           <div><div :class=${state?.class}>I have a class</div></div>
