@@ -31,7 +31,7 @@ const addListener = (document, type) => {
 }
 
 const morphAttribute = (target, key, value, isExistingElement) => {
-  const remove = value == null || value === false
+  const remove = isExistingElement && value == null
 
   if (key.charAt(0) === '@') {
     const type = key.substring(1)
@@ -51,81 +51,15 @@ const morphAttribute = (target, key, value, isExistingElement) => {
         addListener(document, type)
       }
     }
-  } else {
-    if (isExistingElement && remove) {
-      target.removeAttribute(key)
-    } else if (!remove) {
-      const stringified =
-        value === true ? '' : typeof value === 'string' ? value : String(value)
-
-      if (!isExistingElement || target.getAttribute(key) !== stringified) {
-        target.setAttribute(key, stringified)
-      }
+  } else if (remove) {
+    target.removeAttribute(key)
+  } else if (value === true || value === false || key === 'value') {
+    if (target[key] !== value) {
+      target[key] = value
     }
-
-    if (value === true || value === false || key === 'value') {
-      if (target[key] !== value) {
-        target[key] = value
-      }
-    }
+  } else if (value != null && target.getAttribute(key) !== value) {
+    target.setAttribute(key, value)
   }
-}
-
-const morphChild = (
-  target,
-  childNode,
-  next,
-  variables,
-  isExistingElement,
-  isSameView
-) => {
-  const document = target.ownerDocument
-
-  let mode = !isExistingElement || childNode == null ? 2 : !isSameView ? 1 : 0
-
-  let currentChild = childNode
-
-  if (next.type === tokenTypes.text) {
-    if (!mode && childNode.nodeType !== 3) {
-      mode = 1
-    }
-
-    if (mode) {
-      currentChild = document.createTextNode(next.value)
-    } else if (childNode.data !== next.value) {
-      childNode.data = next.value
-    }
-  } else {
-    if (
-      !mode &&
-      (childNode.nodeType !== 1 ||
-        childNode.nodeName.toLowerCase() !== next.tag)
-    ) {
-      mode = 1
-    }
-
-    if (mode) {
-      const isSvg = next.tag === 'svg' || target.namespaceURI === svgNamespace
-
-      currentChild = isSvg
-        ? document.createElementNS(svgNamespace, next.tag)
-        : document.createElement(next.tag)
-    }
-
-    if (next.view) {
-      morphRoot(currentChild, next, !mode)
-    } else if (mode || next.dynamic) {
-      morph(currentChild, next, variables, !mode, isSameView)
-    }
-  }
-
-  if (mode === 2) {
-    target.appendChild(currentChild)
-  } else if (mode === 1) {
-    target.replaceChild(currentChild, childNode)
-  }
-
-  return getNextSibling(currentChild)
 }
 
 const morph = (target, next, variables, isExistingElement, isSameView) => {
@@ -180,29 +114,66 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
 
     if (child.type === tokenTypes.variable) {
       child = variables[child.value]
+    }
 
-      if (!Array.isArray(child)) {
-        child = [child]
-      }
-    } else {
+    if (!Array.isArray(child)) {
       child = [child]
     }
 
     for (let i = 0; i < child.length; i++) {
-      let grand = child[i]
+      const next = child[i]
 
-      if (!grand?.type) {
-        grand = {type: tokenTypes.text, value: grand ?? ''}
+      const document = target.ownerDocument
+
+      let mode =
+        !isExistingElement || childNode == null ? 2 : !isSameView ? 1 : 0
+
+      let currentChild = childNode
+
+      if (!next?.type || next.type === tokenTypes.text) {
+        if (!mode && childNode.nodeType !== 3) {
+          mode = 1
+        }
+
+        const value = next?.value ?? next ?? ''
+
+        if (mode) {
+          currentChild = document.createTextNode(value)
+        } else if (childNode.data !== value) {
+          childNode.data = value
+        }
+      } else {
+        if (
+          !mode &&
+          (childNode.nodeType !== 1 ||
+            childNode.nodeName.toLowerCase() !== next.tag)
+        ) {
+          mode = 1
+        }
+
+        if (mode) {
+          const isSvg =
+            next.tag === 'svg' || target.namespaceURI === svgNamespace
+
+          currentChild = isSvg
+            ? document.createElementNS(svgNamespace, next.tag)
+            : document.createElement(next.tag)
+        }
+
+        if (next.view) {
+          morphRoot(currentChild, next, !mode)
+        } else if (mode || next.dynamic) {
+          morph(currentChild, next, variables, !mode, isSameView)
+        }
       }
 
-      childNode = morphChild(
-        target,
-        childNode,
-        grand,
-        variables,
-        isExistingElement,
-        isSameView
-      )
+      if (mode === 2) {
+        target.appendChild(currentChild)
+      } else if (mode === 1) {
+        target.replaceChild(currentChild, childNode)
+      }
+
+      childNode = getNextSibling(currentChild)
     }
   }
 
