@@ -1,10 +1,13 @@
-import delay from 'delay'
 import jsdom from 'jsdom'
+import timers from 'timers'
+import {promisify} from 'util'
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 
 import {createDOMView} from '../../create-dom-view.js'
 import {html} from '../../html.js'
+
+const setTimeout = promisify(timers.setTimeout)
 
 test('remove attributes', async () => {
   const dom = new jsdom.JSDOM(`
@@ -32,7 +35,7 @@ test('remove attributes', async () => {
 
   view()
 
-  await delay(0)
+  await setTimeout(0)
 
   const input = el.querySelector('input')
 
