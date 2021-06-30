@@ -31,8 +31,7 @@ const tokenize = (acc, strs, vlength) => {
   let afterVar = false
   const current = () => str.charAt(i)
   const next = () => str.charAt(i + 1)
-  let str
-  let i
+  let str, i
 
   for (let index = 0, length = strs.length; index < length; index++) {
     str = strs[index]
@@ -322,6 +321,6 @@ const html = (strs, ...variables) => {
   return {variables, ...result}
 }
 
-html.dev = import.meta.env?.DEV
+html.dev = false
 
 export {html}
