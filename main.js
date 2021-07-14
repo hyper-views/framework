@@ -1,5 +1,5 @@
 export {createDOMView} from './create-dom-view.js'
 
-export {html} from './html.js'
+export {cache, html} from './html.js'
 
 export {createApp} from './create-app.js'

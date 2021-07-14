@@ -321,6 +321,12 @@ const html = (strs, ...variables) => {
   return {variables, ...result}
 }
 
+export const cache = (result) => {
+  result.dynamic = false
+
+  return result
+}
+
 html.dev = false
 
 export {html}
