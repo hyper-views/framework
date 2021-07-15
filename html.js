@@ -322,6 +322,8 @@ const html = (strs, ...variables) => {
 }
 
 export const cache = (result) => {
+  if (html.dev) return result
+
   result.dynamic = false
 
   return result
