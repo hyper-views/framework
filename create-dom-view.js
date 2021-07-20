@@ -16,8 +16,6 @@ const readMeta = (target) => {
   return result
 }
 
-const getNextSibling = (current) => current?.nextSibling
-
 const addListener = (document, type) => {
   document.addEventListener(
     type,
@@ -62,7 +60,27 @@ const morphAttribute = (target, key, value, isExistingElement) => {
   }
 }
 
-const morph = (target, next, variables, isExistingElement, isSameView) => {
+const morph = (
+  target,
+  next,
+  variables,
+  isExistingElement = true,
+  isSameView = true
+) => {
+  if (next.view) {
+    const meta = readMeta(target)
+
+    isSameView = next.view === meta.view
+
+    if (next.dynamic || !isExistingElement || !isSameView) {
+      meta.view = next.view
+
+      variables = next.variables
+    } else {
+      return
+    }
+  }
+
   let attributeIndex = 0
 
   if (isExistingElement && isSameView) {
@@ -160,9 +178,7 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
             : document.createElement(next.tag)
         }
 
-        if (next.view) {
-          morphRoot(currentChild, next, !mode)
-        } else if (mode || next.dynamic) {
+        if (next.view || mode || next.dynamic) {
           morph(currentChild, next, variables, !mode, isSameView)
         }
       }
@@ -173,7 +189,7 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
         target.replaceChild(currentChild, childNode)
       }
 
-      childNode = getNextSibling(currentChild)
+      childNode = currentChild?.nextSibling
     }
   }
 
@@ -181,7 +197,7 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
     let nextChild
 
     do {
-      nextChild = getNextSibling(childNode)
+      nextChild = childNode?.nextSibling
 
       target.removeChild(childNode)
 
@@ -190,18 +206,6 @@ const morph = (target, next, variables, isExistingElement, isSameView) => {
   }
 }
 
-const morphRoot = (target, next, isExistingElement = true) => {
-  const meta = readMeta(target)
-
-  const isSameView = next.view === meta.view
-
-  if (next.dynamic || !isExistingElement || !isSameView) {
-    meta.view = next.view
-
-    morph(target, next, next.variables, isExistingElement, isSameView)
-  }
-}
-
 export const createDOMView = (target, view) => (state) => {
-  morphRoot(target, view(state))
+  morph(target, view(state))
 }
