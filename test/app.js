@@ -1,7 +1,7 @@
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 
-import {createApp} from '../create-app.js'
+import {createApp} from '../app.js'
 
 test('app is created and responds to state changes', async () => {
   const app = createApp(0)

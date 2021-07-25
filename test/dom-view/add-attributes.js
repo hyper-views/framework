@@ -4,7 +4,7 @@ import {promisify} from 'util'
 import {test} from 'uvu'
 import * as assert from 'uvu/assert'
 
-import {createDOMView} from '../../create-dom-view.js'
+import {createDOMView} from '../../dom-view.js'
 import {html} from '../../html.js'
 
 const setTimeout = promisify(timers.setTimeout)

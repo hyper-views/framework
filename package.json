@@ -19,8 +19,8 @@
     "main.js",
     "stringify.js",
     "escape.js",
-    "create-app.js",
-    "create-dom-view.js",
+    "app.js",
+    "dom-view.js",
     "html.js"
   ],
   "main": "main.js",
