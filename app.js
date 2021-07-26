@@ -1,6 +1,6 @@
 export const createApp = (state) => {
   let willCallView = false
-  let view
+  const views = []
 
   const callView = () => {
     if (willCallView) return
@@ -10,15 +10,13 @@ export const createApp = (state) => {
     Promise.resolve().then(() => {
       willCallView = false
 
-      if (view) {
-        view(state)
-      }
+      views.map((view) => view(state))
     })
   }
 
   return {
     render(v) {
-      view = v
+      views.push(v)
 
       callView()
     },
