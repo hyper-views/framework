@@ -42,7 +42,7 @@ test('change event', async () => {
     el,
     (state) => html`
       <body>
-        <button type="button" @click=${onclicks[state]}>Click Me</button>
+        <button type="button" :@click=${onclicks[state]}>Click Me</button>
       </body>
     `
   )

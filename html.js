@@ -198,7 +198,6 @@ const parse = (tokens, parent, tag, variables) => {
 
       const firstChar = key.charAt(0)
       const colon = ':' === firstChar
-      const atSign = '@' === firstChar
 
       if (colon) {
         key = key.substring(1)
@@ -207,12 +206,7 @@ const parse = (tokens, parent, tag, variables) => {
       constant = token.type === tokenTypes.value
       value = token.value
 
-      if (
-        token.type === tokenTypes.variable &&
-        !colon &&
-        !atSign &&
-        !html.dev
-      ) {
+      if (token.type === tokenTypes.variable && !colon && !html.dev) {
         value = variables[value]
         constant = true
       }
