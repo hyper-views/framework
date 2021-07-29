@@ -28,33 +28,45 @@ const addListener = (document, type) => {
   )
 }
 
+const rekeyMap = {
+  class: 'className',
+  for: 'htmlFor'
+}
+
 const morphAttribute = (target, key, value, isExistingElement) => {
-  const remove = isExistingElement && value == null
+  const firstChar = key.charAt(0)
+  const hasDash = ~key.indexOf('-')
 
-  if (key.charAt(0) === '@') {
-    const type = key.substring(1)
+  if (firstChar === ':' || firstChar === '@') {
+    key = key.substring(1)
+  }
 
+  if (firstChar === ':' && !hasDash) {
+    key = rekeyMap[key] ?? key
+
+    if (value == null) {
+      delete target[key]
+    } else if (target[key] !== value) {
+      target[key] = value
+    }
+  } else if (firstChar === '@') {
     const meta = readMeta(target)
 
-    meta[type] = value
+    meta[key] = value
 
-    if (!remove) {
+    if (value != null) {
       const document = target.ownerDocument
 
       const listeners = readMeta(document)
 
-      if (!listeners[type]) {
-        listeners[type] = true
+      if (!listeners[key]) {
+        listeners[key] = true
 
-        addListener(document, type)
+        addListener(document, key)
       }
     }
-  } else if (remove) {
+  } else if (isExistingElement && value == null) {
     target.removeAttribute(key)
-  } else if (value === true || value === false || key === 'value') {
-    if (target[key] !== value) {
-      target[key] = value
-    }
   } else if (value != null && target.getAttribute(key) !== value) {
     target.setAttribute(key, value)
   }
@@ -84,7 +96,7 @@ const morph = (
   let attributeIndex = 0
 
   if (isExistingElement && isSameView) {
-    attributeIndex = next.attributes.offset ?? 0
+    attributeIndex = next.offsets.attributes
   }
 
   for (
@@ -120,7 +132,7 @@ const morph = (
   let childIndex = 0
 
   if (isExistingElement && isSameView) {
-    childIndex = next.children.offset ?? 0
+    childIndex = next.offsets.children
 
     childNode = target.childNodes[childIndex]
   } else {

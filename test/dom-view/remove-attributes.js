@@ -28,7 +28,7 @@ test('remove attributes', async () => {
     el,
     () => html`
       <body>
-        <input :required=${false} :placeholder=${null} ${{value: null}} />
+        <input :required=${false} :placeholder=${null} ${{':value': null}} />
       </body>
     `
   )

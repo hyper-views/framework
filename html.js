@@ -28,7 +28,6 @@ const isQuoteChar = (char) => char === '"' || char === "'"
 
 const tokenize = (acc, strs, vlength) => {
   const tokens = []
-  let afterVar = false
   const current = () => str.charAt(i)
   const next = () => str.charAt(i + 1)
   let str, i
@@ -58,8 +57,6 @@ const tokenize = (acc, strs, vlength) => {
             value += current()
           }
 
-          afterVar = false
-
           tokens.push({
             type: !end ? tokenTypes.tag : tokenTypes.endtag,
             value
@@ -75,7 +72,7 @@ const tokenize = (acc, strs, vlength) => {
             i++
           }
 
-          if (value.trim() || (afterVar && current() !== '<')) {
+          if (value.trim()) {
             tokens.push({
               type: tokenTypes.text,
               value
@@ -160,8 +157,6 @@ const tokenize = (acc, strs, vlength) => {
     acc.tag = tag
 
     if (index < vlength) {
-      afterVar = true
-
       tokens.push({
         type: tokenTypes.variable,
         value: index
@@ -178,7 +173,11 @@ const parse = (tokens, parent, tag, variables) => {
     dynamic: false,
     type: tokenTypes.node,
     attributes: [],
-    children: []
+    children: [],
+    offsets: {
+      attributes: 0,
+      children: null
+    }
   }
 
   let token
@@ -197,23 +196,19 @@ const parse = (tokens, parent, tag, variables) => {
       token = tokens.shift()
 
       const firstChar = key.charAt(0)
-      const colon = ':' === firstChar
-
-      if (colon) {
-        key = key.substring(1)
-      }
+      const special = ':' === firstChar || '@' === firstChar
 
       constant = token.type === tokenTypes.value
       value = token.value
 
-      if (token.type === tokenTypes.variable && !colon && !html.dev) {
+      if (token.type === tokenTypes.variable && !special && !html.dev) {
         value = variables[value]
         constant = true
       }
     }
 
     if (constant) {
-      if (child.attributes.offset != null) child.attributes.offset++
+      child.offsets.attributes++
 
       child.attributes.unshift({
         type: tokenTypes.constant,
@@ -222,9 +217,6 @@ const parse = (tokens, parent, tag, variables) => {
       })
     } else {
       child.dynamic = true
-
-      child.attributes.offset =
-        child.attributes.offset ?? child.attributes.length
 
       child.attributes.push({
         type: tokenTypes.variable,
@@ -244,7 +236,7 @@ const parse = (tokens, parent, tag, variables) => {
     } else if (token.type === tokenTypes.tag) {
       const dynamic = parse(tokens, child, token.value, variables)
 
-      child.dynamic = child.dynamic || dynamic
+      child.dynamic ||= dynamic
     } else if (token.type === tokenTypes.text) {
       child.children.push({
         type: tokenTypes.text,
@@ -253,7 +245,7 @@ const parse = (tokens, parent, tag, variables) => {
     } else if (token.type === tokenTypes.variable) {
       child.dynamic = true
 
-      child.children.offset = child.children.offset ?? child.children.length
+      child.offsets.children ??= child.children.length
 
       child.children.push({
         type: tokenTypes.variable,
@@ -263,10 +255,12 @@ const parse = (tokens, parent, tag, variables) => {
   }
 
   if (child.dynamic) {
-    parent.children.offset = parent.children.offset ?? parent.children.length
+    parent.offsets.children ??= parent.children.length
   }
 
   parent.children.push(child)
+
+  child.offsets.children ??= child.children.length
 
   return child.dynamic
 }
@@ -281,6 +275,7 @@ const toTemplate = (strs, variables) => {
   const tokens = tokenize(acc, strs, variables.length)
 
   const children = []
+  const offsets = {children: null}
 
   for (;;) {
     const token = tokens.shift()
@@ -288,7 +283,7 @@ const toTemplate = (strs, variables) => {
     if (!token) break
 
     if (token.type === tokenTypes.tag) {
-      parse(tokens, {children}, token.value, variables)
+      parse(tokens, {children, offsets}, token.value, variables)
     } else if (token.type === tokenTypes.text && token.value.trim()) {
       throw createAssertionError(token.type, "'node'")
     }

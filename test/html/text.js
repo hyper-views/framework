@@ -54,17 +54,13 @@ test('text nodes -- static and dynamic', () => {
 
   assert.is(el3.dynamic, true)
 
-  assert.is(el3.children?.length, 3)
+  assert.is(el3.children?.length, 2)
 
   assert.is(el3.children?.[0]?.type, tokenTypes.variable)
 
   assert.is(el3.children?.[0]?.value, 0)
 
-  assert.is(el3.children?.[1]?.type, tokenTypes.text)
+  assert.is(el3.children?.[1]?.type, tokenTypes.variable)
 
-  assert.is(el3.children?.[1]?.value, ' ')
-
-  assert.is(el3.children?.[2]?.type, tokenTypes.variable)
-
-  assert.is(el3.children?.[2]?.value, 1)
+  assert.is(el3.children?.[1]?.value, 1)
 })

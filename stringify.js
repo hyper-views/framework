@@ -87,7 +87,7 @@ export const stringify = (obj) => {
       }
 
       for (let c of child) {
-        c = c ?? ''
+        c ??= ''
 
         descendants.push(c)
       }
