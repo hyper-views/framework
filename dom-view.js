@@ -33,7 +33,7 @@ const rekeyMap = {
   for: 'htmlFor'
 }
 
-const morphAttribute = (target, key, value, isExistingElement) => {
+const morphAttribute = (target, key, value, existing) => {
   const firstChar = key.charAt(0)
   const hasDash = ~key.indexOf('-')
 
@@ -65,26 +65,22 @@ const morphAttribute = (target, key, value, isExistingElement) => {
         addListener(document, key)
       }
     }
-  } else if (isExistingElement && value == null) {
+  } else if (existing && value == null) {
     target.removeAttribute(key)
   } else if (value != null && target.getAttribute(key) !== value) {
     target.setAttribute(key, value)
   }
 }
 
-const morph = (
-  target,
-  next,
-  variables,
-  isExistingElement = true,
-  isSameView = true
-) => {
+const morph = (target, next, variables, existing = true, same = true) => {
+  const document = target.ownerDocument
+
   if (next.view) {
     const meta = readMeta(target)
 
-    isSameView = next.view === meta.view
+    same = next.view === meta.view
 
-    if (next.dynamic || !isExistingElement || !isSameView) {
+    if (next.dynamic || !existing || !same) {
       meta.view = next.view
 
       variables = next.variables
@@ -95,7 +91,7 @@ const morph = (
 
   let attributeIndex = 0
 
-  if (isExistingElement && isSameView) {
+  if (existing && same) {
     attributeIndex = next.offsets.attributes
   }
 
@@ -113,7 +109,7 @@ const morph = (
     }
 
     if (attribute.key) {
-      morphAttribute(target, attribute.key, value, isExistingElement)
+      morphAttribute(target, attribute.key, value, existing)
     } else {
       for (
         let i = 0, keys = Object.keys(value), len = keys.length;
@@ -122,7 +118,7 @@ const morph = (
       ) {
         const key = keys[i]
 
-        morphAttribute(target, key, value[key], isExistingElement)
+        morphAttribute(target, key, value[key], existing)
       }
     }
   }
@@ -131,7 +127,7 @@ const morph = (
 
   let childIndex = 0
 
-  if (isExistingElement && isSameView) {
+  if (existing && same) {
     childIndex = next.offsets.children
 
     childNode = target.childNodes[childIndex]
@@ -146,26 +142,28 @@ const morph = (
       child = variables[child.value]
     }
 
+    let nextChild
+    let i
+
     if (!Array.isArray(child)) {
-      child = [child]
+      nextChild = child
+    } else {
+      i = 0
+
+      nextChild = child[i]
     }
 
-    for (let i = 0; i < child.length; i++) {
-      const next = child[i]
-
-      const document = target.ownerDocument
-
-      let mode =
-        !isExistingElement || childNode == null ? 2 : !isSameView ? 1 : 0
+    while (nextChild != null) {
+      let mode = !existing || childNode == null ? 2 : !same ? 1 : 0
 
       let currentChild = childNode
 
-      if (!next?.type || next.type === tokenTypes.text) {
+      if (!nextChild?.type || nextChild.type === tokenTypes.text) {
         if (!mode && childNode.nodeType !== 3) {
           mode = 1
         }
 
-        const value = next?.value ?? next ?? ''
+        const value = nextChild?.value ?? nextChild ?? ''
 
         if (mode) {
           currentChild = document.createTextNode(value)
@@ -176,22 +174,22 @@ const morph = (
         if (
           !mode &&
           (childNode.nodeType !== 1 ||
-            childNode.nodeName.toLowerCase() !== next.tag)
+            childNode.nodeName.toLowerCase() !== nextChild.tag)
         ) {
           mode = 1
         }
 
         if (mode) {
           const isSvg =
-            next.tag === 'svg' || target.namespaceURI === svgNamespace
+            nextChild.tag === 'svg' || target.namespaceURI === svgNamespace
 
           currentChild = isSvg
-            ? document.createElementNS(svgNamespace, next.tag)
-            : document.createElement(next.tag)
+            ? document.createElementNS(svgNamespace, nextChild.tag)
+            : document.createElement(nextChild.tag)
         }
 
-        if (next.view || mode || next.dynamic) {
-          morph(currentChild, next, variables, !mode, isSameView)
+        if (nextChild.view || mode || nextChild.dynamic) {
+          morph(currentChild, nextChild, variables, !mode, same)
         }
       }
 
@@ -202,19 +200,19 @@ const morph = (
       }
 
       childNode = currentChild?.nextSibling
+
+      nextChild = i != null ? child[++i] : null
     }
   }
 
-  if (childNode) {
-    let nextChild
+  let nextChild
 
-    do {
-      nextChild = childNode?.nextSibling
+  while (childNode) {
+    nextChild = childNode?.nextSibling
 
-      target.removeChild(childNode)
+    target.removeChild(childNode)
 
-      childNode = nextChild
-    } while (childNode)
+    childNode = nextChild
   }
 }
 

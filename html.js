@@ -299,15 +299,24 @@ const toTemplate = (strs, variables) => {
 }
 
 const html = (strs, ...variables) => {
-  let result = weakMap.get(strs)
+  let template = weakMap.get(strs)
 
-  if (!result) {
-    result = toTemplate(strs, variables)
+  if (!template) {
+    template = toTemplate(strs, variables)
 
-    weakMap.set(strs, result)
+    weakMap.set(strs, template)
   }
 
-  return {variables, ...result}
+  return {
+    view: template.view,
+    tag: template.tag,
+    dynamic: template.dynamic,
+    type: template.type,
+    attributes: template.attributes,
+    children: template.children,
+    offsets: template.offsets,
+    variables
+  }
 }
 
 export const cache = (result) => {
