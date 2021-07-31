@@ -225,6 +225,8 @@ const parse = (tokens, parent, tag, variables) => {
           value
         })
       }
+    } else {
+      throw createAssertionError(variables[value], null)
     }
   }
 
@@ -300,7 +302,7 @@ const toTemplate = (strs, variables) => {
   return children[0]
 }
 
-const html = (strs, ...variables) => {
+export const html = (strs, ...variables) => {
   let template = weakMap.get(strs)
 
   if (!template) {
@@ -321,6 +323,8 @@ const html = (strs, ...variables) => {
   }
 }
 
+html.dev = false
+
 export const cache = (result) => {
   if (html.dev) return result
 
@@ -328,7 +332,3 @@ export const cache = (result) => {
 
   return result
 }
-
-html.dev = false
-
-export {html}
