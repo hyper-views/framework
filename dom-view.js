@@ -28,48 +28,9 @@ const addListener = (document, type) => {
   )
 }
 
-const rekeyMap = {
+const attrToPropMap = {
   class: 'className',
   for: 'htmlFor'
-}
-
-const morphAttribute = (target, key, value, existing) => {
-  const firstChar = key.charAt(0)
-  const hasDash = ~key.indexOf('-')
-
-  if (firstChar === ':' || firstChar === '@') {
-    key = key.substring(1)
-  }
-
-  if (firstChar === ':' && !hasDash) {
-    key = rekeyMap[key] ?? key
-
-    if (value == null) {
-      delete target[key]
-    } else if (target[key] !== value) {
-      target[key] = value
-    }
-  } else if (firstChar === '@') {
-    const meta = readMeta(target)
-
-    meta[key] = value
-
-    if (value != null) {
-      const document = target.ownerDocument
-
-      const listeners = readMeta(document)
-
-      if (!listeners[key]) {
-        listeners[key] = true
-
-        addListener(document, key)
-      }
-    }
-  } else if (existing && value == null) {
-    target.removeAttribute(key)
-  } else if (value != null && target.getAttribute(key) !== value) {
-    target.setAttribute(key, value)
-  }
 }
 
 const morph = (target, next, variables, existing = true, same = true) => {
@@ -108,18 +69,43 @@ const morph = (target, next, variables, existing = true, same = true) => {
       value = variables[value]
     }
 
-    if (attribute.key) {
-      morphAttribute(target, attribute.key, value, existing)
-    } else {
-      for (
-        let i = 0, keys = Object.keys(value), len = keys.length;
-        i < len;
-        i++
-      ) {
-        const key = keys[i]
+    let key = attribute.key
 
-        morphAttribute(target, key, value[key], existing)
+    const firstChar = key.charAt(0)
+    const hasDash = ~key.indexOf('-')
+
+    if (firstChar === ':' || firstChar === '@') {
+      key = key.substring(1)
+    }
+
+    if (firstChar === ':' && !hasDash) {
+      key = attrToPropMap[key] ?? key
+
+      if (value == null) {
+        delete target[key]
+      } else if (target[key] !== value) {
+        target[key] = value
       }
+    } else if (firstChar === '@') {
+      const meta = readMeta(target)
+
+      meta[key] = value
+
+      if (value != null) {
+        const document = target.ownerDocument
+
+        const listeners = readMeta(document)
+
+        if (!listeners[key]) {
+          listeners[key] = true
+
+          addListener(document, key)
+        }
+      }
+    } else if (existing && value == null) {
+      target.removeAttribute(key)
+    } else if (value != null && target.getAttribute(key) !== value) {
+      target.setAttribute(key, value)
     }
   }
 

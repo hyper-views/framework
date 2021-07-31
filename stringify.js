@@ -29,29 +29,15 @@ export const stringify = (obj) => {
   for (let i = 0; i < attributes.length; i++) {
     const attribute = attributes[i]
 
-    if (attribute.key) {
-      if (attribute.key.startsWith('@')) continue
+    if (attribute.key.startsWith('@')) continue
 
-      const hasColon = attribute.key.startsWith(':')
+    const hasColon = attribute.key.startsWith(':')
 
-      if (hasColon) {
-        attribute.key = attribute.key.substring(1)
-      }
-
-      reducedAttributes.push(attribute)
-    } else {
-      for (let key of Object.keys(variables[attribute.value])) {
-        if (key.startsWith('@')) continue
-
-        const hasColon = key.startsWith(':')
-
-        if (hasColon) {
-          key = key.substring(1)
-        }
-
-        reducedAttributes.push({key, value: variables[attribute.value][key]})
-      }
+    if (hasColon) {
+      attribute.key = attribute.key.substring(1)
     }
+
+    reducedAttributes.push(attribute)
   }
 
   for (const attr of reducedAttributes) {

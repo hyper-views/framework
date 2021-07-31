@@ -26,7 +26,7 @@ test('add attributes', async () => {
     el,
     () => html`
       <body>
-        <input required placeholder="Add a Value" ${{value: "I'm the Value"}} />
+        <input required placeholder="Add a Value" :value=${"I'm the Value"} />
       </body>
     `
   )

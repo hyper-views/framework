@@ -207,22 +207,24 @@ const parse = (tokens, parent, tag, variables) => {
       }
     }
 
-    if (constant) {
-      child.offsets.attributes++
+    if (key) {
+      if (constant) {
+        child.offsets.attributes++
 
-      child.attributes.unshift({
-        type: tokenTypes.constant,
-        key,
-        value
-      })
-    } else {
-      child.dynamic = true
+        child.attributes.unshift({
+          type: tokenTypes.constant,
+          key,
+          value
+        })
+      } else {
+        child.dynamic = true
 
-      child.attributes.push({
-        type: tokenTypes.variable,
-        key,
-        value
-      })
+        child.attributes.push({
+          type: tokenTypes.variable,
+          key,
+          value
+        })
+      }
     }
   }
 

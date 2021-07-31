@@ -14,10 +14,11 @@ test('stringify', () => {
             (i) => html`
               <input
                 required
+                type="input"
                 :id=${`value${i}`}
                 :name=${`value${i}`}
-                type="input"
-                ${{'placeholder': 'Add A Value', '@change'() {}}}
+                :placeholder=${'Add A Value'}
+                @change=${() => {}}
               />
             `
           )}
