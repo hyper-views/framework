@@ -3,168 +3,172 @@ const weakMap = new WeakMap()
 const createAssertionError = (actual, expected) =>
   Error(`Expected ${expected}. Found ${actual}.`)
 
-export const tokenTypes = {
-  variable: 0,
-  tag: 1,
-  endtag: 2,
-  key: 3,
-  value: 4,
-  node: 5,
-  text: 6,
-  constant: 7
-}
+export const tokenTypes = [
+  'variable',
+  'tag',
+  'endtag',
+  'key',
+  'value',
+  'node',
+  'text',
+  'constant',
+  'end'
+].reduce((acc, val) => {
+  acc[val] = val
+
+  return acc
+}, {})
 
 const valueTrue = {
   type: tokenTypes.value,
   value: true
 }
 
-const END = Symbol('end')
+const END = {
+  type: tokenTypes.end
+}
 
 const isSpaceChar = (char) => !char.trim()
 const isOfTag = (char) => char !== '/' && char !== '>' && !isSpaceChar(char)
 const isOfKey = (char) => char !== '=' && isOfTag(char)
 const isQuoteChar = (char) => char === '"' || char === "'"
 
-const tokenize = (acc, strs, vlength) => {
-  const tokens = []
-  const current = () => str.charAt(i)
-  const next = () => str.charAt(i + 1)
-  let str, i
+const tokenizer = {
+  *tokenize(acc, strs, vlength) {
+    const current = () => str.charAt(i)
+    const next = () => str.charAt(i + 1)
+    let str, i
 
-  for (let index = 0, length = strs.length; index < length; index++) {
-    str = strs[index]
-    i = 0
+    for (let index = 0, length = strs.length; index < length; index++) {
+      str = strs[index]
+      i = 0
 
-    let tag = acc.tag
+      let tag = acc.tag
 
-    while (current()) {
-      if (!tag) {
-        let value = ''
-
-        if (current() === '<') {
-          let end = false
-
-          if (next() === '/') {
-            end = true
-
-            i++
-          }
-
-          while (next() && isOfTag(next())) {
-            i++
-
-            value += current()
-          }
-
-          tokens.push({
-            type: !end ? tokenTypes.tag : tokenTypes.endtag,
-            value
-          })
-
-          tag = value
-
-          i++
-        } else {
-          while (current() && current() !== '<') {
-            value += current()
-
-            i++
-          }
-
-          if (value.trim()) {
-            tokens.push({
-              type: tokenTypes.text,
-              value
-            })
-          }
-        }
-      } else if (isSpaceChar(current())) {
-        i++
-      } else if (current() === '/' && next() === '>') {
-        tokens.push(
-          END,
-          {
-            type: tokenTypes.endtag,
-            value: tag
-          },
-          END
-        )
-
-        tag = false
-
-        i += 2
-      } else if (current() === '>') {
-        tokens.push(END)
-
-        tag = false
-
-        i++
-      } else if (isOfKey(current())) {
-        let value = ''
-
-        i--
-
-        while (next() && isOfKey(next())) {
-          i++
-
-          value += current()
-        }
-
-        tokens.push({
-          type: tokenTypes.key,
-          value
-        })
-
-        if (next() === '=') {
-          i++
-
-          let quote = ''
+      while (current()) {
+        if (!tag) {
           let value = ''
 
-          if (next() && isQuoteChar(next())) {
-            i++
+          if (current() === '<') {
+            let end = false
 
-            quote = current()
+            if (next() === '/') {
+              end = true
 
-            while (next() !== quote) {
-              if (next()) {
-                i++
-
-                value += current()
-              } else {
-                throw createAssertionError('', quote)
-              }
+              i++
             }
 
+            while (next() && isOfTag(next())) {
+              i++
+
+              value += current()
+            }
+
+            yield {
+              type: !end ? tokenTypes.tag : tokenTypes.endtag,
+              value
+            }
+
+            tag = value
+
+            i++
+          } else {
+            while (current() && current() !== '<') {
+              value += current()
+
+              i++
+            }
+
+            if (value.trim()) {
+              yield {
+                type: tokenTypes.text,
+                value
+              }
+            }
+          }
+        } else if (isSpaceChar(current())) {
+          i++
+        } else if (current() === '/' && next() === '>') {
+          yield END
+
+          yield {
+            type: tokenTypes.endtag,
+            value: tag
+          }
+
+          tag = false
+
+          i += 2
+        } else if (current() === '>') {
+          yield END
+
+          tag = false
+
+          i++
+        } else if (isOfKey(current())) {
+          let value = ''
+
+          i--
+
+          while (next() && isOfKey(next())) {
             i++
 
-            tokens.push({
-              type: tokenTypes.value,
-              value
-            })
-          } else if (next()) {
-            throw createAssertionError(next(), '"')
+            value += current()
           }
-        } else {
-          tokens.push(valueTrue)
-        }
 
-        i++
+          yield {
+            type: tokenTypes.key,
+            value
+          }
+
+          if (next() === '=') {
+            i++
+
+            let quote = ''
+            let value = ''
+
+            if (next() && isQuoteChar(next())) {
+              i++
+
+              quote = current()
+
+              while (next() !== quote) {
+                if (next()) {
+                  i++
+
+                  value += current()
+                } else {
+                  throw createAssertionError('', quote)
+                }
+              }
+
+              i++
+
+              yield {
+                type: tokenTypes.value,
+                value
+              }
+            } else if (next()) {
+              throw createAssertionError(next(), '"')
+            }
+          } else {
+            yield valueTrue
+          }
+
+          i++
+        }
+      }
+
+      acc.tag = tag
+
+      if (index < vlength) {
+        yield {
+          type: tokenTypes.variable,
+          value: index
+        }
       }
     }
-
-    acc.tag = tag
-
-    if (index < vlength) {
-      tokens.push({
-        type: tokenTypes.variable,
-        value: index
-      })
-    }
   }
-
-  return tokens
 }
 
 const parse = (tokens, parent, tag, variables) => {
@@ -183,31 +187,29 @@ const parse = (tokens, parent, tag, variables) => {
   let token
 
   for (;;) {
-    token = tokens.shift()
+    token = tokens.next().value
 
     if (!token || token === END) break
 
-    let key = false
-    let constant = false
-    let value = token.value
-
     if (token.type === tokenTypes.key) {
-      key = token.value
-      token = tokens.shift()
+      const key = token.value
+
+      token = tokens.next().value
 
       const firstChar = key.charAt(0)
       const special = ':' === firstChar || '@' === firstChar
 
-      constant = token.type === tokenTypes.value
-      value = token.value
+      let value = token.value
+      let constant = false
 
-      if (token.type === tokenTypes.variable && !special && !html.dev) {
+      if (token.type === tokenTypes.value) {
+        constant = true
+      } else if (token.type === tokenTypes.variable && !special && !html.dev) {
         value = variables[value]
+
         constant = true
       }
-    }
 
-    if (key) {
       if (constant) {
         child.offsets.attributes++
 
@@ -226,12 +228,12 @@ const parse = (tokens, parent, tag, variables) => {
         })
       }
     } else {
-      throw createAssertionError(variables[value], null)
+      throw createAssertionError(token.type, END.type)
     }
   }
 
   for (;;) {
-    token = tokens.shift()
+    token = tokens.next().value
 
     if (!token) break
 
@@ -276,20 +278,20 @@ const toTemplate = (strs, variables) => {
     tag: false
   }
 
-  const tokens = tokenize(acc, strs, variables.length)
+  const tokens = tokenizer.tokenize(acc, strs, variables.length)
 
   const children = []
   const offsets = {children: null}
 
   for (;;) {
-    const token = tokens.shift()
+    const token = tokens.next().value
 
     if (!token) break
 
     if (token.type === tokenTypes.tag) {
       parse(tokens, {children, offsets}, token.value, variables)
     } else if (token.type === tokenTypes.text && token.value.trim()) {
-      throw createAssertionError(token.type, "'node'")
+      throw createAssertionError(token.type, tokenTypes.node)
     }
   }
 
