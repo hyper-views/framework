@@ -1,10 +1,10 @@
 # @erickmerchant/framework
 
-A modest frontend framework in a bit less than 3kB minified and gzipped. No build step required to use. Import it from a CDN like Skypack and get started.
+A simple frontend framework. Import it from a CDN, or npm install.
 
 ## Get started
 
-```javascript
+```js
 import {
   cache
   createApp,
@@ -15,15 +15,17 @@ import {
 const app = createApp({items: []})
 ```
 
-`createApp` take the initial state of the app. It can be any type, but an object usually makes sense.
+`createApp` takes the initial state of the app. It can be any type, but an object usually makes sense.
 
 ## Rendering some html
 
-```javascript
+```js
 const target = document.querySelector('#app')
 
+const cls = getCls()
+
 const view = (state) => html`
-  <div id="app" />
+  <div id="app" class=${cls} />
 `
 
 const domView = createDOMView(target, view)
@@ -35,10 +37,11 @@ This doesn't do much right now, but it does demonstrate a few things.
 
 - How to render an element with no children. The self closing `/>` is required even on tags that normally wouldn't need it and it's allowed on all, even those that normally wouldn't allow it.
 - How to render static attributes. `id="app"` is static. It will be the same each time this view is rendered. The quotes (single or double) are require.
+- How to render cached attributes. `class=${cls}` is cached. Its value is not hard-coded. However every time the view is rendered it will not change, even if `getCls()` returns a new value.
 
-### Dynamic children
+## Dynamic children
 
-```javascript
+```js
 const view = (state) => html`
   <div id="app">
     <ol>
@@ -55,12 +58,12 @@ const view = (state) => html`
 
 This shows how you can have dynamic children and how you'd output an array of items.
 
-### Cached children
+## Cached children
 
-Sometimes you'll have something that needs to be dynamic once but after that can be treated as if it were static. That's where `cache` comes into play.
+Sometimes you'll have some html that needs to be dynamic once but after that can be treated as if it were static. That's where `cache` comes into play.
 
-```javascript
-const title = 'Cool list making app'
+```js
+const title = 'The heading'
 
 const heading = cache(
   html`
@@ -83,46 +86,81 @@ const view = (state) => html`
 `
 ```
 
-### Properties
+## Properties
 
-### Events
+Cached attributes are useful, but often you'll have attributes that need to change. This is where you can use properties instead. Properties are always reevaluated. You can indicate a property with `:`, a single colon.
+
+```js
+let hasFoo = true
+
+let barValue = "I'm the bar value"
+
+const view = (state) => html`
+  <form id="app">
+    <label>
+      Has foo
+      <input type="checkbox" :checkbox=${hasFoo} />
+    </label>
+    <label>
+      Bar value
+      <input type="text" :value=${barValue} />
+    </label>
+  </form>
+`
+```
+
+Also worth pointing out in this example is that `hasFoo` is a boolean, which demonstrates how to render boolean properties.
+
+## Events
+
+```js
+const onClick = (e) => {
+  e.preventDefault()
+}
+
+const view = (state) => html`
+  <div id="app">
+    <button @click=${onClick}>Click here</button>
+  </div>
+`
+```
 
 ## Changing state
 
+```js
+const onClick = (e) => {
+  e.preventDefault()
+
+  app.state = {count: app.state.count + 1}
+}
+
+const view = (state) => html`
+  <div id="app">
+    <p>${state.count}</p>
+    <button @click=${onClick}>Click here</button>
+  </div>
+`
+```
+
 ## Server-side rendering
 
-## Example
+```js
+import {stringify, html} from '@erickmerchant/framework/stringify.js'
 
-```javascript
-import {
-  createApp,
-  createDOMView,
-  html
-} from 'https://cdn.skypack.dev/@erickmerchant/framework?min'
+const view = (state) => html`
+  <div id="app">
+    <ol>
+      ${state.items.map(
+        (item) =>
+          html`
+            <li>${item}</li>
+          `
+      )}
+    </ol>
+  </div>
+`
 
-const app = createApp(0)
+const staticHTML = stringify(view({items}))
 
-const decrement = () => {
-  app.state--
-}
-
-const increment = () => {
-  app.state++
-}
-
-const target = document.querySelector('div')
-
-const view = createDOMView(
-  target,
-  (state) => html`
-    <div>
-      <output>${state}</output>
-      <br />
-      <button type="button" @click=${decrement}>--</button>
-      <button type="button" @click=${increment}>++</button>
-    </div>
-  `
-)
-
-app.render(view)
+res.write(staticHTML)
 ```
