@@ -1,6 +1,6 @@
 # @erickmerchant/framework
 
-A simple frontend framework. Import it from a CDN, or npm install.
+A simple frontend framework.
 
 ## Get started
 
