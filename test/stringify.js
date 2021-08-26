@@ -1,11 +1,10 @@
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
+import t from 'tap'
 
 import {html} from '../html.js'
 import {stringify} from '../stringify.js'
 
-test('stringify', () => {
-  assert.is(
+t.test('stringify', async () => {
+  t.equal(
     stringify(html`
       <form action=${'/submit'}>
         <fieldset>

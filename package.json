@@ -28,13 +28,13 @@
   "scripts": {
     "lint": "eslint . --ignore-path .gitignore",
     "pretest": "npm run lint",
-    "test": "node test/index.js"
+    "test": "tap test --no-coverage"
   },
   "devDependencies": {
     "@erickmerchant/eslint-config": "^3.0.0",
     "@erickmerchant/prettier-config": "^1.2.0",
     "jsdom": "^17.0.0",
-    "uvu": "^0.5.0"
+    "tap": "^15.0.9"
   },
   "engines": {
     "node": ">=14.3"

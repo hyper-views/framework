@@ -1,15 +1,14 @@
 import jsdom from 'jsdom'
+import t from 'tap'
 import timers from 'timers'
 import {promisify} from 'util'
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
 
 import {createDOMView} from '../../dom-view.js'
 import {html} from '../../html.js'
 
 const setTimeout = promisify(timers.setTimeout)
 
-test('remove text', async () => {
+t.test('remove text', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -35,5 +34,5 @@ test('remove text', async () => {
 
   await setTimeout(0)
 
-  assert.is(el.childNodes?.length, 0)
+  t.equal(el.childNodes?.length, 0)
 })

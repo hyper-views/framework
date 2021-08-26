@@ -1,15 +1,14 @@
 import jsdom from 'jsdom'
+import t from 'tap'
 import timers from 'timers'
 import {promisify} from 'util'
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
 
 import {createDOMView} from '../../dom-view.js'
 import {html} from '../../html.js'
 
 const setTimeout = promisify(timers.setTimeout)
 
-test('do not reuse elements between different templates', async () => {
+t.test('do not reuse elements between different templates', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -38,11 +37,15 @@ test('do not reuse elements between different templates', async () => {
 
   await setTimeout(0)
 
-  assert.is(el.childNodes[0].className, 'test')
+  t.has(el.childNodes, {
+    0: {className: 'test'}
+  })
 
   view()
 
   await setTimeout(0)
 
-  assert.is(el.childNodes[0].className, '')
+  t.has(el.childNodes, {
+    0: {className: ''}
+  })
 })

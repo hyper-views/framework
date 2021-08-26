@@ -1,15 +1,14 @@
 import jsdom from 'jsdom'
+import t from 'tap'
 import timers from 'timers'
 import {promisify} from 'util'
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
 
 import {createDOMView} from '../../dom-view.js'
 import {html} from '../../html.js'
 
 const setTimeout = promisify(timers.setTimeout)
 
-test('remove attributes', async () => {
+t.test('remove attributes', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -39,9 +38,9 @@ test('remove attributes', async () => {
 
   const input = el.querySelector('input')
 
-  assert.is(input?.required, false)
+  t.equal(input?.required, false)
 
-  assert.is(input?.placeholder, '')
+  t.equal(input?.placeholder, '')
 
-  assert.is(input?.value, '')
+  t.equal(input?.value, '')
 })

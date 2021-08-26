@@ -1,9 +1,8 @@
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
+import t from 'tap'
 
 import {html, tokenTypes} from '../../html.js'
 
-test('nodes -- static and dynamic', () => {
+t.test('nodes -- static and dynamic', async () => {
   const el = html`
     <ul>
       <li>0</li>
@@ -12,58 +11,44 @@ test('nodes -- static and dynamic', () => {
     </ul>
   `
 
-  assert.is(el.type, tokenTypes.node)
-
-  assert.is(el.tag, 'ul')
-
-  assert.is(el.dynamic, true)
-
-  assert.is(el.children?.length, 3)
-
-  assert.is(el.children?.[0]?.type, tokenTypes.node)
-
-  assert.is(el.children?.[0]?.tag, 'li')
-
-  assert.is(el.children?.[0]?.dynamic, false)
-
-  assert.is(el.children?.[0]?.children?.length, 1)
-
-  assert.is(el.children?.[0]?.children?.[0]?.type, tokenTypes.text)
-
-  assert.is(el.children?.[0]?.children?.[0]?.value, '0')
-
-  assert.is(el.children?.[1]?.type, tokenTypes.node)
-
-  assert.is(el.children?.[1]?.tag, 'li')
-
-  assert.is(el.children?.[1]?.dynamic, true)
-
-  assert.is(el.children?.[1]?.children?.length, 1)
-
-  assert.is(el.children?.[1]?.children?.[0]?.type, tokenTypes.variable)
-
-  assert.is(el.children?.[1]?.children?.[0]?.value, 0)
-
-  assert.is(el.children?.[2]?.type, tokenTypes.node)
-
-  assert.is(el.children?.[2]?.tag, 'li')
-
-  assert.is(el.children?.[2]?.dynamic, false)
-
-  assert.is(el.children?.[2]?.children?.length, 1)
-
-  assert.is(el.children?.[2]?.children?.[0]?.type, tokenTypes.node)
-
-  assert.is(el.children?.[2]?.children?.[0]?.tag, 'span')
-
-  assert.is(el.children?.[2]?.children?.[0]?.dynamic, false)
-
-  assert.is(el.children?.[2]?.children?.[0]?.children?.length, 1)
-
-  assert.is(
-    el.children?.[2]?.children?.[0]?.children?.[0]?.type,
-    tokenTypes.text
-  )
-
-  assert.is(el.children?.[2]?.children?.[0]?.children?.[0]?.value, '2')
+  t.has(el, {
+    type: tokenTypes.node,
+    tag: 'ul',
+    dynamic: true,
+    children: {
+      length: 3,
+      0: {
+        type: tokenTypes.node,
+        tag: 'li',
+        dynamic: false,
+        children: {
+          length: 1,
+          0: {type: tokenTypes.text, value: '0'}
+        }
+      },
+      1: {
+        type: tokenTypes.node,
+        tag: 'li',
+        dynamic: true,
+        children: {
+          length: 1,
+          0: {type: tokenTypes.variable, value: 0}
+        }
+      },
+      2: {
+        type: tokenTypes.node,
+        tag: 'li',
+        dynamic: false,
+        children: {
+          length: 1,
+          0: {
+            type: tokenTypes.node,
+            tag: 'span',
+            dynamic: false,
+            children: {length: 1, 0: {type: tokenTypes.text, value: '2'}}
+          }
+        }
+      }
+    }
+  })
 })

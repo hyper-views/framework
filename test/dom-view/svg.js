@@ -1,15 +1,14 @@
 import jsdom from 'jsdom'
+import t from 'tap'
 import timers from 'timers'
 import {promisify} from 'util'
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
 
 import {createDOMView} from '../../dom-view.js'
 import {html} from '../../html.js'
 
 const setTimeout = promisify(timers.setTimeout)
 
-test('svg', async () => {
+t.test('svg', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -37,11 +36,8 @@ test('svg', async () => {
 
   await setTimeout(0)
 
-  assert.is(el.childNodes?.length, 1)
-
-  assert.is(el.childNodes?.[0]?.nodeName, 'svg')
-
-  assert.is(el.childNodes?.[0]?.childNodes?.length, 1)
-
-  assert.is(el.childNodes?.[0]?.childNodes?.[0]?.nodeName, 'circle')
+  t.has(el.childNodes, {
+    length: 1,
+    0: {nodeName: 'svg', childNodes: {length: 1, 0: {nodeName: 'circle'}}}
+  })
 })

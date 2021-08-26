@@ -1,17 +1,16 @@
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
+import t from 'tap'
 
 import {html} from '../../html.js'
 
-test('throws on root issues', () => {
-  assert.throws(() => {
+t.test('throws on root issues', async () => {
+  t.throws(() => {
     html`
       <div />
       <div />
     `
   })
 
-  assert.throws(() => {
+  t.throws(() => {
     html`
       lorem ipsum dolor
     `

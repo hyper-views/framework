@@ -1,13 +1,12 @@
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
+import t from 'tap'
 
 import {createApp} from '../app.js'
 
-test('app is created and responds to state changes', async () => {
+t.test('app is created and responds to state changes', async () => {
   const app = createApp(0)
 
   app.render((state) => {
-    assert.is(state, 2)
+    t.equal(state, 2)
   })
 
   app.state = 1

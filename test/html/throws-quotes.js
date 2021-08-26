@@ -1,16 +1,15 @@
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
+import t from 'tap'
 
 import {html} from '../../html.js'
 
-test('throws on various quote issues', () => {
-  assert.throws(() => {
+t.test('throws on various quote issues', async () => {
+  t.throws(() => {
     /* prettier-ignore */ html`
       <div foo=bar />
     `
   })
 
-  assert.throws(() => {
+  t.throws(() => {
     html`
       <div foo="${'bar'}" />
     `

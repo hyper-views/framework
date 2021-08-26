@@ -1,15 +1,14 @@
 import jsdom from 'jsdom'
+import t from 'tap'
 import timers from 'timers'
 import {promisify} from 'util'
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
 
 import {createDOMView} from '../../dom-view.js'
 import {html} from '../../html.js'
 
 const setTimeout = promisify(timers.setTimeout)
 
-test('remove event', async () => {
+t.test('remove event', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -50,7 +49,7 @@ test('remove event', async () => {
 
   await setTimeout(0)
 
-  assert.is(clicked, 1)
+  t.equal(clicked, 1)
 
   view(1)
 
@@ -60,5 +59,5 @@ test('remove event', async () => {
 
   await setTimeout(0)
 
-  assert.is(clicked, 1)
+  t.equal(clicked, 1)
 })

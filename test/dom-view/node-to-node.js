@@ -1,15 +1,14 @@
 import jsdom from 'jsdom'
+import t from 'tap'
 import timers from 'timers'
 import {promisify} from 'util'
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
 
 import {createDOMView} from '../../dom-view.js'
 import {html} from '../../html.js'
 
 const setTimeout = promisify(timers.setTimeout)
 
-test('node to node', async () => {
+t.test('node to node', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -33,9 +32,8 @@ test('node to node', async () => {
 
   await setTimeout(0)
 
-  assert.is(el.childNodes?.length, 1)
-
-  assert.is(el.childNodes?.[0]?.nodeName, 'UL')
-
-  assert.is(el.childNodes?.[0]?.children?.length, 3)
+  t.has(el.childNodes, {
+    length: 1,
+    0: {nodeName: 'UL', childNodes: {length: 3}}
+  })
 })

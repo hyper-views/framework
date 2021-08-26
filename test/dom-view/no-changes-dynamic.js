@@ -1,15 +1,14 @@
 import jsdom from 'jsdom'
+import t from 'tap'
 import timers from 'timers'
 import {promisify} from 'util'
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
 
 import {createDOMView} from '../../dom-view.js'
 import {html} from '../../html.js'
 
 const setTimeout = promisify(timers.setTimeout)
 
-test('no change - dynamic', async () => {
+t.test('no change - dynamic', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -46,27 +45,19 @@ test('no change - dynamic', async () => {
 
   await setTimeout(0)
 
-  assert.is(el.childNodes?.length, 2)
-
-  assert.is(el.childNodes?.[0]?.nodeName, 'UL')
-
-  assert.is(el.childNodes?.[0]?.childNodes?.length, 3)
-
-  assert.is(el.childNodes?.[1]?.nodeName, 'P')
-
-  assert.is(el.childNodes?.[1]?.childNodes?.length, 1)
+  t.has(el.childNodes, {
+    length: 2,
+    0: {nodeName: 'UL', childNodes: {length: 3}},
+    1: {nodeName: 'P', childNodes: {length: 1}}
+  })
 
   view()
 
   await setTimeout(0)
 
-  assert.is(el.childNodes?.length, 2)
-
-  assert.is(el.childNodes?.[0]?.nodeName, 'UL')
-
-  assert.is(el.childNodes?.[0]?.childNodes?.length, 3)
-
-  assert.is(el.childNodes?.[1]?.nodeName, 'P')
-
-  assert.is(el.childNodes?.[1]?.childNodes?.length, 1)
+  t.has(el.childNodes, {
+    length: 2,
+    0: {nodeName: 'UL', childNodes: {length: 3}},
+    1: {nodeName: 'P', childNodes: {length: 1}}
+  })
 })

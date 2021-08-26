@@ -1,26 +1,25 @@
-import {test} from 'uvu'
-import * as assert from 'uvu/assert'
+import t from 'tap'
 
 import {html, tokenTypes} from '../../html.js'
 
-test('handles self closing and not', () => {
+t.test('handles self closing and not', async () => {
   const div1 = html`
     <div />
   `
 
-  assert.is(div1.type, tokenTypes.node)
+  t.equal(div1.type, tokenTypes.node)
 
-  assert.is(div1.tag, 'div')
+  t.equal(div1.tag, 'div')
 
-  assert.is(div1.dynamic, false)
+  t.equal(div1.dynamic, false)
 
   const div2 = html`
     <div></div>
   `
 
-  assert.is(div2.type, tokenTypes.node)
+  t.equal(div2.type, tokenTypes.node)
 
-  assert.is(div2.tag, 'div')
+  t.equal(div2.tag, 'div')
 
-  assert.is(div2.dynamic, false)
+  t.equal(div2.dynamic, false)
 })
