@@ -10,7 +10,7 @@ export const createApp = (state) => {
     Promise.resolve().then(() => {
       willCallView = false
 
-      views.map((view) => view(state))
+      for (const view of views) view(state)
     })
   }
 

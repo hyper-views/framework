@@ -171,7 +171,7 @@ const tokenizer = {
   }
 }
 
-const parse = (tokens, parent, tag, variables) => {
+const parse = (read, parent, tag, variables) => {
   const child = {
     tag,
     dynamic: false,
@@ -186,15 +186,13 @@ const parse = (tokens, parent, tag, variables) => {
 
   let token
 
-  for (;;) {
-    token = tokens.next().value
-
-    if (!token || token === END) break
+  while ((token = read())) {
+    if (token === END) break
 
     if (token.type === tokenTypes.key) {
       const key = token.value
 
-      token = tokens.next().value
+      token = read()
 
       const firstChar = key.charAt(0)
       const special = ':' === firstChar || '@' === firstChar
@@ -232,15 +230,11 @@ const parse = (tokens, parent, tag, variables) => {
     }
   }
 
-  for (;;) {
-    token = tokens.next().value
-
-    if (!token) break
-
+  while ((token = read())) {
     if (token.type === tokenTypes.endtag && token.value === child.tag) {
       break
     } else if (token.type === tokenTypes.tag) {
-      const dynamic = parse(tokens, child, token.value, variables)
+      const dynamic = parse(read, child, token.value, variables)
 
       child.dynamic ||= dynamic
     } else if (token.type === tokenTypes.text) {
@@ -271,44 +265,38 @@ const parse = (tokens, parent, tag, variables) => {
   return child.dynamic
 }
 
-let view = 1
-
-const toTemplate = (strs, variables) => {
-  const acc = {
-    tag: false
-  }
-
-  const tokens = tokenizer.tokenize(acc, strs, variables.length)
-
-  const children = []
-  const offsets = {children: null}
-
-  for (;;) {
-    const token = tokens.next().value
-
-    if (!token) break
-
-    if (token.type === tokenTypes.tag) {
-      parse(tokens, {children, offsets}, token.value, variables)
-    } else if (token.type === tokenTypes.text && token.value.trim()) {
-      throw createAssertionError(token.type, tokenTypes.node)
-    }
-  }
-
-  if (children.length !== 1) {
-    throw createAssertionError(children.length, 1)
-  }
-
-  children[0].view = view++
-
-  return children[0]
-}
+let id = 1
 
 export const html = (strs, ...variables) => {
   let template = weakMap.get(strs)
 
   if (!template) {
-    template = toTemplate(strs, variables)
+    const acc = {
+      tag: false
+    }
+
+    const tokens = tokenizer.tokenize(acc, strs, variables.length)
+    const read = () => tokens.next().value
+
+    const children = []
+    const offsets = {children: null}
+    let token
+
+    while ((token = read())) {
+      if (token.type === tokenTypes.tag) {
+        parse(read, {children, offsets}, token.value, variables)
+      } else if (token.type === tokenTypes.text && token.value.trim()) {
+        throw createAssertionError(token.type, tokenTypes.node)
+      }
+    }
+
+    if (children.length !== 1) {
+      throw createAssertionError(children.length, 1)
+    }
+
+    template = children[0]
+
+    template.view = id++
 
     weakMap.set(strs, template)
   }
