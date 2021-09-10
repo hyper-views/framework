@@ -28,16 +28,17 @@ const END = {
   type: tokenTypes.end
 }
 
-const isSpaceChar = (char) => !char.trim()
-const isOfTag = (char) => char !== '/' && char !== '>' && !isSpaceChar(char)
-const isOfKey = (char) => char !== '=' && isOfTag(char)
-const isQuoteChar = (char) => char === '"' || char === "'"
+const createIsChar = (regex) => (char) => char && regex.test(char)
+
+const isSpaceChar = createIsChar(/\s/)
+const isNameChar = createIsChar(/[:@a-zA-Z0-9-]/)
+const isQuoteChar = createIsChar(/["']/)
 
 const tokenizer = {
   *tokenize(acc, strs, vlength) {
+    let str, i
     const current = () => str.charAt(i)
     const next = () => str.charAt(i + 1)
-    let str, i
 
     for (let index = 0, length = strs.length; index < length; index++) {
       str = strs[index]
@@ -58,10 +59,10 @@ const tokenizer = {
               i++
             }
 
-            while (next() && isOfTag(next())) {
-              i++
+            while (isNameChar(next())) {
+              value += next()
 
-              value += current()
+              i++
             }
 
             yield {
@@ -89,12 +90,13 @@ const tokenizer = {
         } else if (isSpaceChar(current())) {
           i++
         } else if (current() === '/' && next() === '>') {
-          yield END
-
-          yield {
-            type: tokenTypes.endtag,
-            value: tag
-          }
+          yield* [
+            END,
+            {
+              type: tokenTypes.endtag,
+              value: tag
+            }
+          ]
 
           tag = false
 
@@ -105,12 +107,12 @@ const tokenizer = {
           tag = false
 
           i++
-        } else if (isOfKey(current())) {
+        } else if (isNameChar(current())) {
           let value = ''
 
           i--
 
-          while (next() && isOfKey(next())) {
+          while (isNameChar(next())) {
             i++
 
             value += current()
@@ -127,7 +129,7 @@ const tokenizer = {
             let quote = ''
             let value = ''
 
-            if (next() && isQuoteChar(next())) {
+            if (isQuoteChar(next())) {
               i++
 
               quote = current()
