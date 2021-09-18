@@ -1,7 +1,8 @@
 const weakMap = new WeakMap()
 
-const createAssertionError = (actual, expected) =>
-  Error(`Expected ${expected}. Found ${actual}.`)
+const throwAssertionError = (actual, expected) => {
+  throw Error(`Expected ${expected}. Found ${actual}.`)
+}
 
 export const tokenTypes = [
   'variable',
@@ -36,33 +37,39 @@ const isQuoteChar = createIsChar(/["']/)
 
 const tokenizer = {
   *tokenize(acc, strs, vlength) {
-    let str, i
-    const current = () => str.charAt(i)
-    const next = () => str.charAt(i + 1)
+    let str, i, char
+
+    const nextChar = () => {
+      char = str.charAt(i++)
+    }
 
     for (let index = 0, length = strs.length; index < length; index++) {
       str = strs[index]
       i = 0
 
+      nextChar()
+
       let tag = acc.tag
 
-      while (current()) {
+      while (char) {
         if (!tag) {
           let value = ''
 
-          if (current() === '<') {
+          if (char === '<') {
             let end = false
 
-            if (next() === '/') {
+            nextChar()
+
+            if (char === '/') {
               end = true
 
-              i++
+              nextChar()
             }
 
-            while (isNameChar(next())) {
-              value += next()
+            while (isNameChar(char)) {
+              value += char
 
-              i++
+              nextChar()
             }
 
             yield {
@@ -71,13 +78,11 @@ const tokenizer = {
             }
 
             tag = value
-
-            i++
           } else {
-            while (current() && current() !== '<') {
-              value += current()
+            while (char && char !== '<') {
+              value += char
 
-              i++
+              nextChar()
             }
 
             if (value.trim()) {
@@ -87,35 +92,37 @@ const tokenizer = {
               }
             }
           }
-        } else if (isSpaceChar(current())) {
-          i++
-        } else if (current() === '/' && next() === '>') {
-          yield* [
-            END,
-            {
-              type: tokenTypes.endtag,
-              value: tag
-            }
-          ]
+        } else if (isSpaceChar(char)) {
+          nextChar()
+        } else if (char === '/') {
+          nextChar()
 
-          tag = false
+          if (char === '>') {
+            yield* [
+              END,
+              {
+                type: tokenTypes.endtag,
+                value: tag
+              }
+            ]
 
-          i += 2
-        } else if (current() === '>') {
+            tag = false
+
+            nextChar()
+          }
+        } else if (char === '>') {
           yield END
 
           tag = false
 
-          i++
-        } else if (isNameChar(current())) {
+          nextChar()
+        } else if (isNameChar(char)) {
           let value = ''
 
-          i--
+          while (isNameChar(char)) {
+            value += char
 
-          while (isNameChar(next())) {
-            i++
-
-            value += current()
+            nextChar()
           }
 
           yield {
@@ -123,41 +130,39 @@ const tokenizer = {
             value
           }
 
-          if (next() === '=') {
-            i++
+          if (char === '=') {
+            nextChar()
 
             let quote = ''
             let value = ''
 
-            if (isQuoteChar(next())) {
-              i++
+            if (isQuoteChar(char)) {
+              quote = char
 
-              quote = current()
+              nextChar()
 
-              while (next() !== quote) {
-                if (next()) {
-                  i++
+              while (char !== quote) {
+                if (char) {
+                  value += char
 
-                  value += current()
+                  nextChar()
                 } else {
-                  throw createAssertionError('', quote)
+                  throwAssertionError('', quote)
                 }
               }
 
-              i++
+              nextChar()
 
               yield {
                 type: tokenTypes.value,
                 value
               }
-            } else if (next()) {
-              throw createAssertionError(next(), '"')
+            } else if (char) {
+              throwAssertionError(char, '"')
             }
           } else {
             yield valueTrue
           }
-
-          i++
         }
       }
 
@@ -228,7 +233,7 @@ const parse = (read, parent, tag, variables) => {
         })
       }
     } else {
-      throw createAssertionError(token.type, END.type)
+      throwAssertionError(token.type, END.type)
     }
   }
 
@@ -288,12 +293,12 @@ export const html = (strs, ...variables) => {
       if (token.type === tokenTypes.tag) {
         parse(read, {children, offsets}, token.value, variables)
       } else if (token.type === tokenTypes.text && token.value.trim()) {
-        throw createAssertionError(token.type, tokenTypes.node)
+        throwAssertionError(token.type, tokenTypes.node)
       }
     }
 
     if (children.length !== 1) {
-      throw createAssertionError(children.length, 1)
+      throwAssertionError(children.length, 1)
     }
 
     template = children[0]
