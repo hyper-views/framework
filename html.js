@@ -4,21 +4,17 @@ const throwAssertionError = (actual, expected) => {
   throw Error(`Expected ${expected}. Found ${actual}.`)
 }
 
-export const tokenTypes = [
-  'variable',
-  'tag',
-  'endtag',
-  'key',
-  'value',
-  'node',
-  'text',
-  'constant',
-  'end'
-].reduce((acc, val) => {
-  acc[val] = val
-
-  return acc
-}, {})
+export const tokenTypes = {
+  variable: 'variable',
+  tag: 'tag',
+  endtag: 'endtag',
+  key: 'key',
+  value: 'value',
+  node: 'node',
+  text: 'text',
+  constant: 'constant',
+  end: 'end'
+}
 
 const valueTrue = {
   type: tokenTypes.value,
@@ -309,13 +305,7 @@ export const html = (strs, ...variables) => {
   }
 
   return {
-    view: template.view,
-    tag: template.tag,
-    dynamic: template.dynamic,
-    type: template.type,
-    attributes: template.attributes,
-    children: template.children,
-    offsets: template.offsets,
+    ...template,
     variables
   }
 }
