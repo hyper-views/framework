@@ -1,59 +1,59 @@
-import {tokenTypes} from './html.js'
+import {tokenTypes} from './html.js';
 
-const svgNamespace = 'http://www.w3.org/2000/svg'
+const svgNamespace = 'http://www.w3.org/2000/svg';
 
-const weakMap = new WeakMap()
+const weakMap = new WeakMap();
 
 const readMeta = (target) => {
-  let result = weakMap.get(target)
+  let result = weakMap.get(target);
 
   if (!result) {
-    result = {}
+    result = {};
 
-    weakMap.set(target, result)
+    weakMap.set(target, result);
   }
 
-  return result
-}
+  return result;
+};
 
 const addListener = (document, type) => {
   document.addEventListener(
     type,
     (e) => {
-      const map = weakMap.get(e.target)
+      const map = weakMap.get(e.target);
 
-      map?.[type]?.(e)
+      map?.[type]?.(e);
     },
     {capture: true}
-  )
-}
+  );
+};
 
 const attrToPropMap = {
   class: 'className',
-  for: 'htmlFor'
-}
+  for: 'htmlFor',
+};
 
 const morph = (target, next, variables, existing = true, same = true) => {
-  const document = target.ownerDocument
+  const document = target.ownerDocument;
 
   if (next.view) {
-    const meta = readMeta(target)
+    const meta = readMeta(target);
 
-    same = next.view === meta.view
+    same = next.view === meta.view;
 
     if (next.dynamic || !existing || !same) {
-      meta.view = next.view
+      meta.view = next.view;
 
-      variables = next.variables
+      variables = next.variables;
     } else {
-      return
+      return;
     }
   }
 
-  let attributeIndex = 0
+  let attributeIndex = 0;
 
   if (existing && same) {
-    attributeIndex = next.offsets.attributes
+    attributeIndex = next.offsets.attributes;
   }
 
   for (
@@ -61,100 +61,100 @@ const morph = (target, next, variables, existing = true, same = true) => {
     attributeIndex < length;
     attributeIndex++
   ) {
-    const attribute = next.attributes[attributeIndex]
+    const attribute = next.attributes[attributeIndex];
 
-    let value = attribute.value
+    let value = attribute.value;
 
     if (attribute.type === tokenTypes.variable) {
-      value = variables[value]
+      value = variables[value];
     }
 
-    let key = attribute.key
+    let key = attribute.key;
 
-    const firstChar = key.charAt(0)
-    const hasDash = ~key.indexOf('-')
+    const firstChar = key.charAt(0);
+    const hasDash = ~key.indexOf('-');
 
     if (firstChar === ':' || firstChar === '@') {
-      key = key.substring(1)
+      key = key.substring(1);
     }
 
     if (firstChar === ':' && !hasDash) {
-      key = attrToPropMap[key] ?? key
+      key = attrToPropMap[key] ?? key;
 
       if (value == null) {
-        delete target[key]
+        delete target[key];
       } else if (target[key] !== value) {
-        target[key] = value
+        target[key] = value;
       }
     } else if (firstChar === '@') {
-      const meta = readMeta(target)
+      const meta = readMeta(target);
 
-      meta[key] = value
+      meta[key] = value;
 
       if (value != null) {
-        const document = target.ownerDocument
+        const document = target.ownerDocument;
 
-        const listeners = readMeta(document)
+        const listeners = readMeta(document);
 
         if (!listeners[key]) {
-          listeners[key] = true
+          listeners[key] = true;
 
-          addListener(document, key)
+          addListener(document, key);
         }
       }
     } else if (existing && value == null) {
-      target.removeAttribute(key)
+      target.removeAttribute(key);
     } else if (value != null && target.getAttribute(key) !== value) {
-      target.setAttribute(key, value)
+      target.setAttribute(key, value);
     }
   }
 
-  let childNode
+  let childNode;
 
-  let childIndex = 0
+  let childIndex = 0;
 
   if (existing && same) {
-    childIndex = next.offsets.children
+    childIndex = next.offsets.children;
 
-    childNode = target.childNodes[childIndex]
+    childNode = target.childNodes[childIndex];
   } else {
-    childNode = target.firstChild
+    childNode = target.firstChild;
   }
 
   for (const length = next.children.length; childIndex < length; childIndex++) {
-    let child = next.children[childIndex]
+    let child = next.children[childIndex];
 
     if (child.type === tokenTypes.variable) {
-      child = variables[child.value]
+      child = variables[child.value];
     }
 
-    let nextChild
-    let i
+    let nextChild;
+    let i;
 
     if (!Array.isArray(child)) {
-      nextChild = child
+      nextChild = child;
     } else {
-      i = 0
+      i = 0;
 
-      nextChild = child[i]
+      nextChild = child[i];
     }
 
     while (nextChild != null) {
-      let mode = !existing || childNode == null ? 2 : !same ? 1 : 0
+      let mode = !existing || childNode == null ? 2 : !same ? 1 : 0;
 
-      let currentChild = childNode
+      let currentChild = childNode;
 
       if (!nextChild?.type || nextChild.type === tokenTypes.text) {
         if (!mode && childNode.nodeType !== 3) {
-          mode = 1
+          mode = 1;
         }
 
-        const value = nextChild?.value ?? nextChild ?? ''
+        const value = nextChild?.value ?? nextChild ?? '';
 
         if (mode) {
-          currentChild = document.createTextNode(value)
+          currentChild = document.createTextNode(value);
         } else if (childNode.data !== value) {
-          childNode.data = value
+          childNode.data = value;
         }
       } else {
         if (
@@ -162,46 +162,46 @@ const morph = (target, next, variables, existing = true, same = true) => {
           (childNode.nodeType !== 1 ||
             childNode.nodeName.toLowerCase() !== nextChild.tag)
         ) {
-          mode = 1
+          mode = 1;
         }
 
         if (mode) {
           const isSvg =
-            nextChild.tag === 'svg' || target.namespaceURI === svgNamespace
+            nextChild.tag === 'svg' || target.namespaceURI === svgNamespace;
 
           currentChild = isSvg
             ? document.createElementNS(svgNamespace, nextChild.tag)
-            : document.createElement(nextChild.tag)
+            : document.createElement(nextChild.tag);
         }
 
         if (nextChild.view || mode || nextChild.dynamic) {
-          morph(currentChild, nextChild, variables, !mode, same)
+          morph(currentChild, nextChild, variables, !mode, same);
         }
       }
 
       if (mode === 2) {
-        target.appendChild(currentChild)
+        target.appendChild(currentChild);
       } else if (mode === 1) {
-        target.replaceChild(currentChild, childNode)
+        target.replaceChild(currentChild, childNode);
       }
 
-      childNode = currentChild?.nextSibling
+      childNode = currentChild?.nextSibling;
 
-      nextChild = i != null ? child[++i] : null
+      nextChild = i != null ? child[++i] : null;
     }
   }
 
-  let nextChild
+  let nextChild;
 
   while (childNode) {
-    nextChild = childNode?.nextSibling
+    nextChild = childNode?.nextSibling;
 
-    target.removeChild(childNode)
+    target.removeChild(childNode);
 
-    childNode = nextChild
+    childNode = nextChild;
   }
-}
+};
 
 export const createDOMView = (target, view) => (state) => {
-  morph(target, view(state))
-}
+  morph(target, view(state));
+};

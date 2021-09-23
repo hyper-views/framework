@@ -1,12 +1,12 @@
-import jsdom from 'jsdom'
-import t from 'tap'
-import timers from 'timers'
-import {promisify} from 'util'
+import jsdom from 'jsdom';
+import t from 'tap';
+import timers from 'timers';
+import {promisify} from 'util';
 
-import {createDOMView} from '../../dom-view.js'
-import {html} from '../../html.js'
+import {createDOMView} from '../../dom-view.js';
+import {html} from '../../html.js';
 
-const setTimeout = promisify(timers.setTimeout)
+const setTimeout = promisify(timers.setTimeout);
 
 t.test('add event', async () => {
   const dom = new jsdom.JSDOM(`
@@ -17,15 +17,15 @@ t.test('add event', async () => {
       </head>
       <body></body>
     </html>
-  `)
+  `);
 
-  const el = dom.window.document.body
+  const el = dom.window.document.body;
 
-  let clicked = false
+  let clicked = false;
 
   const onclick = () => {
-    clicked = true
-  }
+    clicked = true;
+  };
 
   const view = createDOMView(
     el,
@@ -34,17 +34,17 @@ t.test('add event', async () => {
         <button type="button" @click=${onclick}>Click Me</button>
       </body>
     `
-  )
+  );
 
-  view()
+  view();
 
-  await setTimeout(0)
+  await setTimeout(0);
 
-  const button = el.querySelector('button')
+  const button = el.querySelector('button');
 
-  button.dispatchEvent(new dom.window.Event('click', {bubbles: true}))
+  button.dispatchEvent(new dom.window.Event('click', {bubbles: true}));
 
-  await setTimeout(0)
+  await setTimeout(0);
 
-  t.equal(clicked, true)
-})
+  t.equal(clicked, true);
+});

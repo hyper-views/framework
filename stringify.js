@@ -1,5 +1,5 @@
-import {escape} from './escape.js'
-import {tokenTypes} from './html.js'
+import {escape} from './escape.js';
+import {tokenTypes} from './html.js';
 
 const selfClosing = [
   'area',
@@ -15,97 +15,97 @@ const selfClosing = [
   'param',
   'source',
   'track',
-  'wbr'
-]
+  'wbr',
+];
 
 export const stringify = (obj) => {
-  const {tag, attributes, children, variables} = obj
+  const {tag, attributes, children, variables} = obj;
 
-  let result = `<${tag}`
-  const isSelfClosing = selfClosing.includes(tag)
+  let result = `<${tag}`;
+  const isSelfClosing = selfClosing.includes(tag);
 
-  const reducedAttributes = []
+  const reducedAttributes = [];
 
   for (let i = 0; i < attributes.length; i++) {
-    const attribute = attributes[i]
+    const attribute = attributes[i];
 
-    if (attribute.key.startsWith('@')) continue
+    if (attribute.key.startsWith('@')) continue;
 
-    const hasColon = attribute.key.startsWith(':')
+    const hasColon = attribute.key.startsWith(':');
 
     if (hasColon) {
-      attribute.key = attribute.key.substring(1)
+      attribute.key = attribute.key.substring(1);
     }
 
-    reducedAttributes.push(attribute)
+    reducedAttributes.push(attribute);
   }
 
   for (const attr of reducedAttributes) {
-    let value = attr.value
+    let value = attr.value;
 
     if (attr.type === tokenTypes.variable) {
-      value = variables[value]
+      value = variables[value];
     }
 
     if (value === true) {
-      result += ` ${attr.key}`
+      result += ` ${attr.key}`;
     } else if (value !== false) {
-      result += ` ${attr.key}="${escape(value)}"`
+      result += ` ${attr.key}="${escape(value)}"`;
     }
   }
 
-  result += '>'
+  result += '>';
 
   if (!isSelfClosing) {
-    let i = 0
+    let i = 0;
 
-    const descendants = []
+    const descendants = [];
 
     for (let i = 0; i < children.length; i++) {
-      let child = children[i]
+      let child = children[i];
 
       if (child?.type === tokenTypes.variable) {
-        child = variables[child.value]
+        child = variables[child.value];
       }
 
       if (!Array.isArray(child)) {
-        child = [child]
+        child = [child];
       }
 
       for (let c of child) {
-        c ??= ''
+        c ??= '';
 
-        descendants.push(c)
+        descendants.push(c);
       }
     }
 
     while (i < descendants.length) {
-      const child = descendants[i]
+      const child = descendants[i];
 
       if (child) {
         if (child.type) {
           switch (child.type) {
             case tokenTypes.text:
-              result += tag !== 'style' ? escape(child.value) : child.value
-              break
+              result += tag !== 'style' ? escape(child.value) : child.value;
+              break;
 
             case tokenTypes.node:
               result += stringify({
                 variables: child.view ? child.variables : variables,
-                ...child
-              })
-              break
+                ...child,
+              });
+              break;
           }
         } else {
-          result += tag !== 'style' ? escape(child) : child
+          result += tag !== 'style' ? escape(child) : child;
         }
       }
 
-      i++
+      i++;
     }
 
-    result += `</${tag}>`
+    result += `</${tag}>`;
   }
 
-  return result
-}
+  return result;
+};

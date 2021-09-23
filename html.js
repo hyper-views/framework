@@ -1,8 +1,8 @@
-const weakMap = new WeakMap()
+const weakMap = new WeakMap();
 
 const throwAssertionError = (actual, expected) => {
-  throw Error(`Expected ${expected}. Found ${actual}.`)
-}
+  throw Error(`Expected ${expected}. Found ${actual}.`);
+};
 
 export const tokenTypes = {
   variable: 'variable',
@@ -13,166 +13,166 @@ export const tokenTypes = {
   node: 'node',
   text: 'text',
   constant: 'constant',
-  end: 'end'
-}
+  end: 'end',
+};
 
 const valueTrue = {
   type: tokenTypes.value,
-  value: true
-}
+  value: true,
+};
 
 const END = {
-  type: tokenTypes.end
-}
+  type: tokenTypes.end,
+};
 
-const createIsChar = (regex) => (char) => char && regex.test(char)
+const createIsChar = (regex) => (char) => char && regex.test(char);
 
-const isSpaceChar = createIsChar(/\s/)
-const isNameChar = createIsChar(/[:@a-zA-Z0-9-]/)
-const isQuoteChar = createIsChar(/["']/)
+const isSpaceChar = createIsChar(/\s/);
+const isNameChar = createIsChar(/[:@a-zA-Z0-9-]/);
+const isQuoteChar = createIsChar(/["']/);
 
 const tokenizer = {
   *tokenize(acc, strs, vlength) {
-    let str, i, char
+    let str, i, char;
 
     const nextChar = () => {
-      char = str.charAt(i++)
-    }
+      char = str.charAt(i++);
+    };
 
     for (let index = 0, length = strs.length; index < length; index++) {
-      str = strs[index]
-      i = 0
+      str = strs[index];
+      i = 0;
 
-      nextChar()
+      nextChar();
 
-      let tag = acc.tag
+      let tag = acc.tag;
 
       while (char) {
         if (!tag) {
-          let value = ''
+          let value = '';
 
           if (char === '<') {
-            let end = false
+            let end = false;
 
-            nextChar()
+            nextChar();
 
             if (char === '/') {
-              end = true
+              end = true;
 
-              nextChar()
+              nextChar();
             }
 
             while (isNameChar(char)) {
-              value += char
+              value += char;
 
-              nextChar()
+              nextChar();
             }
 
             yield {
               type: !end ? tokenTypes.tag : tokenTypes.endtag,
-              value
-            }
+              value,
+            };
 
-            tag = value
+            tag = value;
           } else {
             while (char && char !== '<') {
-              value += char
+              value += char;
 
-              nextChar()
+              nextChar();
             }
 
             if (value.trim()) {
               yield {
                 type: tokenTypes.text,
-                value
-              }
+                value,
+              };
             }
           }
         } else if (isSpaceChar(char)) {
-          nextChar()
+          nextChar();
         } else if (char === '/') {
-          nextChar()
+          nextChar();
 
           if (char === '>') {
             yield* [
               END,
               {
                 type: tokenTypes.endtag,
-                value: tag
-              }
-            ]
+                value: tag,
+              },
+            ];
 
-            tag = false
+            tag = false;
 
-            nextChar()
+            nextChar();
           }
         } else if (char === '>') {
-          yield END
+          yield END;
 
-          tag = false
+          tag = false;
 
-          nextChar()
+          nextChar();
         } else if (isNameChar(char)) {
-          let value = ''
+          let value = '';
 
           while (isNameChar(char)) {
-            value += char
+            value += char;
 
-            nextChar()
+            nextChar();
           }
 
           yield {
             type: tokenTypes.key,
-            value
-          }
+            value,
+          };
 
           if (char === '=') {
-            nextChar()
+            nextChar();
 
-            let quote = ''
-            let value = ''
+            let quote = '';
+            let value = '';
 
             if (isQuoteChar(char)) {
-              quote = char
+              quote = char;
 
-              nextChar()
+              nextChar();
 
               while (char !== quote) {
                 if (char) {
-                  value += char
+                  value += char;
 
-                  nextChar()
+                  nextChar();
                 } else {
-                  throwAssertionError('', quote)
+                  throwAssertionError('', quote);
                 }
               }
 
-              nextChar()
+              nextChar();
 
               yield {
                 type: tokenTypes.value,
-                value
-              }
+                value,
+              };
             } else if (char) {
-              throwAssertionError(char, '"')
+              throwAssertionError(char, '"');
             }
           } else {
-            yield valueTrue
+            yield valueTrue;
           }
         }
       }
 
-      acc.tag = tag
+      acc.tag = tag;
 
       if (index < vlength) {
         yield {
           type: tokenTypes.variable,
-          value: index
-        }
+          value: index,
+        };
       }
     }
-  }
-}
+  },
+};
 
 const parse = (read, parent, tag, variables) => {
   const child = {
@@ -183,139 +183,139 @@ const parse = (read, parent, tag, variables) => {
     children: [],
     offsets: {
       attributes: 0,
-      children: null
-    }
-  }
+      children: null,
+    },
+  };
 
-  let token
+  let token;
 
   while ((token = read())) {
-    if (token === END) break
+    if (token === END) break;
 
     if (token.type === tokenTypes.key) {
-      const key = token.value
+      const key = token.value;
 
-      token = read()
+      token = read();
 
-      const firstChar = key.charAt(0)
-      const special = ':' === firstChar || '@' === firstChar
+      const firstChar = key.charAt(0);
+      const special = ':' === firstChar || '@' === firstChar;
 
-      let value = token.value
-      let constant = false
+      let value = token.value;
+      let constant = false;
 
       if (token.type === tokenTypes.value) {
-        constant = true
+        constant = true;
       } else if (token.type === tokenTypes.variable && !special && !html.dev) {
-        value = variables[value]
+        value = variables[value];
 
-        constant = true
+        constant = true;
       }
 
       if (constant) {
-        child.offsets.attributes++
+        child.offsets.attributes++;
 
         child.attributes.unshift({
           type: tokenTypes.constant,
           key,
-          value
-        })
+          value,
+        });
       } else {
-        child.dynamic = true
+        child.dynamic = true;
 
         child.attributes.push({
           type: tokenTypes.variable,
           key,
-          value
-        })
+          value,
+        });
       }
     } else {
-      throwAssertionError(token.type, END.type)
+      throwAssertionError(token.type, END.type);
     }
   }
 
   while ((token = read())) {
     if (token.type === tokenTypes.endtag && token.value === child.tag) {
-      break
+      break;
     } else if (token.type === tokenTypes.tag) {
-      const dynamic = parse(read, child, token.value, variables)
+      const dynamic = parse(read, child, token.value, variables);
 
-      child.dynamic ||= dynamic
+      child.dynamic ||= dynamic;
     } else if (token.type === tokenTypes.text) {
       child.children.push({
         type: tokenTypes.text,
-        value: token.value
-      })
+        value: token.value,
+      });
     } else if (token.type === tokenTypes.variable) {
-      child.dynamic = true
+      child.dynamic = true;
 
-      child.offsets.children ??= child.children.length
+      child.offsets.children ??= child.children.length;
 
       child.children.push({
         type: tokenTypes.variable,
-        value: token.value
-      })
+        value: token.value,
+      });
     }
   }
 
   if (child.dynamic) {
-    parent.offsets.children ??= parent.children.length
+    parent.offsets.children ??= parent.children.length;
   }
 
-  parent.children.push(child)
+  parent.children.push(child);
 
-  child.offsets.children ??= child.children.length
+  child.offsets.children ??= child.children.length;
 
-  return child.dynamic
-}
+  return child.dynamic;
+};
 
-let id = 1
+let id = 1;
 
 export const html = (strs, ...variables) => {
-  let template = weakMap.get(strs)
+  let template = weakMap.get(strs);
 
   if (!template) {
     const acc = {
-      tag: false
-    }
+      tag: false,
+    };
 
-    const tokens = tokenizer.tokenize(acc, strs, variables.length)
-    const read = () => tokens.next().value
+    const tokens = tokenizer.tokenize(acc, strs, variables.length);
+    const read = () => tokens.next().value;
 
-    const children = []
-    const offsets = {children: null}
-    let token
+    const children = [];
+    const offsets = {children: null};
+    let token;
 
     while ((token = read())) {
       if (token.type === tokenTypes.tag) {
-        parse(read, {children, offsets}, token.value, variables)
+        parse(read, {children, offsets}, token.value, variables);
       } else if (token.type === tokenTypes.text && token.value.trim()) {
-        throwAssertionError(token.type, tokenTypes.node)
+        throwAssertionError(token.type, tokenTypes.node);
       }
     }
 
     if (children.length !== 1) {
-      throwAssertionError(children.length, 1)
+      throwAssertionError(children.length, 1);
     }
 
-    template = children[0]
+    template = children[0];
 
-    template.view = id++
+    template.view = id++;
 
-    weakMap.set(strs, template)
+    weakMap.set(strs, template);
   }
 
   return {
     ...template,
-    variables
-  }
-}
+    variables,
+  };
+};
 
-html.dev = false
+html.dev = false;
 
 export const cache = (result) => {
-  if (html.dev) return result
+  if (html.dev) return result;
 
-  result.dynamic = false
+  result.dynamic = false;
 
-  return result
-}
+  return result;
+};

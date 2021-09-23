@@ -1,6 +1,6 @@
-import t from 'tap'
+import t from 'tap';
 
-import {html, tokenTypes} from '../../html.js'
+import {html, tokenTypes} from '../../html.js';
 
 t.test('nodes -- static and dynamic', async () => {
   const el = html`
@@ -9,7 +9,7 @@ t.test('nodes -- static and dynamic', async () => {
       <li>${1}</li>
       <li><span>2</span></li>
     </ul>
-  `
+  `;
 
   t.has(el, {
     type: tokenTypes.node,
@@ -23,8 +23,8 @@ t.test('nodes -- static and dynamic', async () => {
         dynamic: false,
         children: {
           length: 1,
-          0: {type: tokenTypes.text, value: '0'}
-        }
+          0: {type: tokenTypes.text, value: '0'},
+        },
       },
       1: {
         type: tokenTypes.node,
@@ -32,8 +32,8 @@ t.test('nodes -- static and dynamic', async () => {
         dynamic: true,
         children: {
           length: 1,
-          0: {type: tokenTypes.variable, value: 0}
-        }
+          0: {type: tokenTypes.variable, value: 0},
+        },
       },
       2: {
         type: tokenTypes.node,
@@ -45,10 +45,10 @@ t.test('nodes -- static and dynamic', async () => {
             type: tokenTypes.node,
             tag: 'span',
             dynamic: false,
-            children: {length: 1, 0: {type: tokenTypes.text, value: '2'}}
-          }
-        }
-      }
-    }
-  })
-})
+            children: {length: 1, 0: {type: tokenTypes.text, value: '2'}},
+          },
+        },
+      },
+    },
+  });
+});

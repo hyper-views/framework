@@ -1,7 +1,7 @@
-import t from 'tap'
+import t from 'tap';
 
-import {html} from '../html.js'
-import {stringify} from '../stringify.js'
+import {html} from '../html.js';
+import {stringify} from '../stringify.js';
 
 t.test('stringify', async () => {
   t.equal(
@@ -26,5 +26,5 @@ t.test('stringify', async () => {
       </form>
     `),
     `<form action="/submit"><fieldset><legend>Very Important Values</legend><input type="input" required id="value1" name="value1" placeholder="Add A Value"><input type="input" required id="value2" name="value2" placeholder="Add A Value"><input type="input" required id="value3" name="value3" placeholder="Add A Value"></fieldset><button type="button">Submit</button></form>`
-  )
-})
+  );
+});

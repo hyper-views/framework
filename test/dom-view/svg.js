@@ -1,12 +1,12 @@
-import jsdom from 'jsdom'
-import t from 'tap'
-import timers from 'timers'
-import {promisify} from 'util'
+import jsdom from 'jsdom';
+import t from 'tap';
+import timers from 'timers';
+import {promisify} from 'util';
 
-import {createDOMView} from '../../dom-view.js'
-import {html} from '../../html.js'
+import {createDOMView} from '../../dom-view.js';
+import {html} from '../../html.js';
 
-const setTimeout = promisify(timers.setTimeout)
+const setTimeout = promisify(timers.setTimeout);
 
 t.test('svg', async () => {
   const dom = new jsdom.JSDOM(`
@@ -17,9 +17,9 @@ t.test('svg', async () => {
       </head>
       <body></body>
     </html>
-  `)
+  `);
 
-  const el = dom.window.document.body
+  const el = dom.window.document.body;
 
   const view = createDOMView(
     el,
@@ -30,14 +30,14 @@ t.test('svg', async () => {
         </svg>
       </body>
     `
-  )
+  );
 
-  view()
+  view();
 
-  await setTimeout(0)
+  await setTimeout(0);
 
   t.has(el.childNodes, {
     length: 1,
-    0: {nodeName: 'svg', childNodes: {length: 1, 0: {nodeName: 'circle'}}}
-  })
-})
+    0: {nodeName: 'svg', childNodes: {length: 1, 0: {nodeName: 'circle'}}},
+  });
+});

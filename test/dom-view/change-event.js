@@ -1,12 +1,12 @@
-import jsdom from 'jsdom'
-import t from 'tap'
-import timers from 'timers'
-import {promisify} from 'util'
+import jsdom from 'jsdom';
+import t from 'tap';
+import timers from 'timers';
+import {promisify} from 'util';
 
-import {createDOMView} from '../../dom-view.js'
-import {html} from '../../html.js'
+import {createDOMView} from '../../dom-view.js';
+import {html} from '../../html.js';
 
-const setTimeout = promisify(timers.setTimeout)
+const setTimeout = promisify(timers.setTimeout);
 
 t.test('change event', async () => {
   const dom = new jsdom.JSDOM(`
@@ -17,25 +17,25 @@ t.test('change event', async () => {
       </head>
       <body></body>
     </html>
-  `)
+  `);
 
-  const el = dom.window.document.body
+  const el = dom.window.document.body;
 
-  let clicked = -1
-  let totalClicks = 0
+  let clicked = -1;
+  let totalClicks = 0;
 
   const onclicks = [
     () => {
-      clicked = 0
+      clicked = 0;
 
-      totalClicks++
+      totalClicks++;
     },
     () => {
-      clicked = 1
+      clicked = 1;
 
-      totalClicks++
-    }
-  ]
+      totalClicks++;
+    },
+  ];
 
   const view = createDOMView(
     el,
@@ -44,29 +44,29 @@ t.test('change event', async () => {
         <button type="button" @click=${onclicks[state]}>Click Me</button>
       </body>
     `
-  )
+  );
 
-  view(0)
+  view(0);
 
-  await setTimeout(0)
+  await setTimeout(0);
 
-  const button = el.querySelector('button')
+  const button = el.querySelector('button');
 
-  button.dispatchEvent(new dom.window.Event('click', {bubbles: true}))
+  button.dispatchEvent(new dom.window.Event('click', {bubbles: true}));
 
-  await setTimeout(0)
+  await setTimeout(0);
 
-  t.equal(clicked, 0)
+  t.equal(clicked, 0);
 
-  view(1)
+  view(1);
 
-  await setTimeout(0)
+  await setTimeout(0);
 
-  button.dispatchEvent(new dom.window.Event('click', {bubbles: true}))
+  button.dispatchEvent(new dom.window.Event('click', {bubbles: true}));
 
-  await setTimeout(0)
+  await setTimeout(0);
 
-  t.equal(clicked, 1)
+  t.equal(clicked, 1);
 
-  t.equal(totalClicks, 2)
-})
+  t.equal(totalClicks, 2);
+});
