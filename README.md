@@ -4,7 +4,7 @@ A simple frontend framework.
 
 ## Get started
 
-```js
+```javascript
 import {
   cache
   createApp,
@@ -19,18 +19,18 @@ const app = createApp({items: []})
 
 ## Rendering some html
 
-```js
-const target = document.querySelector('#app')
+```javascript
+const target = document.querySelector('#app');
 
-const cls = getCls()
+const cls = getCls();
 
 const view = (state) => html`
   <div id="app" class=${cls} />
-`
+`;
 
-const domView = createDOMView(target, view)
+const domView = createDOMView(target, view);
 
-app.render(domView)
+app.render(domView);
 ```
 
 This doesn't do much right now, but it does demonstrate a few things.
@@ -41,7 +41,7 @@ This doesn't do much right now, but it does demonstrate a few things.
 
 ## Dynamic children
 
-```js
+```javascript
 const view = (state) => html`
   <div id="app">
     <ol>
@@ -53,7 +53,7 @@ const view = (state) => html`
       )}
     </ol>
   </div>
-`
+`;
 ```
 
 This shows how you can have dynamic children and how you'd output an array of items.
@@ -62,14 +62,14 @@ This shows how you can have dynamic children and how you'd output an array of it
 
 Sometimes you'll have some html that needs to be dynamic once but after that can be treated as if it were static. That's where `cache` comes into play.
 
-```js
-const title = 'The heading'
+```javascript
+const title = 'The heading';
 
 const heading = cache(
   html`
     <h1>${title}</h1>
   `
-)
+);
 
 const view = (state) => html`
   <div id="app">
@@ -83,17 +83,19 @@ const view = (state) => html`
       )}
     </ol>
   </div>
-`
+`;
 ```
 
 ## Properties
 
 Cached attributes are useful, but often you'll have attributes that need to change. This is where you can use properties instead. Properties are always reevaluated. You can indicate a property with `:`, a single colon.
 
-```js
-let hasFoo = true
+Please note that `class` will get expanded to `className` and `for` will get expanded to `htmlFor`.
 
-let barValue = "I'm the bar value"
+```javascript
+let hasFoo = true;
+
+let barValue = "I'm the bar value";
 
 const view = (state) => html`
   <form id="app">
@@ -106,46 +108,48 @@ const view = (state) => html`
       <input type="text" :value=${barValue} />
     </label>
   </form>
-`
+`;
 ```
 
 Also worth pointing out in this example is that `hasFoo` is a boolean, which demonstrates how to render boolean properties.
 
 ## Events
 
-```js
+```javascript
 const onClick = (e) => {
-  e.preventDefault()
-}
+  e.preventDefault();
+};
 
 const view = (state) => html`
   <div id="app">
     <button @click=${onClick}>Click here</button>
   </div>
-`
+`;
 ```
+
+The framework always uses event delegation. For instance with this click handler above a single event handler is added to the document with capture set to true. When a click occurs the target is checked to see if it was registered as having a handler. If it was then the handler is called with the event object.
 
 ## Changing state
 
-```js
+```javascript
 const onClick = (e) => {
-  e.preventDefault()
+  e.preventDefault();
 
-  app.state = {count: app.state.count + 1}
-}
+  app.state = {count: app.state.count + 1};
+};
 
 const view = (state) => html`
   <div id="app">
     <p>${state.count}</p>
     <button @click=${onClick}>Click here</button>
   </div>
-`
+`;
 ```
 
 ## Server-side rendering
 
-```js
-import {stringify, html} from '@erickmerchant/framework/stringify.js'
+```javascript
+import {stringify, html} from '@erickmerchant/framework/stringify.js';
 
 const view = (state) => html`
   <div id="app">
@@ -158,9 +162,9 @@ const view = (state) => html`
       )}
     </ol>
   </div>
-`
+`;
 
-const staticHTML = stringify(view({items}))
+const staticHTML = stringify(view({items}));
 
-res.write(staticHTML)
+res.write(staticHTML);
 ```
