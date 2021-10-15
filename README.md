@@ -1,4 +1,4 @@
-# @erickmerchant/framework
+# @hyper-views/framework
 
 A simple frontend framework.
 
@@ -9,7 +9,7 @@ import {
   cache
   createApp,
   html,
-} from 'https://cdn.skypack.dev/@erickmerchant/framework?min'
+} from 'https://cdn.skypack.dev/@hyper-views/framework?min'
 
 const app = createApp({items: []})
 ```
@@ -146,7 +146,7 @@ const view = (state) => html`
 ## Server-side rendering
 
 ```javascript
-import {stringify, html} from '@erickmerchant/framework/stringify.js';
+import {stringify, html} from '@hyper-views/framework/stringify.js';
 
 const view = (state) => html`
   <div id="app">

@@ -1,14 +1,14 @@
 {
-  "name": "@erickmerchant/framework",
-  "version": "49.0.0",
+  "name": "@hyper-views/framework",
+  "version": "1.0.0",
   "description": "A front-end framework.",
-  "homepage": "https://github.com/erickmerchant/framework#readme",
+  "homepage": "https://github.com/hyper-views/framework#readme",
   "bugs": {
-    "url": "https://github.com/erickmerchant/framework/issues"
+    "url": "https://github.com/hyper-views/framework/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/erickmerchant/framework.git"
+    "url": "git+https://github.com/hyper-views/framework.git"
   },
   "license": "ISC",
   "author": "Erick Merchant <erickmerchant@gmail.com>",
