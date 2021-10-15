@@ -8,7 +8,6 @@ A simple frontend framework.
 import {
   cache
   createApp,
-  createDOMView,
   html,
 } from 'https://cdn.skypack.dev/@erickmerchant/framework?min'
 
@@ -28,9 +27,7 @@ const view = (state) => html`
   <div id="app" class=${cls} />
 `;
 
-const domView = createDOMView(target, view);
-
-app.render(domView);
+app.render(view, target);
 ```
 
 This doesn't do much right now, but it does demonstrate a few things.

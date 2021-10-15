@@ -3,8 +3,8 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {createDOMView} from '../../dom-view.js';
 import {html} from '../../html.js';
+import {morph} from '../../morph.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
@@ -23,17 +23,16 @@ t.test('do not reuse elements between different templates', async () => {
 
   const el = dom.window.document.querySelector('div');
 
-  const view = createDOMView(el, (state) =>
+  const view = (state) =>
     state?.class
       ? html`
           <div><div :class=${state?.class}>I have a class</div></div>
         `
       : html`
           <div><div>I do not</div></div>
-        `
-  );
+        `;
 
-  view({class: 'test'});
+  morph(el, view({class: 'test'}));
 
   await setTimeout(0);
 
@@ -41,7 +40,7 @@ t.test('do not reuse elements between different templates', async () => {
     0: {className: 'test'},
   });
 
-  view();
+  morph(el, view());
 
   await setTimeout(0);
 

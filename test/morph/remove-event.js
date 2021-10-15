@@ -3,8 +3,8 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {createDOMView} from '../../dom-view.js';
 import {html} from '../../html.js';
+import {morph} from '../../morph.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
@@ -30,16 +30,13 @@ t.test('remove event', async () => {
     null,
   ];
 
-  const view = createDOMView(
-    el,
-    (state) => html`
-      <body>
-        <button type="button" @click=${onclicks[state]}>Click Me</button>
-      </body>
-    `
-  );
+  const view = (state) => html`
+    <body>
+      <button type="button" @click=${onclicks[state]}>Click Me</button>
+    </body>
+  `;
 
-  view(0);
+  morph(el, view(0));
 
   await setTimeout(0);
 
@@ -51,7 +48,7 @@ t.test('remove event', async () => {
 
   t.equal(clicked, 1);
 
-  view(1);
+  morph(el, view(1));
 
   await setTimeout(0);
 

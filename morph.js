@@ -33,7 +33,13 @@ const attrToPropMap = {
   for: 'htmlFor',
 };
 
-const morph = (target, next, variables, existing = true, same = true) => {
+export const morph = (
+  target,
+  next,
+  variables,
+  existing = true,
+  same = true
+) => {
   const document = target.ownerDocument;
 
   if (next.view) {
@@ -200,8 +206,4 @@ const morph = (target, next, variables, existing = true, same = true) => {
 
     childNode = nextChild;
   }
-};
-
-export const createDOMView = (target, view) => (state) => {
-  morph(target, view(state));
 };

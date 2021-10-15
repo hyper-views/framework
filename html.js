@@ -16,7 +16,7 @@ export const tokenTypes = {
   end: 'end',
 };
 
-const valueTrue = {
+const TRUE = {
   type: tokenTypes.value,
   value: true,
 };
@@ -157,7 +157,7 @@ const tokenizer = {
               throwAssertionError(char, '"');
             }
           } else {
-            yield valueTrue;
+            yield TRUE;
           }
         }
       }

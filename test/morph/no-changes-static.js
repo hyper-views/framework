@@ -3,12 +3,12 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {createDOMView} from '../../dom-view.js';
 import {html} from '../../html.js';
+import {morph} from '../../morph.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
-t.test('no change - dynamic', async () => {
+t.test('no change - static', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
@@ -22,26 +22,18 @@ t.test('no change - dynamic', async () => {
 
   const el = dom.window.document.body;
 
-  const item = (i) =>
-    html`
-      <li>${i}</li>
-    `;
+  const view = () => html`
+    <body>
+      <ul>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+      </ul>
+      <p>lorem ipsum dolor</p>
+    </body>
+  `;
 
-  const view = createDOMView(
-    el,
-    () => html`
-      <body>
-        <ul>
-          ${[1, 2, 3].map((i) => item(i))}
-        </ul>
-        ${html`
-          <p>lorem ipsum dolor</p>
-        `}
-      </body>
-    `
-  );
-
-  view();
+  morph(el, view());
 
   await setTimeout(0);
 
@@ -51,7 +43,7 @@ t.test('no change - dynamic', async () => {
     1: {nodeName: 'P', childNodes: {length: 1}},
   });
 
-  view();
+  morph(el, view());
 
   await setTimeout(0);
 

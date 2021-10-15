@@ -1,3 +1,5 @@
+import {morph} from './morph.js';
+
 export const createApp = (state) => {
   let willCallView = false;
   const views = [];
@@ -10,13 +12,17 @@ export const createApp = (state) => {
     Promise.resolve().then(() => {
       willCallView = false;
 
-      for (const view of views) view(state);
+      for (const [target, view] of views) morph(target, view(state));
     });
   };
 
   return {
-    render(v) {
-      views.push(v);
+    render(view, target) {
+      if (typeof target === 'string') {
+        target = document.querySelector(target);
+      }
+
+      views.push([target, view]);
 
       callView();
     },

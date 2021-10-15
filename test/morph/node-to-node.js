@@ -3,39 +3,30 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {createDOMView} from '../../dom-view.js';
 import {html} from '../../html.js';
+import {morph} from '../../morph.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
-t.test('add children', async () => {
+t.test('node to node', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
       <head>
         <title></title>
       </head>
-      <body>
-      </body>
+      <body><p>lorem ipsum dolor</p></body>
     </html>
   `);
 
   const el = dom.window.document.body;
 
-  const view = createDOMView(
-    el,
-    () => html`
-      <body>
-        <ul>
-          <li>1</li>
-          <li>2</li>
-          <li>3</li>
-        </ul>
-      </body>
-    `
-  );
+  const view =
+    () => /* prettier-ignore */ html`
+      <body><ul><li>1</li><li>2</li><li>3</li></ul></body>
+    `;
 
-  view();
+  morph(el, view());
 
   await setTimeout(0);
 

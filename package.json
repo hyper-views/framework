@@ -20,7 +20,7 @@
     "stringify.js",
     "escape.js",
     "app.js",
-    "dom-view.js",
+    "morph.js",
     "html.js"
   ],
   "main": "main.js",

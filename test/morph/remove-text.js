@@ -3,37 +3,33 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {createDOMView} from '../../dom-view.js';
 import {html} from '../../html.js';
+import {morph} from '../../morph.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
-t.test('text to text', async () => {
+t.test('remove text', async () => {
   const dom = new jsdom.JSDOM(`
     <!doctype html>
     <html>
       <head>
         <title></title>
       </head>
-      <body>lorem ipsum dolor</body>
+      <body>
+        lorem ipsum
+      </body>
     </html>
   `);
 
   const el = dom.window.document.body;
 
-  const view = createDOMView(
-    el,
-    () => /* prettier-ignore */ html`
-      <body>dolor ipsum lorem</body>
-    `
-  );
+  const view = () => html`
+    <body></body>
+  `;
 
-  view();
+  morph(el, view());
 
   await setTimeout(0);
 
-  t.match(el.childNodes, {
-    length: 1,
-    0: {nodeValue: /^\s*dolor ipsum lorem\s*$/},
-  });
+  t.equal(el.childNodes?.length, 0);
 });
