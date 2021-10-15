@@ -1,0 +1,46 @@
+{
+  "name": "@erickmerchant/framework",
+  "version": "49.0.0",
+  "description": "A front-end framework.",
+  "homepage": "https://github.com/erickmerchant/framework#readme",
+  "bugs": {
+    "url": "https://github.com/erickmerchant/framework/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erickmerchant/framework.git"
+  },
+  "license": "ISC",
+  "author": "Erick Merchant <erickmerchant@gmail.com>",
+  "type": "module",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "main.js",
+    "stringify.js",
+    "escape.js",
+    "app.js",
+    "morph.js",
+    "html.js"
+  ],
+  "main": "main.js",
+  "module": "main.js",
+  "scripts": {
+    "lint": "eslint . --ignore-path .gitignore",
+    "pretest": "npm run lint",
+    "test": "tap test --no-coverage"
+  },
+  "devDependencies": {
+    "@erickmerchant/eslint-config": "^3.0.0",
+    "@erickmerchant/prettier-config": "^2.0.0",
+    "jsdom": "^18.0.0",
+    "tap": "^15.0.9"
+  },
+  "engines": {
+    "node": ">=14.3"
+  },
+  "eslintConfig": {
+    "extends": "@erickmerchant/eslint-config"
+  },
+  "prettier": "@erickmerchant/prettier-config"
+}
