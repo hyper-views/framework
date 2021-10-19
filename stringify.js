@@ -26,7 +26,7 @@ export const stringify = (obj) => {
 
   const reducedAttributes = [];
 
-  for (let i = 0; i < attributes.length; i++) {
+  for (let i = 0, length = attributes.length; i < length; i++) {
     const attribute = attributes[i];
 
     if (attribute.key.startsWith('@')) continue;
@@ -61,7 +61,7 @@ export const stringify = (obj) => {
 
     const descendants = [];
 
-    for (let i = 0; i < children.length; i++) {
+    for (let i = 0, length = children.length; i < length; i++) {
       let child = children[i];
 
       if (child?.type === tokenTypes.variable) {

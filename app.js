@@ -12,7 +12,11 @@ export const createApp = (state) => {
     Promise.resolve().then(() => {
       willCallView = false;
 
-      for (const [target, view] of views) morph(target, view(state));
+      for (let i = 0, length = views.length; i < length; i++) {
+        const [target, view] = views[i];
+
+        morph(target, view(state));
+      }
     });
   };
 
