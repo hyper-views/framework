@@ -25,6 +25,6 @@ t.test('stringify', async () => {
         <button type="button" @click=${() => {}}>Submit</button>
       </form>
     `),
-    `<form action="/submit"><fieldset><legend>Very Important Values</legend><input type="input" required id="value1" name="value1" placeholder="Add A Value"><input type="input" required id="value2" name="value2" placeholder="Add A Value"><input type="input" required id="value3" name="value3" placeholder="Add A Value"></fieldset><button type="button">Submit</button></form>`
+    `<form action="/submit"><fieldset><legend>Very Important Values</legend><input placeholder="Add A Value" name="value1" id="value1" required type="input"><input placeholder="Add A Value" name="value2" id="value2" required type="input"><input placeholder="Add A Value" name="value3" id="value3" required type="input"></fieldset><button type="button">Submit</button></form>`
   );
 });

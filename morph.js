@@ -56,18 +56,16 @@ export const morph = (
     }
   }
 
-  let attributeIndex = 0;
-
-  if (existing && same) {
-    attributeIndex = next.offsets.attributes;
-  }
-
   for (
-    const length = next.attributes.length;
+    let attributeIndex = 0, length = next.attributes.length;
     attributeIndex < length;
     attributeIndex++
   ) {
     const attribute = next.attributes[attributeIndex];
+
+    if (existing && same && attribute.type !== tokenTypes.variable) {
+      break;
+    }
 
     let value = attribute.value;
 
@@ -120,7 +118,7 @@ export const morph = (
   let childIndex = 0;
 
   if (existing && same) {
-    childIndex = next.offsets.children;
+    childIndex = next.offset;
 
     childNode = target.childNodes[childIndex];
   } else {

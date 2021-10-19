@@ -181,10 +181,7 @@ const parse = (read, parent, tag, variables) => {
     type: tokenTypes.node,
     attributes: [],
     children: [],
-    offsets: {
-      attributes: 0,
-      children: null,
-    },
+    offset: null,
   };
 
   let token;
@@ -212,9 +209,7 @@ const parse = (read, parent, tag, variables) => {
       }
 
       if (constant) {
-        child.offsets.attributes++;
-
-        child.attributes.unshift({
+        child.attributes.push({
           type: tokenTypes.constant,
           key,
           value,
@@ -222,7 +217,7 @@ const parse = (read, parent, tag, variables) => {
       } else {
         child.dynamic = true;
 
-        child.attributes.push({
+        child.attributes.unshift({
           type: tokenTypes.variable,
           key,
           value,
@@ -248,7 +243,7 @@ const parse = (read, parent, tag, variables) => {
     } else if (token.type === tokenTypes.variable) {
       child.dynamic = true;
 
-      child.offsets.children ??= child.children.length;
+      child.offset ??= child.children.length;
 
       child.children.push({
         type: tokenTypes.variable,
@@ -258,12 +253,12 @@ const parse = (read, parent, tag, variables) => {
   }
 
   if (child.dynamic) {
-    parent.offsets.children ??= parent.children.length;
+    parent.offset ??= parent.children.length;
   }
 
   parent.children.push(child);
 
-  child.offsets.children ??= child.children.length;
+  child.offset ??= child.children.length;
 
   return child.dynamic;
 };
@@ -282,12 +277,12 @@ export const html = (strs, ...variables) => {
     const read = () => tokens.next().value;
 
     const children = [];
-    const offsets = {children: null};
+    const offset = null;
     let token;
 
     while ((token = read())) {
       if (token.type === tokenTypes.tag) {
-        parse(read, {children, offsets}, token.value, variables);
+        parse(read, {children, offset}, token.value, variables);
       } else if (token.type === tokenTypes.text && token.value.trim()) {
         throwAssertionError(token.type, tokenTypes.node);
       }
