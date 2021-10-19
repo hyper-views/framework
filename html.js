@@ -224,7 +224,7 @@ const parse = (read, parent, tag, variables) => {
         });
       }
     } else {
-      throwAssertionError(token.type, END.type);
+      throwAssertionError(token.type, tokenTypes.end);
     }
   }
 
