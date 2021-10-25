@@ -1,8 +1,10 @@
+/* global WeakRef */
+
 import {morph} from './morph.js';
 
 export const createApp = (state) => {
   let willCallView = false;
-  const views = [];
+  const views = new Map();
 
   const callView = () => {
     if (willCallView) return;
@@ -12,10 +14,14 @@ export const createApp = (state) => {
     Promise.resolve().then(() => {
       willCallView = false;
 
-      for (let i = 0, length = views.length; i < length; i++) {
-        const [target, view] = views[i];
+      for (const [ref, view] of views.entries()) {
+        const target = ref.deref();
 
-        morph(target, view(state));
+        if (target) {
+          morph(target, view(state));
+        } else {
+          views.delete(ref);
+        }
       }
     });
   };
@@ -26,7 +32,7 @@ export const createApp = (state) => {
         target = document.querySelector(target);
       }
 
-      views.push([target, view]);
+      views.set(new WeakRef(target), view);
 
       callView();
     },
