@@ -1,6 +1,6 @@
 # @hyper-views/framework
 
-A simple frontend framework.
+A simple front-end framework.
 
 ## Get started
 
