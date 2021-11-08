@@ -5,29 +5,17 @@ A simple front-end framework.
 ## Get started
 
 ```javascript
-import {
-  cache
-  createApp,
-  html,
-} from 'https://cdn.skypack.dev/@hyper-views/framework?min'
+import {morph, html} from '@hyper-views/framework/stringify.js';
 
-const app = createApp({items: []})
-```
-
-`createApp` takes the initial state of the app. It can be any type, but an object usually makes sense.
-
-## Rendering some html
-
-```javascript
 const target = document.querySelector('#app');
 
 const cls = getCls();
 
-const view = (state) => html`
+const view = () => html`
   <div id="app" class=${cls} />
 `;
 
-app.render(view, target);
+morph(target, view());
 ```
 
 This doesn't do much right now, but it does demonstrate a few things.
@@ -60,6 +48,8 @@ This shows how you can have dynamic children and how you'd output an array of it
 Sometimes you'll have some html that needs to be dynamic once but after that can be treated as if it were static. That's where `cache` comes into play.
 
 ```javascript
+import {cache, html} from '@hyper-views/framework/stringify.js';
+
 const title = 'The heading';
 
 const heading = cache(
@@ -129,10 +119,15 @@ The framework always uses event delegation. For instance with this click handler
 ## Changing state
 
 ```javascript
+const state = {count: 0};
+const target = document.querySelector('#app');
+
 const onClick = (e) => {
   e.preventDefault();
 
-  app.state = {count: app.state.count + 1};
+  state.count++;
+
+  morph(target, view(state));
 };
 
 const view = (state) => html`
@@ -141,6 +136,8 @@ const view = (state) => html`
     <button @click=${onClick}>Click here</button>
   </div>
 `;
+
+morph(target, view(state));
 ```
 
 ## Server-side rendering

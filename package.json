@@ -19,7 +19,6 @@
     "main.js",
     "stringify.js",
     "escape.js",
-    "app.js",
     "morph.js",
     "html.js"
   ],

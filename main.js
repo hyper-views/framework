@@ -1,3 +1,3 @@
 export {cache, html} from './html.js';
 
-export {createApp} from './app.js';
+export {morph} from './morph.js';

@@ -36,9 +36,7 @@ const attrToPropMap = {
 export const morph = (
   target,
   next,
-  variables,
-  existing = true,
-  same = true
+  {variables, existing = true, same = true} = {}
 ) => {
   const document = target.ownerDocument;
 
@@ -179,7 +177,9 @@ export const morph = (
         }
 
         if (nextChild.view || mode || nextChild.dynamic) {
-          morph(currentChild, nextChild, variables, !mode, same);
+          const existing = !mode;
+
+          morph(currentChild, nextChild, {variables, existing, same});
         }
       }
 
