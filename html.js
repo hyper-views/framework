@@ -115,11 +115,11 @@ const tokenizer = {
         } else if (isNameChar(char)) {
           let value = '';
 
-          while (isNameChar(char)) {
+          do {
             value += char;
 
             nextChar();
-          }
+          } while (isNameChar(char));
 
           yield {
             type: tokenTypes.key,
