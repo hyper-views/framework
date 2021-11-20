@@ -23,7 +23,12 @@ t.test('add attributes', async () => {
 
   const view = () => html`
     <body>
-      <input required placeholder="Add a Value" :value=${"I'm the Value"} />
+      <input
+        required
+        placeholder="Add a Value"
+        :value=${"I'm the Value"}
+        data-not=${null}
+      />
     </body>
   `;
 
@@ -38,4 +43,6 @@ t.test('add attributes', async () => {
   t.equal(input?.placeholder, 'Add a Value');
 
   t.equal(input?.value, "I'm the Value");
+
+  t.equal(input?.dataset?.not, undefined);
 });
