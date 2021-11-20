@@ -49,7 +49,7 @@ export const stringify = (obj) => {
 
     if (value === true) {
       result += ` ${attr.key}`;
-    } else if (value !== false) {
+    } else if (value !== false && value != null) {
       result += ` ${attr.key}="${escape(value)}"`;
     }
   }
