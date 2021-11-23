@@ -39,6 +39,7 @@ export const morph = (
   {variables, existing = true, same = true} = {}
 ) => {
   const document = target.ownerDocument;
+  const isSvg = next.tag === 'svg' || target.namespaceURI === svgNamespace;
 
   if (next.view) {
     const meta = readMeta(target);
@@ -80,7 +81,7 @@ export const morph = (
       key = key.substring(1);
     }
 
-    if (firstChar === ':' && !hasDash) {
+    if (firstChar === ':' && !hasDash && !isSvg) {
       key = attrToPropMap[key] ?? key;
 
       if (value == null) {
@@ -168,12 +169,10 @@ export const morph = (
         }
 
         if (mode) {
-          const isSvg =
-            nextChild.tag === 'svg' || target.namespaceURI === svgNamespace;
-
-          currentChild = isSvg
-            ? document.createElementNS(svgNamespace, nextChild.tag)
-            : document.createElement(nextChild.tag);
+          currentChild =
+            isSvg || nextChild.tag === 'svg'
+              ? document.createElementNS(svgNamespace, nextChild.tag)
+              : document.createElement(nextChild.tag);
         }
 
         if (nextChild.view || mode || nextChild.dynamic) {
