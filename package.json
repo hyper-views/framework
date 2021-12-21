@@ -28,9 +28,7 @@
   "exports": {
     ".": "./main.js",
     "./component.js": "./component.js",
-    "./html.js": "./html.js",
     "./main.js": "./main.js",
-    "./morph.js": "./morph.js",
     "./stringify.js": "./stringify.js"
   },
   "scripts": {
