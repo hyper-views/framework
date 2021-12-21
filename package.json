@@ -17,6 +17,7 @@
     "LICENSE",
     "README.md",
     "main.js",
+    "component.js",
     "stringify.js",
     "escape.js",
     "morph.js",
