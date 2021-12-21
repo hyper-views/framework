@@ -1,4 +1,3 @@
-import {cache, html} from './html.js';
 import {morph} from './morph.js';
 
 const definitions = new Map();
