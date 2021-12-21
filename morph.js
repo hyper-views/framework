@@ -16,8 +16,8 @@ const readMeta = (target) => {
   return result;
 };
 
-const addListener = (document, type) => {
-  document.addEventListener(
+const addListener = (rootNode, type) => {
+  rootNode.addEventListener(
     type,
     (e) => {
       const map = weakMap.get(e.target);
@@ -36,9 +36,15 @@ const attrToPropMap = {
 export const morph = (
   target,
   next,
-  {variables, existing = true, same = true} = {}
+  {
+    variables,
+    existing = true,
+    same = true,
+    rootNode = target.ownerDocument,
+  } = {}
 ) => {
-  const document = target.ownerDocument;
+  const ownerDocument = target.ownerDocument;
+
   const isSvg = next.tag === 'svg' || target.namespaceURI === svgNamespace;
 
   if (next.view) {
@@ -95,14 +101,12 @@ export const morph = (
       meta[key] = value;
 
       if (value != null) {
-        const document = target.ownerDocument;
-
-        const listeners = readMeta(document);
+        const listeners = readMeta(rootNode);
 
         if (!listeners[key]) {
           listeners[key] = true;
 
-          addListener(document, key);
+          addListener(rootNode, key);
         }
       }
     } else if (existing && value == null) {
@@ -155,7 +159,7 @@ export const morph = (
         const value = nextChild?.value ?? nextChild ?? '';
 
         if (mode) {
-          currentChild = document.createTextNode(value);
+          currentChild = ownerDocument.createTextNode(value);
         } else if (childNode.data !== value) {
           childNode.data = value;
         }
@@ -171,14 +175,14 @@ export const morph = (
         if (mode) {
           currentChild =
             isSvg || nextChild.tag === 'svg'
-              ? document.createElementNS(svgNamespace, nextChild.tag)
-              : document.createElement(nextChild.tag);
+              ? ownerDocument.createElementNS(svgNamespace, nextChild.tag)
+              : ownerDocument.createElement(nextChild.tag);
         }
 
         if (nextChild.view || mode || nextChild.dynamic) {
           const existing = !mode;
 
-          morph(currentChild, nextChild, {variables, existing, same});
+          morph(currentChild, nextChild, {variables, existing, same, rootNode});
         }
       }
 
