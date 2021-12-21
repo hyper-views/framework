@@ -25,12 +25,6 @@
   ],
   "main": "main.js",
   "module": "main.js",
-  "exports": {
-    ".": "./main.js",
-    "./component.js": "./component.js",
-    "./main.js": "./main.js",
-    "./stringify.js": "./stringify.js"
-  },
   "scripts": {
     "lint": "eslint . --ignore-path .gitignore",
     "pretest": "npm run lint",

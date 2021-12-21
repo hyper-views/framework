@@ -61,5 +61,3 @@ export const register = (Definition) => {
     createElement(Definition.attributes)
   );
 };
-
-export {cache, html, morph};
