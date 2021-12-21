@@ -14,17 +14,25 @@
   "author": "Erick Merchant <erickmerchant@gmail.com>",
   "type": "module",
   "files": [
-    "LICENSE",
-    "README.md",
-    "main.js",
     "component.js",
-    "stringify.js",
     "escape.js",
+    "html.js",
+    "LICENSE",
+    "main.js",
     "morph.js",
-    "html.js"
+    "README.md",
+    "stringify.js"
   ],
   "main": "main.js",
   "module": "main.js",
+  "exports": {
+    ".": "./main.js",
+    "./component.js": "./component.js",
+    "./html.js": "./html.js",
+    "./main.js": "./main.js",
+    "./morph.js": "./morph.js",
+    "./stringify.js": "./stringify.js"
+  },
   "scripts": {
     "lint": "eslint . --ignore-path .gitignore",
     "pretest": "npm run lint",
