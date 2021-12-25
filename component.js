@@ -1,62 +1,49 @@
 import {morph} from './morph.js';
 
-const definitions = new Map();
+const shadows = new WeakMap();
 
-class Element extends HTMLElement {
-  connectedCallback() {
-    const Definition = definitions.get(this.tagName.toLowerCase());
+export const render = (component) => {
+  const result = component.template();
 
-    this.component = new Definition(this);
+  const shadow = shadows.get(component);
 
-    if (Definition.attributes) {
-      for (const name of Definition.attributes) {
-        this.component.attributes[name] = this.getAttribute(name);
-      }
-    }
-
-    this.shadow = this.attachShadow({mode: 'open'});
-
-    render(this.component);
-  }
-
-  attributeChangedCallback(name, _, newValue) {
-    if (this.shadow) {
-      this.component.attributes[name] = newValue;
-
-      render(this.component);
-    }
-  }
-}
-
-const createElement = (attributes) =>
-  class extends Element {
-    static get observedAttributes() {
-      return attributes;
-    }
-  };
-
-const mixDefinition = (Definition) =>
-  class extends Definition {
-    constructor(host) {
-      super(host);
-
-      this.host = host;
-
-      this.attributes = {};
-    }
-  };
-
-export const render = (self) => {
-  const result = self.template();
-
-  morph(self.host.shadow, result, {rootNode: self.host.shadow});
+  morph(shadow, result, {rootNode: shadow});
 };
 
 export const register = (Definition) => {
-  definitions.set(Definition.tag, mixDefinition(Definition));
+  const attributes = Definition.attributes;
 
-  window.customElements.define(
-    Definition.tag,
-    createElement(Definition.attributes)
-  );
+  class Element extends HTMLElement {
+    static get observedAttributes() {
+      return attributes;
+    }
+
+    connectedCallback() {
+      this.component = new Definition(this);
+
+      this.component.attributes = {};
+
+      if (attributes) {
+        for (const name of attributes) {
+          this.component.attributes[name] = this.getAttribute(name);
+        }
+      }
+
+      this.attachShadow({mode: 'open'});
+
+      shadows.set(this.component, this.shadowRoot);
+
+      render(this.component);
+    }
+
+    attributeChangedCallback(name, _, newValue) {
+      if (this.shadowRoot) {
+        this.component.attributes[name] = newValue;
+
+        render(this.component);
+      }
+    }
+  }
+
+  window.customElements.define(Definition.tag, Element);
 };
