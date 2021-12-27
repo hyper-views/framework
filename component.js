@@ -10,10 +10,10 @@ export const render = (component) => {
   morph(shadow, result, {rootNode: shadow});
 };
 
-export const register = (Definition, window = window) => {
+export const register = (Definition, win = window) => {
   const attributes = Definition.attributes;
 
-  class Element extends window.HTMLElement {
+  class Element extends win.HTMLElement {
     static get observedAttributes() {
       return attributes;
     }
@@ -45,5 +45,5 @@ export const register = (Definition, window = window) => {
     }
   }
 
-  window.customElements.define(Definition.tag, Element);
+  win.customElements.define(Definition.tag, Element);
 };
