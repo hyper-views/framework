@@ -5,7 +5,7 @@ A simple front-end framework.
 ## Get started
 
 ```javascript
-import {morph, html} from '@hyper-views/framework/stringify.js';
+import {morph, html} from '@hyper-views/framework';
 
 const target = document.querySelector('#app');
 
@@ -48,7 +48,7 @@ This shows how you can have dynamic children and how you'd output an array of it
 Sometimes you'll have some html that needs to be dynamic once but after that can be treated as if it were static. That's where `cache` comes into play.
 
 ```javascript
-import {cache, html} from '@hyper-views/framework/stringify.js';
+import {cache, html} from '@hyper-views/framework';
 
 const title = 'The heading';
 
