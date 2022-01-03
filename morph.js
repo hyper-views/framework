@@ -90,9 +90,7 @@ export const morph = (
     if (firstChar === ':' && !hasDash && !isSvg) {
       key = attrToPropMap[key] ?? key;
 
-      if (value == null) {
-        delete target[key];
-      } else if (target[key] !== value) {
+      if (value != null && target[key] !== value) {
         target[key] = value;
       }
     } else if (firstChar === '@') {
@@ -109,7 +107,7 @@ export const morph = (
           addListener(rootNode, key);
         }
       }
-    } else if (existing && value == null) {
+    } else if (value == null) {
       target.removeAttribute(key);
     } else if (value != null && target.getAttribute(key) !== value) {
       target.setAttribute(key, value);
@@ -147,15 +145,11 @@ export const morph = (
     }
 
     while (nextChild != null) {
-      let mode = !existing || childNode == null ? 2 : !same ? 1 : 0;
+      const mode = !existing || childNode == null ? 2 : !same ? 1 : 0;
 
       let currentChild = childNode;
 
       if (!nextChild?.type || nextChild.type === tokenTypes.text) {
-        if (!mode && childNode.nodeType !== 3) {
-          mode = 1;
-        }
-
         const value = nextChild?.value ?? nextChild ?? '';
 
         if (mode) {
@@ -164,14 +158,6 @@ export const morph = (
           childNode.data = value;
         }
       } else {
-        if (
-          !mode &&
-          (childNode.nodeType !== 1 ||
-            childNode.nodeName.toLowerCase() !== nextChild.tag)
-        ) {
-          mode = 1;
-        }
-
         if (mode) {
           currentChild =
             isSvg || nextChild.tag === 'svg'

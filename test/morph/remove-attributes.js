@@ -16,28 +16,53 @@ t.test('remove attributes', async () => {
         <title></title>
       </head>
       <body>
-        <input required placeholder="Add a Value" value="I'm the Value" />
       </body>
     </html>
   `);
 
   const el = dom.window.document.body;
 
-  const view = () => html`
+  const view = ({required, placeholder, value, dataAttr}) => html`
     <body>
-      <input :required=${false} :placeholder=${null} :value=${null} />
+      <input :required=${required} :value=${value} :data-attr=${dataAttr} />
     </body>
   `;
 
-  morph(el, view());
+  morph(
+    el,
+    view({
+      required: true,
+      value: "I'm the Value",
+      dataAttr: 'remove me',
+    })
+  );
 
   await setTimeout(0);
 
-  const input = el.querySelector('input');
+  const input1 = el.querySelector('input');
 
-  t.equal(input?.required, false);
+  t.equal(input1?.required, true);
 
-  t.equal(input?.placeholder, '');
+  t.equal(input1?.value, "I'm the Value");
 
-  t.equal(input?.value, '');
+  t.equal(input1?.dataset.attr, 'remove me');
+
+  morph(
+    el,
+    view({
+      required: false,
+      value: '',
+      dataAttr: null,
+    })
+  );
+
+  await setTimeout(0);
+
+  const input2 = el.querySelector('input');
+
+  t.equal(input2?.required, false);
+
+  t.equal(input2?.value, '');
+
+  t.equal(input2?.dataset.attr, undefined);
 });
