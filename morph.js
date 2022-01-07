@@ -145,11 +145,15 @@ export const morph = (
     }
 
     while (nextChild != null) {
-      const mode = !existing || childNode == null ? 2 : !same ? 1 : 0;
+      let mode = !existing || childNode == null ? 2 : !same ? 1 : 0;
 
       let currentChild = childNode;
 
       if (!nextChild?.type || nextChild.type === tokenTypes.text) {
+        if (!mode && childNode.nodeType !== 3) {
+          mode = 1;
+        }
+
         const value = nextChild?.value ?? nextChild ?? '';
 
         if (mode) {
@@ -158,6 +162,14 @@ export const morph = (
           childNode.data = value;
         }
       } else {
+        if (
+          !mode &&
+          (childNode.nodeType !== 1 ||
+            childNode.nodeName.toLowerCase() !== nextChild.tag)
+        ) {
+          mode = 1;
+        }
+
         if (mode) {
           currentChild =
             isSvg || nextChild.tag === 'svg'
