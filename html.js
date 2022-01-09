@@ -159,6 +159,11 @@ const tokenizer = {
           } else {
             yield TRUE;
           }
+        } else {
+          yield {
+            type: tokenTypes.tag,
+            tag,
+          };
         }
       }
 
