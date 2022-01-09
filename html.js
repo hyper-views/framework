@@ -194,21 +194,9 @@ const parse = (read, parent, tag, variables) => {
 
       token = read();
 
-      const firstChar = key.charAt(0);
-      const special = ':' === firstChar || '@' === firstChar;
-
-      let value = token.value;
-      let constant = false;
+      const value = token.value;
 
       if (token.type === tokenTypes.value) {
-        constant = true;
-      } else if (token.type === tokenTypes.variable && !special && !html.dev) {
-        value = variables[value];
-
-        constant = true;
-      }
-
-      if (constant) {
         child.attributes.push({
           type: tokenTypes.constant,
           key,
@@ -305,11 +293,7 @@ export const html = (strs, ...variables) => {
   };
 };
 
-html.dev = false;
-
 export const cache = (result) => {
-  if (html.dev) return result;
-
   result.dynamic = false;
 
   return result;

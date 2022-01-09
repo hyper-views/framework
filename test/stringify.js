@@ -14,10 +14,10 @@ t.test('stringify', async () => {
               <input
                 required
                 type="input"
-                :id=${`value${i}`}
-                :name=${`value${i}`}
-                :placeholder=${'Add A Value'}
-                :value=${i}
+                id=${`value${i}`}
+                name=${`value${i}`}
+                placeholder=${'Add A Value'}
+                value=${i}
                 @change=${() => {}}
                 data-not=${null}
               />

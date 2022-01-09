@@ -9,7 +9,7 @@ import {morph, html} from '@hyper-views/framework';
 
 const target = document.querySelector('#app');
 
-const cls = getCls();
+const cls = 'app';
 
 const view = () => html`
   <div id="app" class=${cls} />
@@ -22,7 +22,7 @@ This doesn't do much right now, but it does demonstrate a few things.
 
 - How to render an element with no children. The self closing `/>` is required even on tags that normally wouldn't need it and it's allowed on all, even those that normally wouldn't allow it.
 - How to render static attributes. `id="app"` is static. It will be the same each time this view is rendered. The quotes (single or double) are require.
-- How to render cached attributes. `class=${cls}` is cached. Its value is not hard-coded. However every time the view is rendered it will not change, even if `getCls()` returns a new value.
+- How to render variable attributes. `class=${cls}` is an variable attribute.
 
 ## Dynamic children
 
@@ -43,7 +43,7 @@ const view = (state) => html`
 
 This shows how you can have dynamic children and how you'd output an array of items.
 
-## Cached children
+## Cached elements
 
 Sometimes you'll have some html that needs to be dynamic once but after that can be treated as if it were static. That's where `cache` comes into play.
 
@@ -75,9 +75,7 @@ const view = (state) => html`
 
 ## Properties
 
-Cached attributes are useful, but often you'll have attributes that need to change. This is where you can use properties instead. Properties are always reevaluated. You can indicate a property with `:`, a single colon.
-
-Please note that `class` will get expanded to `className` and `for` will get expanded to `htmlFor`.
+Sometimes you need to change properties, not attributes, especially with form elements and web components. You can indicate a property with `:`, a single colon.
 
 ```javascript
 let hasFoo = true;
@@ -88,7 +86,7 @@ const view = (state) => html`
   <form id="app">
     <label>
       Has foo
-      <input type="checkbox" :checkbox=${hasFoo} />
+      <input type="checkbox" :checked=${hasFoo} />
     </label>
     <label>
       Bar value

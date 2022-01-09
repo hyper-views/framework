@@ -9,9 +9,9 @@ t.test('attributes', async () => {
 
   t.has(el.attributes, {
     length: 4,
-    0: {key: 'foo', value: true},
-    1: {key: 'bar', value: 'a'},
-    2: {key: 'baz', value: 'b'},
-    3: {key: 'qux', value: 'c'},
+    0: {key: 'qux', value: 0},
+    1: {key: 'foo', value: true},
+    2: {key: 'bar', value: 'a'},
+    3: {key: 'baz', value: 'b'},
   });
 });

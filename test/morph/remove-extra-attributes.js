@@ -26,7 +26,7 @@ t.test('do not reuse elements between different templates', async () => {
   const view = (state) =>
     state?.class
       ? html`
-          <div><div :class=${state?.class}>I have a class</div></div>
+          <div><div class=${state?.class}>I have a class</div></div>
         `
       : html`
           <div><div>I do not</div></div>

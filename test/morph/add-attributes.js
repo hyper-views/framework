@@ -24,9 +24,9 @@ t.test('add attributes', async () => {
   const view = () => html`
     <body>
       <input
-        required
-        placeholder="Add a Value"
+        :required=${true}
         :value=${"I'm the Value"}
+        placeholder="Add a Value"
         data-not=${null}
       />
     </body>

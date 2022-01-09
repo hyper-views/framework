@@ -28,11 +28,6 @@ const addListener = (rootNode, type) => {
   );
 };
 
-const attrToPropMap = {
-  class: 'className',
-  for: 'htmlFor',
-};
-
 export const morph = (
   target,
   next,
@@ -81,16 +76,13 @@ export const morph = (
     let key = attribute.key;
 
     const firstChar = key.charAt(0);
-    const hasDash = ~key.indexOf('-');
 
     if (firstChar === ':' || firstChar === '@') {
       key = key.substring(1);
     }
 
-    if (firstChar === ':' && !hasDash && !isSvg) {
-      key = attrToPropMap[key] ?? key;
-
-      if (value != null && target[key] !== value) {
+    if (firstChar === ':') {
+      if (target[key] !== value) {
         target[key] = value;
       }
     } else if (firstChar === '@') {
@@ -109,7 +101,7 @@ export const morph = (
       }
     } else if (value == null) {
       target.removeAttribute(key);
-    } else if (value != null && target.getAttribute(key) !== value) {
+    } else if (target.getAttribute(key) !== value) {
       target.setAttribute(key, value);
     }
   }

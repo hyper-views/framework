@@ -22,9 +22,9 @@ t.test('remove attributes', async () => {
 
   const el = dom.window.document.body;
 
-  const view = ({required, placeholder, value, dataAttr}) => html`
+  const view = ({required, value, dataAttr}) => html`
     <body>
-      <input :required=${required} :value=${value} :data-attr=${dataAttr} />
+      <input :required=${required} :value=${value} data-attr=${dataAttr} />
     </body>
   `;
 
