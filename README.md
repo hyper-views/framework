@@ -22,7 +22,7 @@ This doesn't do much right now, but it does demonstrate a few things.
 
 - How to render an element with no children. The self closing `/>` is required even on tags that normally wouldn't need it and it's allowed on all, even those that normally wouldn't allow it.
 - How to render static attributes. `id="app"` is static. It will be the same each time this view is rendered. The quotes (single or double) are require.
-- How to render variable attributes. `class=${cls}` is an variable attribute.
+- How to render dynamic attributes. `class=${cls}` is an dynamic attribute. It can change each time this view is rendered.
 
 ## Dynamic children
 
@@ -114,28 +114,33 @@ const view = (state) => html`
 
 The framework always uses event delegation. For instance with this click handler above a single event handler is added to the document with capture set to true. When a click occurs the target is checked to see if it was registered as having a handler. If it was then the handler is called with the event object.
 
-## Changing state
+## Web components
 
 ```javascript
-const state = {count: 0};
-const target = document.querySelector('#app');
+import {html, render, register} from '@hyper-views/framework';
 
-const onClick = (e) => {
-  e.preventDefault();
+register(
+  class {
+    static tag = 'my-counter';
 
-  state.count++;
+    count = 0;
 
-  morph(target, view(state));
-};
+    onClick = (e) => {
+      e.preventDefault();
 
-const view = (state) => html`
-  <div id="app">
-    <p>${state.count}</p>
-    <button @click=${onClick}>Click here</button>
-  </div>
-`;
+      this.count++;
 
-morph(target, view(state));
+      render(this);
+    };
+
+    template = () => html`
+      <div>
+        <p>${this.count}</p>
+        <button @click=${this.onClick}>Click here</button>
+      </div>
+    `;
+  }
+);
 ```
 
 ## Server-side rendering
