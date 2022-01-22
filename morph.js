@@ -56,6 +56,8 @@ export const morph = (
     }
   }
 
+  const attributeTarget = target.host ?? target;
+
   for (
     let attributeIndex = 0, length = next.attributes.length;
     attributeIndex < length;
@@ -82,11 +84,11 @@ export const morph = (
     }
 
     if (firstChar === ':') {
-      if (target[key] !== value) {
-        target[key] = value;
+      if (attributeTarget[key] !== value) {
+        attributeTarget[key] = value;
       }
     } else if (firstChar === '@') {
-      const meta = readMeta(target);
+      const meta = readMeta(attributeTarget);
 
       meta[key] = value;
 
@@ -99,10 +101,10 @@ export const morph = (
           addListener(rootNode, key);
         }
       }
-    } else if (value == null) {
-      target.removeAttribute(key);
-    } else if (target.getAttribute(key) !== value) {
-      target.setAttribute(key, value);
+    } else if (value == null || value === false) {
+      attributeTarget.removeAttribute(key);
+    } else if (attributeTarget.getAttribute(key) !== value) {
+      attributeTarget.setAttribute(key, value === true ? '' : value);
     }
   }
 

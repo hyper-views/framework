@@ -11,7 +11,7 @@ export const render = (component) => {
 };
 
 export const register = (Definition, win = window) => {
-  const attributes = Definition.attributes;
+  const attributes = Definition.attributes ?? [];
 
   class Element extends win.HTMLElement {
     static get observedAttributes() {
@@ -23,10 +23,8 @@ export const register = (Definition, win = window) => {
 
       this.component.attributes = {};
 
-      if (attributes) {
-        for (const name of attributes) {
-          this.component.attributes[name] = this.getAttribute(name);
-        }
+      for (const name of attributes) {
+        this.component.attributes[name] = this.getAttribute(name);
       }
 
       this.attachShadow({mode: 'open'});
