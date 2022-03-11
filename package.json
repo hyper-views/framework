@@ -34,7 +34,7 @@
     "@erickmerchant/eslint-config": "^3.0.0",
     "@erickmerchant/prettier-config": "^2.0.0",
     "jsdom": "^19.0.0",
-    "tap": "^15.0.9"
+    "tap": "^16.0.0"
   },
   "engines": {
     "node": ">=14.3"
