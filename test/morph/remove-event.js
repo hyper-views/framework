@@ -3,8 +3,7 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {html} from '../../html.js';
-import {morph} from '../../morph.js';
+import {html, render} from '../../main.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
@@ -31,12 +30,10 @@ t.test('remove event', async () => {
   ];
 
   const view = (state) => html`
-    <body>
-      <button type="button" @click=${onclicks[state]}>Click Me</button>
-    </body>
+    <button type="button" @click=${onclicks[state]}>Click Me</button>
   `;
 
-  morph(el, view(0));
+  render(view(0), el);
 
   await setTimeout(0);
 
@@ -48,7 +45,7 @@ t.test('remove event', async () => {
 
   t.equal(clicked, 1);
 
-  morph(el, view(1));
+  render(view(1), el);
 
   await setTimeout(0);
 

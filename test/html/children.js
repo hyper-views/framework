@@ -1,6 +1,6 @@
 import t from 'tap';
 
-import {html, tokenTypes} from '../../html.js';
+import {html} from '../../main.js';
 
 t.test('nodes -- static and dynamic', async () => {
   const el = html`
@@ -12,43 +12,47 @@ t.test('nodes -- static and dynamic', async () => {
   `;
 
   t.has(el, {
-    type: tokenTypes.node,
-    tag: 'ul',
-    dynamic: true,
-    children: {
-      length: 3,
-      0: {
-        type: tokenTypes.node,
-        tag: 'li',
-        dynamic: false,
-        children: {
-          length: 1,
-          0: {type: tokenTypes.text, value: '0'},
-        },
-      },
-      1: {
-        type: tokenTypes.node,
-        tag: 'li',
+    views: [
+      {
+        type: 'node',
+        tag: 'ul',
         dynamic: true,
         children: {
-          length: 1,
-          0: {type: tokenTypes.variable, value: 0},
-        },
-      },
-      2: {
-        type: tokenTypes.node,
-        tag: 'li',
-        dynamic: false,
-        children: {
-          length: 1,
+          length: 3,
           0: {
-            type: tokenTypes.node,
-            tag: 'span',
+            type: 'node',
+            tag: 'li',
             dynamic: false,
-            children: {length: 1, 0: {type: tokenTypes.text, value: '2'}},
+            children: {
+              length: 1,
+              0: {type: 'text', value: '0'},
+            },
+          },
+          1: {
+            type: 'node',
+            tag: 'li',
+            dynamic: true,
+            children: {
+              length: 1,
+              0: {type: 'variable', value: 0},
+            },
+          },
+          2: {
+            type: 'node',
+            tag: 'li',
+            dynamic: false,
+            children: {
+              length: 1,
+              0: {
+                type: 'node',
+                tag: 'span',
+                dynamic: false,
+                children: {length: 1, 0: {type: 'text', value: '2'}},
+              },
+            },
           },
         },
       },
-    },
+    ],
   });
 });

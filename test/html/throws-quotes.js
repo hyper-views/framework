@@ -1,6 +1,6 @@
 import t from 'tap';
 
-import {html} from '../../html.js';
+import {html} from '../../main.js';
 
 t.test('throws on various quote issues', async () => {
   t.throws(() => {

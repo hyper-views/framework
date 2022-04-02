@@ -3,8 +3,7 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {html} from '../../html.js';
-import {morph} from '../../morph.js';
+import {html, render} from '../../main.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
@@ -22,14 +21,12 @@ t.test('svg', async () => {
   const el = dom.window.document.body;
 
   const view = () => html`
-    <body>
-      <svg viewBox="0 0 10 10">
-        <circle r="4" cx="5" cy="15" />
-      </svg>
-    </body>
+    <svg viewBox="0 0 10 10">
+      <circle r="4" cx="5" cy="15" />
+    </svg>
   `;
 
-  morph(el, view());
+  render(view(), el);
 
   await setTimeout(0);
 

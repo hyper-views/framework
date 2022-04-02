@@ -1,7 +1,7 @@
 import t from 'tap';
 
-import {cache} from '../html.js';
+import {cache} from '../main.js';
 
 t.test('cache', async () => {
-  t.match(cache({test: 1}), {test: 1, dynamic: false});
+  t.match(cache({views: [{view: 1}]}), {views: [{view: 1, dynamic: false}]});
 });

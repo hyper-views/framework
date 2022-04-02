@@ -3,8 +3,7 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {html} from '../../html.js';
-import {morph} from '../../morph.js';
+import {html, render} from '../../main.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
@@ -23,10 +22,10 @@ t.test('text to node', async () => {
 
   const view =
     () => /* prettier-ignore */ html`
-      <body><p>lorem ipsum dolor</p></body>
+      <p>lorem ipsum dolor</p>
     `;
 
-  morph(el, view());
+  render(view(), el);
 
   await setTimeout(0);
 

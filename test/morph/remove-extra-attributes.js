@@ -3,8 +3,7 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {html} from '../../html.js';
-import {morph} from '../../morph.js';
+import {html, render} from '../../main.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
@@ -26,13 +25,13 @@ t.test('do not reuse elements between different templates', async () => {
   const view = (state) =>
     state?.class
       ? html`
-          <div><div class=${state?.class}>I have a class</div></div>
+          <div class=${state?.class}>I have a class</div>
         `
       : html`
-          <div><div>I do not</div></div>
+          <div>I do not</div>
         `;
 
-  morph(el, view({class: 'test'}));
+  render(view({class: 'test'}), el);
 
   await setTimeout(0);
 
@@ -40,7 +39,7 @@ t.test('do not reuse elements between different templates', async () => {
     0: {className: 'test'},
   });
 
-  morph(el, view());
+  render(view(), el);
 
   await setTimeout(0);
 

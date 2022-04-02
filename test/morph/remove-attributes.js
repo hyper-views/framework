@@ -3,8 +3,7 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {html} from '../../html.js';
-import {morph} from '../../morph.js';
+import {html, render} from '../../main.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
@@ -28,13 +27,13 @@ t.test('remove attributes', async () => {
     </body>
   `;
 
-  morph(
-    el,
+  render(
     view({
       required: true,
       value: "I'm the Value",
       dataAttr: 'remove me',
-    })
+    }),
+    el
   );
 
   await setTimeout(0);
@@ -47,13 +46,13 @@ t.test('remove attributes', async () => {
 
   t.equal(input1?.dataset.attr, 'remove me');
 
-  morph(
-    el,
+  render(
     view({
       required: false,
       value: '',
       dataAttr: null,
-    })
+    }),
+    el
   );
 
   await setTimeout(0);

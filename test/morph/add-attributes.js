@@ -3,8 +3,7 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {html} from '../../html.js';
-import {morph} from '../../morph.js';
+import {html, render} from '../../main.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
@@ -22,17 +21,15 @@ t.test('add attributes', async () => {
   const el = dom.window.document.body;
 
   const view = () => html`
-    <body>
-      <input
-        :required=${true}
-        :value=${"I'm the Value"}
-        placeholder="Add a Value"
-        data-not=${null}
-      />
-    </body>
+    <input
+      :required=${true}
+      :value=${"I'm the Value"}
+      placeholder="Add a Value"
+      data-not=${null}
+    />
   `;
 
-  morph(el, view());
+  render(view(), el);
 
   await setTimeout(0);
 

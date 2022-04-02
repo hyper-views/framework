@@ -1,6 +1,6 @@
 import t from 'tap';
 
-import {html} from '../../html.js';
+import {html} from '../../main.js';
 
 t.test('broken html does not timeout', async () => {
   t.throws(() => {

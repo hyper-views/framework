@@ -3,8 +3,7 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {html} from '../../html.js';
-import {morph} from '../../morph.js';
+import {html, render} from '../../main.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
@@ -15,8 +14,7 @@ t.test('no change - dynamic', async () => {
       <head>
         <title></title>
       </head>
-      <body>
-      </body>
+      <body></body>
     </html>
   `);
 
@@ -28,17 +26,15 @@ t.test('no change - dynamic', async () => {
     `;
 
   const view = () => html`
-    <body>
-      <ul>
-        ${[1, 2, 3].map((i) => item(i))}
-      </ul>
-      ${html`
-        <p>lorem ipsum dolor</p>
-      `}
-    </body>
+    <ul>
+      ${[1, 2, 3].map((i) => item(i))}
+    </ul>
+    ${html`
+      <p>lorem ipsum dolor</p>
+    `}
   `;
 
-  morph(el, view());
+  render(view(), el);
 
   await setTimeout(0);
 
@@ -48,7 +44,7 @@ t.test('no change - dynamic', async () => {
     1: {nodeName: 'P', childNodes: {length: 1}},
   });
 
-  morph(el, view());
+  render(view(), el);
 
   await setTimeout(0);
 

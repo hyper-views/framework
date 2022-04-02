@@ -5,9 +5,9 @@ A simple front-end framework.
 ## Get started
 
 ```javascript
-import {morph, html} from '@hyper-views/framework';
+import {render, html} from '@hyper-views/framework';
 
-const target = document.querySelector('#app');
+const target = document.querySelector('body');
 
 const cls = 'app';
 
@@ -15,7 +15,7 @@ const view = () => html`
   <div id="app" class=${cls} />
 `;
 
-morph(target, view());
+render(view(), target);
 ```
 
 This doesn't do much right now, but it does demonstrate a few things.
@@ -110,37 +110,6 @@ const view = (state) => html`
     <button @click=${onClick}>Click here</button>
   </div>
 `;
-```
-
-The framework always uses event delegation. For instance with this click handler above a single event handler is added to the document with capture set to true. When a click occurs the target is checked to see if it was registered as having a handler. If it was then the handler is called with the event object.
-
-## Web components
-
-```javascript
-import {html, render, register} from '@hyper-views/framework';
-
-register(
-  class {
-    static tag = 'my-counter';
-
-    count = 0;
-
-    onClick = (e) => {
-      e.preventDefault();
-
-      this.count++;
-
-      render(this);
-    };
-
-    template = () => html`
-      <div>
-        <p>${this.count}</p>
-        <button @click=${this.onClick}>Click here</button>
-      </div>
-    `;
-  }
-);
 ```
 
 ## Server-side rendering

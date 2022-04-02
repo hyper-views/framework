@@ -1,6 +1,6 @@
 import t from 'tap';
 
-import {html} from '../html.js';
+import {html} from '../main.js';
 import {stringify} from '../stringify.js';
 
 t.test('stringify', async () => {

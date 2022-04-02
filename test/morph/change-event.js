@@ -3,8 +3,7 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {html} from '../../html.js';
-import {morph} from '../../morph.js';
+import {html, render} from '../../main.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
@@ -24,26 +23,24 @@ t.test('change event', async () => {
   let clicked = -1;
   let totalClicks = 0;
 
-  const onclicks = [
-    () => {
-      clicked = 0;
+  const a = () => {
+    clicked = 0;
 
-      totalClicks++;
-    },
-    () => {
-      clicked = 1;
+    totalClicks++;
+  };
+  const b = () => {
+    clicked = 1;
 
-      totalClicks++;
-    },
-  ];
+    totalClicks++;
+  };
+
+  const onclicks = [a, b];
 
   const view = (state) => html`
-    <body>
-      <button type="button" @click=${onclicks[state]}>Click Me</button>
-    </body>
+    <button type="button" @click=${onclicks[state]}>Click Me</button>
   `;
 
-  morph(el, view(0));
+  render(view(0), el);
 
   await setTimeout(0);
 
@@ -55,7 +52,9 @@ t.test('change event', async () => {
 
   t.equal(clicked, 0);
 
-  morph(el, view(1));
+  t.equal(totalClicks, 1);
+
+  render(view(1), el);
 
   await setTimeout(0);
 

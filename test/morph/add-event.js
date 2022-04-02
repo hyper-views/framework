@@ -3,8 +3,7 @@ import t from 'tap';
 import timers from 'timers';
 import {promisify} from 'util';
 
-import {html} from '../../html.js';
-import {morph} from '../../morph.js';
+import {html, render} from '../../main.js';
 
 const setTimeout = promisify(timers.setTimeout);
 
@@ -28,12 +27,10 @@ t.test('add event', async () => {
   };
 
   const view = () => html`
-    <body>
-      <button type="button" @click=${onclick}>Click Me</button>
-    </body>
+    <button type="button" @click=${onclick}>Click Me</button>
   `;
 
-  morph(el, view());
+  render(view(), el);
 
   await setTimeout(0);
 

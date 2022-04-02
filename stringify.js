@@ -1,5 +1,4 @@
 import {escape} from './escape.js';
-import {tokenTypes} from './html.js';
 
 const selfClosing = [
   'area',
@@ -18,10 +17,20 @@ const selfClosing = [
   'wbr',
 ];
 
-export const stringify = (obj) => {
-  const {tag, attributes, children, variables} = obj;
+export const stringify = (next) => {
+  let result = '';
 
-  let result = `<${tag}`;
+  if (next.views) {
+    for (let i = 0; i < next.views.length; i++) {
+      result += stringify({variables: next.variables, ...next.views[i]});
+    }
+
+    return result;
+  }
+
+  const {tag, attributes, children, variables} = next;
+
+  result += `<${tag}`;
   const isSelfClosing = selfClosing.includes(tag);
 
   const reducedAttributes = [];
@@ -39,7 +48,7 @@ export const stringify = (obj) => {
   for (const attr of reducedAttributes) {
     let value = attr.value;
 
-    if (attr.type === tokenTypes.variable) {
+    if (attr.type === 'variable') {
       value = variables[value];
     }
 
@@ -60,7 +69,7 @@ export const stringify = (obj) => {
     for (let i = 0, length = children.length; i < length; i++) {
       let child = children[i];
 
-      if (child?.type === tokenTypes.variable) {
+      if (child?.type === 'variable') {
         child = variables[child.value];
       }
 
@@ -79,13 +88,22 @@ export const stringify = (obj) => {
       const child = descendants[i];
 
       if (child) {
-        if (child.type) {
+        if (child.views) {
+          if (child.views) {
+            for (let i = 0; i < child.views.length; i++) {
+              result += stringify({
+                variables: child.variables,
+                ...child.views[i],
+              });
+            }
+          }
+        } else if (child.type) {
           switch (child.type) {
-            case tokenTypes.text:
+            case 'text':
               result += tag !== 'style' ? escape(child.value) : child.value;
               break;
 
-            case tokenTypes.node:
+            case 'node':
               result += stringify({
                 variables: child.view ? child.variables : variables,
                 ...child,
