@@ -2,7 +2,7 @@ import t from 'tap';
 
 import {html} from '../../main.js';
 
-t.test('allows multiple roots', async () => {
+t.test('allows multiple and text roots', async () => {
   const result1 = html`
     <div />
     <div />

@@ -21,7 +21,7 @@ render(view(), target);
 This doesn't do much right now, but it does demonstrate a few things.
 
 - How to render an element with no children. The self closing `/>` is required even on tags that normally wouldn't need it and it's allowed on all, even those that normally wouldn't allow it.
-- How to render static attributes. `id="app"` is static. It will be the same each time this view is rendered. The quotes (single or double) are require.
+- How to render static attributes. `id="app"` is static. It will be the same each time this view is rendered.
 - How to render dynamic attributes. `class=${cls}` is an dynamic attribute. It can change each time this view is rendered.
 
 ## Dynamic children
