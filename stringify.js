@@ -28,10 +28,10 @@ export const stringify = (next) => {
     return result;
   }
 
-  const {tag, attributes, children, variables} = next;
+  const {name, attributes, children, variables} = next;
 
-  result += `<${tag}`;
-  const isSelfClosing = selfClosing.includes(tag);
+  result += `<${name}`;
+  const isSelfClosing = selfClosing.includes(name);
 
   const reducedAttributes = [];
 
@@ -100,7 +100,7 @@ export const stringify = (next) => {
         } else if (child.type) {
           switch (child.type) {
             case 'text':
-              result += tag !== 'style' ? escape(child.value) : child.value;
+              result += name !== 'style' ? escape(child.value) : child.value;
               break;
 
             case 'node':
@@ -111,14 +111,14 @@ export const stringify = (next) => {
               break;
           }
         } else {
-          result += tag !== 'style' ? escape(child) : child;
+          result += name !== 'style' ? escape(child) : child;
         }
       }
 
       i++;
     }
 
-    result += `</${tag}>`;
+    result += `</${name}>`;
   }
 
   return result;

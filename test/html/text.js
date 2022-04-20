@@ -11,7 +11,7 @@ t.test('text nodes -- static and dynamic', async () => {
     views: [
       {
         type: 'node',
-        tag: 'div',
+        name: 'div',
         dynamic: true,
         children: {
           length: 2,
@@ -30,7 +30,7 @@ t.test('text nodes -- static and dynamic', async () => {
     views: [
       {
         type: 'node',
-        tag: 'div',
+        name: 'div',
         dynamic: true,
         children: {
           length: 2,
@@ -49,7 +49,7 @@ t.test('text nodes -- static and dynamic', async () => {
     views: [
       {
         type: 'node',
-        tag: 'div',
+        name: 'div',
         dynamic: true,
         children: {
           length: 2,
