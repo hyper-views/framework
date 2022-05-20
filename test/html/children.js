@@ -14,40 +14,40 @@ t.test('nodes -- static and dynamic', async () => {
   t.has(el, {
     views: [
       {
-        type: 'node',
+        type: 6,
         name: 'ul',
         dynamic: true,
         children: {
           length: 3,
           0: {
-            type: 'node',
+            type: 6,
             name: 'li',
             dynamic: false,
             children: {
               length: 1,
-              0: {type: 'text', value: '0'},
+              0: {type: 7, value: '0'},
             },
           },
           1: {
-            type: 'node',
+            type: 6,
             name: 'li',
             dynamic: true,
             children: {
               length: 1,
-              0: {type: 'variable', value: 0},
+              0: {type: 1, value: 0},
             },
           },
           2: {
-            type: 'node',
+            type: 6,
             name: 'li',
             dynamic: false,
             children: {
               length: 1,
               0: {
-                type: 'node',
+                type: 6,
                 name: 'span',
                 dynamic: false,
-                children: {length: 1, 0: {type: 'text', value: '2'}},
+                children: {length: 1, 0: {type: 7, value: '2'}},
               },
             },
           },

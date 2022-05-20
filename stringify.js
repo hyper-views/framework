@@ -48,7 +48,7 @@ export const stringify = (next) => {
   for (const attr of reducedAttributes) {
     let value = attr.value;
 
-    if (attr.type === 'variable') {
+    if (attr.type === 1) {
       value = variables[value];
     }
 
@@ -69,7 +69,7 @@ export const stringify = (next) => {
     for (let i = 0, length = children.length; i < length; i++) {
       let child = children[i];
 
-      if (child?.type === 'variable') {
+      if (child?.type === 1) {
         child = variables[child.value];
       }
 
@@ -99,11 +99,11 @@ export const stringify = (next) => {
           }
         } else if (child.type) {
           switch (child.type) {
-            case 'text':
+            case 7:
               result += name !== 'style' ? escape(child.value) : child.value;
               break;
 
-            case 'node':
+            case 6:
               result += stringify({
                 variables: child.view ? child.variables : variables,
                 ...child,

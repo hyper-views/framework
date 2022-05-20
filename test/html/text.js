@@ -10,13 +10,13 @@ t.test('text nodes -- static and dynamic', async () => {
   t.has(el1, {
     views: [
       {
-        type: 'node',
+        type: 6,
         name: 'div',
         dynamic: true,
         children: {
           length: 2,
-          0: {type: 'text', value: ' 0 '},
-          1: {type: 'variable', value: 0},
+          0: {type: 7, value: ' 0 '},
+          1: {type: 1, value: 0},
         },
       },
     ],
@@ -29,13 +29,13 @@ t.test('text nodes -- static and dynamic', async () => {
   t.has(el2, {
     views: [
       {
-        type: 'node',
+        type: 6,
         name: 'div',
         dynamic: true,
         children: {
           length: 2,
-          0: {type: 'variable', value: 0},
-          1: {type: 'text', value: ' 1 '},
+          0: {type: 1, value: 0},
+          1: {type: 7, value: ' 1 '},
         },
       },
     ],
@@ -48,13 +48,13 @@ t.test('text nodes -- static and dynamic', async () => {
   t.has(el3, {
     views: [
       {
-        type: 'node',
+        type: 6,
         name: 'div',
         dynamic: true,
         children: {
           length: 2,
-          0: {type: 'variable', value: 0},
-          1: {type: 'variable', value: 1},
+          0: {type: 1, value: 0},
+          1: {type: 1, value: 1},
         },
       },
     ],
