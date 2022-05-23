@@ -8,7 +8,7 @@ t.test('attributes', async () => {
   `;
 
   t.has(el, {
-    views: [
+    children: [
       {
         attributes: {
           length: 6,

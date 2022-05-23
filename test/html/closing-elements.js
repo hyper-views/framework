@@ -7,11 +7,11 @@ t.test('handles self closing and not', async () => {
     <div />
   `;
 
-  t.has(div1, {views: [{type: 6, name: 'div', dynamic: false}]});
+  t.has(div1, {children: [{type: 6, name: 'div', dynamic: false}]});
 
   const div2 = html`
     <div></div>
   `;
 
-  t.has(div2, {views: [{type: 6, name: 'div', dynamic: false}]});
+  t.has(div2, {children: [{type: 6, name: 'div', dynamic: false}]});
 });

@@ -8,7 +8,7 @@ t.test('text nodes -- static and dynamic', async () => {
   `;
 
   t.has(el1, {
-    views: [
+    children: [
       {
         type: 6,
         name: 'div',
@@ -27,7 +27,7 @@ t.test('text nodes -- static and dynamic', async () => {
   `;
 
   t.has(el2, {
-    views: [
+    children: [
       {
         type: 6,
         name: 'div',
@@ -46,7 +46,7 @@ t.test('text nodes -- static and dynamic', async () => {
   `;
 
   t.has(el3, {
-    views: [
+    children: [
       {
         type: 6,
         name: 'div',

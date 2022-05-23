@@ -20,9 +20,9 @@ const selfClosing = [
 export const stringify = (next) => {
   let result = '';
 
-  if (next.views) {
-    for (let i = 0; i < next.views.length; i++) {
-      result += stringify({variables: next.variables, ...next.views[i]});
+  if (next.type === 8) {
+    for (let i = 0; i < next.children.length; i++) {
+      result += stringify({variables: next.variables, ...next.children[i]});
     }
 
     return result;
@@ -88,14 +88,12 @@ export const stringify = (next) => {
       const child = descendants[i];
 
       if (child) {
-        if (child.views) {
-          if (child.views) {
-            for (let i = 0; i < child.views.length; i++) {
-              result += stringify({
-                variables: child.variables,
-                ...child.views[i],
-              });
-            }
+        if (child.type === 8) {
+          for (let i = 0; i < child.children.length; i++) {
+            result += stringify({
+              variables: child.variables,
+              ...child.children[i],
+            });
           }
         } else if (child.type) {
           switch (child.type) {

@@ -12,7 +12,7 @@ t.test('nodes -- static and dynamic', async () => {
   `;
 
   t.has(el, {
-    views: [
+    children: [
       {
         type: 6,
         name: 'ul',

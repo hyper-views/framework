@@ -8,11 +8,11 @@ t.test('allows multiple and text roots', async () => {
     <div />
   `;
 
-  t.equal(result1.views.length, 2);
+  t.equal(result1.children.length, 2);
 
   const result2 = html`
     lorem ipsum
   `;
 
-  t.equal(result2.views.length, 1);
+  t.equal(result2.children.length, 1);
 });
